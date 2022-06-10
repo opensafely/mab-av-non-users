@@ -45,7 +45,7 @@ study = StudyDefinition(
     """
     age >= 12 AND age < 110
     AND NOT has_died
-    AND imdQ5 > 0
+    AND NOT imdQ5 = "Unknown"
     AND (
      registered_eligible
       AND
@@ -1008,7 +1008,7 @@ study = StudyDefinition(
             "5 (least deprived)": "imd >= 32800*4/5 AND imd <= 32800",
             },
         imd = patients.address_as_of(
-            "index_date",
+            "start_date",
             returning="index_of_multiple_deprivation",
             round_to_nearest=100,
             )
