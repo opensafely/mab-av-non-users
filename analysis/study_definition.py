@@ -237,7 +237,7 @@ study = StudyDefinition(
   
   
   ## Study start date for extracting variables
-  start_date = covid_test_positive_date
+  start_date = covid_test_positive_date,
   
   ## Exclusion criteria variables
   
@@ -246,18 +246,6 @@ study = StudyDefinition(
   
   ### Require hospitalisation for COVID-19
   ## NB this data lags behind the therapeutics/testing data so may be missing
-  
-  prim_covid_hosp_prev_90_days = patients.admitted_to_hospital(
-    with_these_primary_diagnoses = covid_icd10_codes,
-    with_patient_classification = ["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"], # emergency admissions only to exclude incidental COVID
-    between = ["start_date - 91 days","start_date - 1 day"],
-    returning = "binary_flag",
-    return_expectations = {
-      "incidence": 0.05
-    },
-  ),
   
   any_covid_hosp_prev_90_days = patients.admitted_to_hospital(
     with_these_diagnoses = covid_icd10_codes,
