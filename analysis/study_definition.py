@@ -49,13 +49,13 @@ study = StudyDefinition(
     # Define the study population
     population = patients.satisfying(
         """
-        covid_test_positive AND
-        has_follow_up AND
-        NOT died AND
-        (age >=18 AND age <= 110) AND
-        (sex = "M" OR sex = "F") AND
-        NOT stp = "" AND
-        imdQ5 > 0 
+        covid_test_positive 
+        AND has_follow_up 
+        AND NOT died 
+        AND (age >=18 AND age <= 110)
+        AND (sex = "M" OR sex = "F") 
+        AND NOT stp = "" 
+        AND imdQ5 > 0 
 
         """,
         ),
