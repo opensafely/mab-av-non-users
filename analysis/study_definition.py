@@ -55,6 +55,34 @@ study = StudyDefinition(
     
   ),
   
+### First positive SARS-CoV-2 test
+  # Note patients are eligible for treatment if diagnosed <=5d ago
+  # in the latest 5 days there may be patients identified as eligible who have not yet been treated
+  covid_test_positive = patients.with_test_result_in_sgss(
+    pathogen = "SARS-CoV-2",
+    test_result = "positive",
+    returning = "binary_flag",
+    on_or_after = "index_date",
+    find_first_match_in_period = True,
+    restrict_to_earliest_specimen_date = False,
+    return_expectations = {
+      "incidence": 0.2
+    },
+  ),
+  
+  covid_test_positive_date = patients.with_test_result_in_sgss(
+    pathogen = "SARS-CoV-2",
+    test_result = "positive",
+    find_first_match_in_period = True,
+    restrict_to_earliest_specimen_date = False,
+    returning = "date",
+    date_format = "YYYY-MM-DD",
+    on_or_after = "index_date",
+    return_expectations = {
+      "date": {"earliest": "2021-12-16"},
+      "incidence": 0.9
+    },
+  ),
   
   
   # TREATMENT - NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
@@ -149,35 +177,6 @@ study = StudyDefinition(
   # OVERALL ELIGIBILITY CRITERIA VARIABLES ----
   
   ## Inclusion criteria variables
-  
-  ### First positive SARS-CoV-2 test
-  # Note patients are eligible for treatment if diagnosed <=5d ago
-  # in the latest 5 days there may be patients identified as eligible who have not yet been treated
-  covid_test_positive = patients.with_test_result_in_sgss(
-    pathogen = "SARS-CoV-2",
-    test_result = "positive",
-    returning = "binary_flag",
-    on_or_after = "index_date",
-    find_first_match_in_period = True,
-    restrict_to_earliest_specimen_date = False,
-    return_expectations = {
-      "incidence": 0.2
-    },
-  ),
-  
-  covid_test_positive_date = patients.with_test_result_in_sgss(
-    pathogen = "SARS-CoV-2",
-    test_result = "positive",
-    find_first_match_in_period = True,
-    restrict_to_earliest_specimen_date = False,
-    returning = "date",
-    date_format = "YYYY-MM-DD",
-    on_or_after = "index_date",
-    return_expectations = {
-      "date": {"earliest": "2021-12-16"},
-      "incidence": 0.9
-    },
-  ),
   
   ### Second positive SARS-CoV-2 test
   covid_test_positive_date2 = patients.with_test_result_in_sgss(
