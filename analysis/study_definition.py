@@ -19,10 +19,12 @@ from cohortextractor import (
 )
 
 # Import codelists from codelist.py (which pulls them from the codelist folder)
-# from codelists import *
+from codelists import *
 
 # Import config variables (dates, list of demographics and list of
 # comorbidities)
+## Define study time variables
+from datetime import timedelta, date, datetime 
 # Import json module
 import json
 with open('lib/design/study-dates.json', 'r') as f:
