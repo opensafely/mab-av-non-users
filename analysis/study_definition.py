@@ -45,7 +45,7 @@ study = StudyDefinition(
     """
     age >= 12 AND age < 110
     AND NOT has_died
-    AND imdQ5
+    AND imdQ5 > 0
     AND (
      registered_eligible
       AND
