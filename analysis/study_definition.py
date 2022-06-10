@@ -413,7 +413,7 @@ study = StudyDefinition(
   ),
   
   has_died = patients.died_from_any_cause(
-    on_or_before = "index_date - 1 day",
+    on_or_before = "covid_test_positive_date - 1 day",
     returning = "binary_flag",
   ),
   
@@ -1267,8 +1267,44 @@ study = StudyDefinition(
     },
   ),
   
-  
-  
+ date_most_recent_cov_vac = patients.with_tpp_vaccination_record(
+      target_disease_matches = "SARS-2 CORONAVIRUS",
+      between = ["2020-06-08", "covid_test_positive_date"],
+      find_last_match_in_period = True,
+      returning = "date",
+      date_format = "YYYY-MM-DD"
+    ),
+ 
+pfizer_most_recent_cov_vac=patients.with_tpp_vaccination_record(
+        product_name_matches="COVID-19 mRNA Vaccine Comirnaty 30micrograms/0.3ml dose conc for susp for inj MDV (Pfizer)",
+        between = ["date_most_recent_cov_vac", "date_most_recent_cov_vac"],
+        find_last_match_in_period = True,
+        returning="binary_flag",
+         return_expectations={
+            "incidence": 0.4
+        },
+    ), 
+
+az_most_recent_cov_vac=patients.with_tpp_vaccination_record(
+        product_name_matches="COVID-19 Vac AstraZeneca (ChAdOx1 S recomb) 5x10000000000 viral particles/0.5ml dose sol for inj MDV",
+       between = ["date_most_recent_cov_vac", "date_most_recent_cov_vac"],
+        find_last_match_in_period = True,
+        returning="binary_flag",
+         return_expectations={
+            "incidence": 0.5
+        },
+    ),
+
+moderna_most_recent_cov_vac=patients.with_tpp_vaccination_record(
+        product_name_matches="COVID-19 mRNA Vaccine Spikevax (nucleoside modified) 0.1mg/0.5mL dose disp for inj MDV (Moderna)",
+       between = ["date_most_recent_cov_vac", "date_most_recent_cov_vac"],
+      find_last_match_in_period = True,
+        returning="binary_flag",
+         return_expectations={
+            "incidence": 0.5
+        },
+    ),
+
   # CLINICAL CO-MORBIDITIES TBC ----
   
   # COVID VARIENT
