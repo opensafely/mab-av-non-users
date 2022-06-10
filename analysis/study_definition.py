@@ -26,8 +26,8 @@ from codelists import *
 
 # Import json module
 import json
-with open('lib/design/study-dates.json', 'r') as f:
-    study_dates = json.load(f)
+with open("./lib/design/study-dates.json") as f:
+  study_dates = json.load(f)
 
 start_date = study_dates["start_date"]
 end_date = study_dates["end_date"]
