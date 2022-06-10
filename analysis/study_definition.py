@@ -50,12 +50,6 @@ study = StudyDefinition(
     population = patients.satisfying(
         """
         covid_test_positive 
-        AND has_follow_up 
-        AND NOT died 
-        AND (age >=18 AND age <= 110)
-        AND (sex = "M" OR sex = "F") 
-        AND NOT stp = "" 
-        AND imdQ5 > 0 
 
         """,
         ),
@@ -70,77 +64,5 @@ study = StudyDefinition(
             restrict_to_earliest_specimen_date = False,
             return_expectations = {"incidence": 0.9},
         ),
-        index_date = patients.with_test_result_in_sgss(
-            pathogen = "SARS-CoV-2",
-            test_result = "positive",
-            find_first_match_in_period = True,
-            restrict_to_earliest_specimen_date = False,
-            returning = "date",
-            date_format = "YYYY-MM-DD",
-            return_expectations = {
-                "date": {"earliest": "study_start", "latest": "study_end"},
-                "incidence": 0.9
-            },
-        ),
-        has_follow_up=patients.registered_with_one_practice_between(
-            "index_date - 3 months", "index_date"
-        ),
-        died=patients.died_from_any_cause(
-            on_or_before="index_date",
-            returning="binary_flag",
-            return_expectations={"incidence": 0.01},
-        ),
-        # age
-        age=patients.age_as_of(
-            "index_date",
-            return_expectations={
-                "rate": "universal",
-                "int": {"distribution": "population_ages"},
-            },
-        ),
-        # sex
-        sex=patients.sex(
-            return_expectations={
-                "rate": "universal",
-                "category": {"ratios": {"M": 0.49, "F": 0.51}},
-            },
-        ),
-        # stp
-        stp=patients.registered_practice_as_of(
-            "index_date",
-            returning="stp_code",
-            return_expectations={
-                "rate": "universal",
-                "category": {
-                    "ratios": {
-                        "STP1": 0.1,
-                        "STP2": 0.1,
-                        "STP3": 0.1,
-                        "STP4": 0.1,
-                        "STP5": 0.1,
-                        "STP6": 0.1,
-                        "STP7": 0.1,
-                        "STP8": 0.1,
-                        "STP9": 0.1,
-                        "STP10": 0.1,
-                    }
-                },
-            },
-        ),
-        #index of multiple deprivation
-        imdQ5 = patients.categorised_as(
-            {
-            "Unknown": "DEFAULT",
-            "1 (most deprived)": "imd >= 0 AND imd < 32800*1/5",
-            "2": "imd >= 32800*1/5 AND imd < 32800*2/5",
-            "3": "imd >= 32800*2/5 AND imd < 32800*3/5",
-            "4": "imd >= 32800*3/5 AND imd < 32800*4/5",
-            "5 (least deprived)": "imd >= 32800*4/5 AND imd <= 32800",
-            },
-        imd = patients.address_as_of(
-            "index_date",
-            returning="index_of_multiple_deprivation",
-            round_to_nearest=100,
-            )
-        ),
+    
 )
