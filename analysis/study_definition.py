@@ -127,7 +127,7 @@ study = StudyDefinition(
                 },
             },
         ),
-        # index of multiple deprivation
+        #index of multiple deprivation
         imdQ5 = patients.categorised_as(
             {
             "Unknown": "DEFAULT",
