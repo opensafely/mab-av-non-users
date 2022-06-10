@@ -237,7 +237,10 @@ study = StudyDefinition(
   
   
   ## Study start date for extracting variables
-  start_date = covid_test_positive_date,
+  start_date =  patients.minimum_of(
+    "covid_test_positive_date", 
+    "index_date"
+  ),
   
   ## Exclusion criteria variables
   
