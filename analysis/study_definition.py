@@ -26,12 +26,14 @@ from codelists import *
 ## Define study time variables
 from datetime import timedelta, date, datetime 
 # Import json module
-import json
-with open('lib/design/study-dates.json', 'r') as f:
-    study_dates = json.load(f)
+#import json
+#with open('lib/design/study-dates.json', 'r') as f:
+#    study_dates = json.load(f)
 
-start_date = study_dates["start_date"]
-end_date = study_dates["end_date"]
+#start_date = study_dates["start_date"]
+#end_date = study_dates["end_date"]
+start_date = "2021-12-16"
+end_date = "2022-02-10"
 
 # DEFINE STUDY POPULATION ----
 # Define study population and variables
