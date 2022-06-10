@@ -23,17 +23,14 @@ from codelists import *
 
 # Import config variables (dates, list of demographics and list of
 # comorbidities)
-## Define study time variables
-from datetime import timedelta, date, datetime 
-# Import json module
-#import json
-#with open('lib/design/study-dates.json', 'r') as f:
-#    study_dates = json.load(f)
 
-#start_date = study_dates["start_date"]
-#end_date = study_dates["end_date"]
-start_date = "2021-12-16"
-end_date = "2022-02-10"
+# Import json module
+import json
+with open('lib/design/study-dates.json', 'r') as f:
+    study_dates = json.load(f)
+
+start_date = study_dates["start_date"]
+end_date = study_dates["end_date"]
 
 # DEFINE STUDY POPULATION ----
 # Define study population and variables
@@ -62,11 +59,16 @@ study = StudyDefinition(
         covid_test_positive = patients.with_test_result_in_sgss(
             pathogen = "SARS-CoV-2",
             test_result = "positive",
-            returning = "binary_flag",
             between = ["study_start", "study_end"],
+            returning = "date",
+            date_format = "YYYY-MM-DD",
             find_first_match_in_period = True,
             restrict_to_earliest_specimen_date = False,
-            return_expectations = {"incidence": 0.9},
+            return_expectations = {
+                "date": {"earliest": "study_start", "latest" : "study_end"},
+                "rate": "exponential_increase",
+                "incidence": 0.6
+            },
         ),
     
 )
