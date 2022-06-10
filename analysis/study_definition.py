@@ -237,10 +237,6 @@ study = StudyDefinition(
   
   
   ## Study start date for extracting variables
-  start_date =  patients.minimum_of(
-    "covid_test_positive_date", 
-    "index_date"
-  ),
   
   ## Exclusion criteria variables
   
@@ -255,7 +251,7 @@ study = StudyDefinition(
     with_patient_classification = ["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
     with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"], # emergency admissions only to exclude incidental COVID
-    between = ["start_date - 91 days","start_date - 1 day"],
+    between = ["covid_test_positive_date - 91 days","covid_test_positive_date - 1 day"],
     returning = "binary_flag",
     return_expectations = {
       "incidence": 0.05
@@ -295,7 +291,7 @@ study = StudyDefinition(
     pregnancy_primis_codes,
     returning = "date",
     find_last_match_in_period = True,
-    between = ["start_date - 252 days", "start_date - 1 day"],
+    between = ["covid_test_positive_date - 252 days", "covid_test_positive_date - 1 day"],
     date_format = "YYYY-MM-DD",
   ),
   
@@ -307,7 +303,7 @@ study = StudyDefinition(
     pregdel_primis_codes,
     returning = "binary_flag",
     find_last_match_in_period = True,
-    between = ["preg_36wks_date + 1 day", "start_date - 1 day"],
+    between = ["preg_36wks_date + 1 day", "covid_test_positive_date - 1 day"],
     date_format = "YYYY-MM-DD",
   ),
   
@@ -357,7 +353,7 @@ study = StudyDefinition(
   # look in last 6 months only to get a relevant weight value
   weight = patients.with_these_clinical_events(
     weight_opensafely_snomed_codes,
-    between = ["start_date - 182 days", "start_date"],
+    between = ["covid_test_positive_date - 182 days", "covid_test_positive_date"],
     find_last_match_in_period=True,
     date_format = "YYYY-MM-DD",
     returning = "numeric_value",
@@ -409,7 +405,7 @@ study = StudyDefinition(
   death_date = patients.died_from_any_cause(
     returning = "date_of_death",
     date_format = "YYYY-MM-DD",
-    on_or_after = "start_date",
+    on_or_after = "covid_test_positive_date",
     return_expectations = {
       "date": {"earliest": "2021-12-20"},
       "incidence": 0.1
@@ -423,7 +419,7 @@ study = StudyDefinition(
   
   ## De-registration
   dereg_date = patients.date_deregistered_from_all_supported_practices(
-    on_or_after = "start_date",
+    on_or_after = "covid_test_positive_date",
     date_format = "YYYY-MM-DD",
     return_expectations = {
       "date": {"earliest": "2021-12-20"},
@@ -479,7 +475,7 @@ study = StudyDefinition(
   ## Down's syndrome
   downs_syndrome_nhsd_snomed = patients.with_these_clinical_events(
     downs_syndrome_nhsd_snomed_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     returning = "date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -487,7 +483,7 @@ study = StudyDefinition(
   
   downs_syndrome_nhsd_icd10 = patients.admitted_to_hospital(
     returning = "date_admitted",
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     with_these_diagnoses = downs_syndrome_nhsd_icd10_codes,
     find_last_match_in_period = True,
     date_format = "YYYY-MM-DD",
@@ -502,7 +498,7 @@ study = StudyDefinition(
       lung_cancer_opensafely_snomed_codes,
       chemotherapy_radiotherapy_opensafely_snomed_codes
     ),
-    between = ["start_date - 6 months", "start_date"],
+    between = ["covid_test_positive_date - 6 months", "covid_test_positive_date"],
     returning = "date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -511,7 +507,7 @@ study = StudyDefinition(
   ## Haematological diseases
   haematopoietic_stem_cell_transplant_nhsd_snomed = patients.with_these_clinical_events(
     haematopoietic_stem_cell_transplant_nhsd_snomed_codes,
-    between = ["start_date - 12 months", "start_date"],
+    between = ["covid_test_positive_date - 12 months", "covid_test_positive_date"],
     returning = "date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -519,7 +515,7 @@ study = StudyDefinition(
   
   haematopoietic_stem_cell_transplant_nhsd_icd10 = patients.admitted_to_hospital(
     returning = "date_admitted",
-    between = ["start_date - 12 months", "start_date"],
+    between = ["covid_test_positive_date - 12 months", "covid_test_positive_date"],
     with_these_diagnoses = haematopoietic_stem_cell_transplant_nhsd_icd10_codes,
     find_last_match_in_period = True,
     date_format = "YYYY-MM-DD",
@@ -527,7 +523,7 @@ study = StudyDefinition(
   
   haematopoietic_stem_cell_transplant_nhsd_opcs4 = patients.admitted_to_hospital(
     returning = "date_admitted",
-    between = ["start_date - 12 months", "start_date"],
+    between = ["covid_test_positive_date - 12 months", "covid_test_positive_date"],
     with_these_procedures = haematopoietic_stem_cell_transplant_nhsd_opcs4_codes,
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -540,7 +536,7 @@ study = StudyDefinition(
   
   haematological_malignancies_nhsd_snomed = patients.with_these_clinical_events(
     haematological_malignancies_nhsd_snomed_codes,
-    between = ["start_date - 24 months", "start_date"],
+    between = ["covid_test_positive_date - 24 months", "covid_test_positive_date"],
     returning = "date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -548,7 +544,7 @@ study = StudyDefinition(
   
   haematological_malignancies_nhsd_icd10 = patients.admitted_to_hospital(
     returning = "date_admitted",
-    between = ["start_date - 24 months", "start_date"],
+    between = ["covid_test_positive_date - 24 months", "covid_test_positive_date"],
     with_these_diagnoses = haematological_malignancies_nhsd_icd10_codes,
     find_last_match_in_period = True,
     date_format = "YYYY-MM-DD",
@@ -556,7 +552,7 @@ study = StudyDefinition(
   
   sickle_cell_disease_nhsd_snomed = patients.with_these_clinical_events(
     sickle_cell_disease_nhsd_snomed_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     returning = "date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -564,7 +560,7 @@ study = StudyDefinition(
   
   sickle_cell_disease_nhsd_icd10 = patients.admitted_to_hospital(
     returning = "date_admitted",
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     with_these_diagnoses = sickle_cell_disease_nhsd_icd10_codes,
     find_last_match_in_period = True,
     date_format = "YYYY-MM-DD",
@@ -582,7 +578,7 @@ study = StudyDefinition(
   ## Renal disease
   ckd_stage_5_nhsd_snomed = patients.with_these_clinical_events(
     ckd_stage_5_nhsd_snomed_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     returning = "date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -590,7 +586,7 @@ study = StudyDefinition(
   
   ckd_stage_5_nhsd_icd10 = patients.admitted_to_hospital(
     returning = "date_admitted",
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     with_these_diagnoses = ckd_stage_5_nhsd_icd10_codes,
     find_last_match_in_period = True,
     date_format = "YYYY-MM-DD",
@@ -601,7 +597,7 @@ study = StudyDefinition(
   ## Liver disease
   liver_disease_nhsd_snomed = patients.with_these_clinical_events(
     liver_disease_nhsd_snomed_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     returning = "date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -609,7 +605,7 @@ study = StudyDefinition(
   
   liver_disease_nhsd_icd10 = patients.admitted_to_hospital(
     returning = "date_admitted",
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     with_these_diagnoses = liver_disease_nhsd_icd10_codes,
     find_last_match_in_period = True,
     date_format = "YYYY-MM-DD",
@@ -621,7 +617,7 @@ study = StudyDefinition(
   immunosuppresant_drugs_nhsd = patients.with_these_medications(
     codelist = combine_codelists(immunosuppresant_drugs_dmd_codes, immunosuppresant_drugs_snomed_codes),
     returning = "date",
-    between = ["start_date - 6 months", "start_date"],
+    between = ["covid_test_positive_date - 6 months", "covid_test_positive_date"],
     find_last_match_in_period = True,
     date_format = "YYYY-MM-DD",
   ),
@@ -629,7 +625,7 @@ study = StudyDefinition(
   oral_steroid_drugs_nhsd = patients.with_these_medications(
     codelist = combine_codelists(oral_steroid_drugs_dmd_codes, oral_steroid_drugs_snomed_codes),
     returning = "date",
-    between = ["start_date - 12 months", "start_date"],
+    between = ["covid_test_positive_date - 12 months", "covid_test_positive_date"],
     find_last_match_in_period = True,
     date_format = "YYYY-MM-DD",
   ),
@@ -637,7 +633,7 @@ study = StudyDefinition(
   oral_steroid_drug_nhsd_3m_count = patients.with_these_medications(
     codelist = combine_codelists(oral_steroid_drugs_dmd_codes, oral_steroid_drugs_snomed_codes),
     returning = "number_of_matches_in_period",
-    between = ["start_date - 3 months", "start_date"],
+    between = ["covid_test_positive_date - 3 months", "covid_test_positive_date"],
     return_expectations = {"incidence": 0.1,
       "int": {"distribution": "normal", "mean": 2, "stddev": 1},
     },
@@ -646,7 +642,7 @@ study = StudyDefinition(
   oral_steroid_drug_nhsd_12m_count = patients.with_these_medications(
     codelist = combine_codelists(oral_steroid_drugs_dmd_codes, oral_steroid_drugs_snomed_codes),
     returning = "number_of_matches_in_period",
-    between = ["start_date - 12 months", "start_date"],
+    between = ["covid_test_positive_date - 12 months", "covid_test_positive_date"],
     return_expectations = {"incidence": 0.1,
       "int": {"distribution": "normal", "mean": 3, "stddev": 1},
     },
@@ -658,7 +654,7 @@ study = StudyDefinition(
   ## Primary immune deficiencies
   immunosupression_nhsd = patients.with_these_clinical_events(
     immunosupression_nhsd_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     returning = "date",
     find_last_match_in_period = True,
     date_format = "YYYY-MM-DD",
@@ -667,7 +663,7 @@ study = StudyDefinition(
   ## HIV/AIDs
   hiv_aids_nhsd_snomed = patients.with_these_clinical_events(
     hiv_aids_nhsd_snomed_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     returning = "date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -675,7 +671,7 @@ study = StudyDefinition(
   
   hiv_aids_nhsd_icd10 = patients.admitted_to_hospital(
     returning = "date_admitted",
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     with_these_diagnoses = hiv_aids_nhsd_icd10_codes,
     find_last_match_in_period = True,
     date_format = "YYYY-MM-DD",
@@ -686,7 +682,7 @@ study = StudyDefinition(
   ## Solid organ transplant
   solid_organ_transplant_nhsd_snomed = patients.with_these_clinical_events(
     solid_organ_transplant_nhsd_snomed_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     returning = "date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -694,7 +690,7 @@ study = StudyDefinition(
   
   solid_organ_transplant_nhsd_opcs4 = patients.admitted_to_hospital(
     returning = "date_admitted",
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     with_these_procedures = solid_organ_transplant_nhsd_opcs4_codes,
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -708,7 +704,7 @@ study = StudyDefinition(
   transplant_all_y_codes_opcs4 = patients.admitted_to_hospital(
     returning = "date_admitted",
     with_these_procedures = replacement_of_organ_transplant_nhsd_opcs4_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
     return_expectations = {
@@ -734,7 +730,7 @@ study = StudyDefinition(
   transplant_conjunctiva_y_code_opcs4 = patients.admitted_to_hospital(
     returning = "date_admitted",
     with_these_procedures = conjunctiva_y_codes_transplant_nhsd_opcs4_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
     return_expectations = {
@@ -773,7 +769,7 @@ study = StudyDefinition(
   transplant_ileum_1_Y_codes_opcs4 = patients.admitted_to_hospital(
     returning = "date_admitted",
     with_these_procedures = ileum_1_y_codes_transplant_nhsd_opcs4_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
     return_expectations = {
@@ -786,7 +782,7 @@ study = StudyDefinition(
   transplant_ileum_2_Y_codes_opcs4 = patients.admitted_to_hospital(
     returning = "date_admitted",
     with_these_procedures = ileum_2_y_codes_transplant_nhsd_opcs4_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
     return_expectations = {
@@ -831,7 +827,7 @@ study = StudyDefinition(
   ### Multiple sclerosis
   multiple_sclerosis_nhsd_snomed = patients.with_these_clinical_events(
     multiple_sclerosis_nhsd_snomed_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     returning = "date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -839,7 +835,7 @@ study = StudyDefinition(
   
   multiple_sclerosis_nhsd_icd10 = patients.admitted_to_hospital(
     returning = "date_admitted",
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     with_these_diagnoses = multiple_sclerosis_nhsd_icd10_codes,
     find_last_match_in_period = True,
     date_format = "YYYY-MM-DD",
@@ -850,7 +846,7 @@ study = StudyDefinition(
   ### Motor neurone disease
   motor_neurone_disease_nhsd_snomed = patients.with_these_clinical_events(
     motor_neurone_disease_nhsd_snomed_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     returning = "date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -858,7 +854,7 @@ study = StudyDefinition(
   
   motor_neurone_disease_nhsd_icd10 = patients.admitted_to_hospital(
     returning = "date_admitted",
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     with_these_diagnoses = motor_neurone_disease_nhsd_icd10_codes,
     find_last_match_in_period = True,
     date_format = "YYYY-MM-DD",
@@ -869,7 +865,7 @@ study = StudyDefinition(
   ### Myasthenia gravis
   myasthenia_gravis_nhsd_snomed = patients.with_these_clinical_events(
     myasthenia_gravis_nhsd_snomed_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     returning = "date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -877,7 +873,7 @@ study = StudyDefinition(
   
   myasthenia_gravis_nhsd_icd10 = patients.admitted_to_hospital(
     returning = "date_admitted",
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     with_these_diagnoses = myasthenia_gravis_nhsd_icd10_codes,
     find_last_match_in_period = True,
     date_format = "YYYY-MM-DD",
@@ -888,7 +884,7 @@ study = StudyDefinition(
   ### Huntington’s disease
   huntingtons_disease_nhsd_snomed = patients.with_these_clinical_events(
     huntingtons_disease_nhsd_snomed_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     returning = "date",
     date_format = "YYYY-MM-DD",
     find_last_match_in_period = True,
@@ -896,7 +892,7 @@ study = StudyDefinition(
   
   huntingtons_disease_nhsd_icd10 = patients.admitted_to_hospital(
     returning = "date_admitted",
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     with_these_diagnoses = huntingtons_disease_nhsd_icd10_codes,
     find_last_match_in_period = True,
     date_format = "YYYY-MM-DD",
@@ -910,7 +906,7 @@ study = StudyDefinition(
   
   ## Age
   age = patients.age_as_of(
-    "start_date - 1 days",
+    "covid_test_positive_date - 1 days",
     return_expectations = {
       "rate": "universal",
       "int": {"distribution": "population_ages"},
@@ -930,7 +926,7 @@ study = StudyDefinition(
   ethnicity_primis = patients.with_these_clinical_events(
     ethnicity_primis_snomed_codes,
     returning = "category",
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     find_first_match_in_period = True,
     include_date_of_match = False,
     return_expectations = {
@@ -958,7 +954,7 @@ study = StudyDefinition(
       "5": """index_of_multiple_deprivation >= 32844*4/5 """,
     },
     index_of_multiple_deprivation = patients.address_as_of(
-      "start_date",
+      "covid_test_positive_date",
       returning = "index_of_multiple_deprivation",
       round_to_nearest = 100,
     ),
@@ -978,7 +974,7 @@ study = StudyDefinition(
   
   ## Region - NHS England 9 regions
   region_nhs = patients.registered_practice_as_of(
-    "start_date",
+    "covid_test_positive_date",
     returning = "nuts1_region_name",
     return_expectations = {
       "rate": "universal",
@@ -1000,7 +996,7 @@ study = StudyDefinition(
     #with_these_statuses = ["Approved", "Treatment Complete"],
     #with_these_therapeutics = ["Sotrovimab", "Molnupiravir", "Casirivimab and imdevimab"],
     with_these_indications = "non_hospitalised",
-    on_or_after = "start_date",
+    on_or_after = "covid_test_positive_date",
     find_first_match_in_period = True,
     returning = "region",
     return_expectations = {
@@ -1021,7 +1017,7 @@ study = StudyDefinition(
   
   # STP (NHS administration region based on geography, currenty closest match to CMDU)
   stp = patients.registered_practice_as_of(
-    "start_date",
+    "covid_test_positive_date",
     returning = "stp_code",
     return_expectations = {
       "rate": "universal",
@@ -1044,7 +1040,7 @@ study = StudyDefinition(
   
   # Rurality
   rural_urban = patients.address_as_of(
-    "start_date",
+    "covid_test_positive_date",
     returning = "rural_urban_classification",
     return_expectations = {
       "rate": "universal",
@@ -1060,7 +1056,7 @@ study = StudyDefinition(
   ## Autism
   autism_nhsd = patients.with_these_clinical_events(
     autism_nhsd_snomed_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     returning = "binary_flag",
     return_expectations = {"incidence": 0.3}
   ),
@@ -1069,7 +1065,7 @@ study = StudyDefinition(
   care_home_primis = patients.with_these_clinical_events(
     care_home_primis_snomed_codes,
     returning = "binary_flag",
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     return_expectations = {"incidence": 0.15,}
   ),
   
@@ -1088,7 +1084,7 @@ study = StudyDefinition(
     
     dementia_all = patients.with_these_clinical_events(
       dementia_nhsd_snomed_codes,
-      on_or_before = "start_date",
+      on_or_before = "covid_test_positive_date",
       returning = "binary_flag",
       return_expectations = {"incidence": 0.05}
     ),
@@ -1107,7 +1103,7 @@ study = StudyDefinition(
     
     housebound_date = patients.with_these_clinical_events( 
       housebound_opensafely_snomed_codes, 
-      on_or_before = "start_date",
+      on_or_before = "covid_test_positive_date",
       find_last_match_in_period = True,
       returning = "date",
       date_format = "YYYY-MM-DD",
@@ -1128,7 +1124,7 @@ study = StudyDefinition(
   ## Learning disability
   learning_disability_primis = patients.with_these_clinical_events(
     wider_ld_primis_snomed_codes,
-    on_or_before = "start_date",
+    on_or_before = "covid_test_positive_date",
     returning = "binary_flag",
     return_expectations = {"incidence": 0.2}
   ),
@@ -1229,7 +1225,7 @@ study = StudyDefinition(
     # first vaccine from during trials and up to treatment/test date
     covid_vax_1 = patients.with_tpp_vaccination_record(
       target_disease_matches = "SARS-2 CORONAVIRUS",
-      between = ["2020-06-08", "start_date"],
+      between = ["2020-06-08", "covid_test_positive_date"],
       find_first_match_in_period = True,
       returning = "date",
       date_format = "YYYY-MM-DD"
@@ -1237,7 +1233,7 @@ study = StudyDefinition(
     
     covid_vax_2 = patients.with_tpp_vaccination_record(
       target_disease_matches = "SARS-2 CORONAVIRUS",
-      between = ["covid_vax_1 + 19 days", "start_date"],
+      between = ["covid_vax_1 + 19 days", "covid_test_positive_date"],
       find_first_match_in_period = True,
       returning = "date",
       date_format = "YYYY-MM-DD"
@@ -1245,7 +1241,7 @@ study = StudyDefinition(
     
     covid_vax_3 = patients.with_tpp_vaccination_record(
       target_disease_matches = "SARS-2 CORONAVIRUS",
-      between = ["covid_vax_2 + 56 days", "start_date"],
+      between = ["covid_vax_2 + 56 days", "covid_test_positive_date"],
       find_first_match_in_period = True,
       returning = "date",
       date_format = "YYYY-MM-DD"
@@ -1254,7 +1250,7 @@ study = StudyDefinition(
     covid_vax_declined = patients.with_these_clinical_events(
       covid_vaccine_declined_codes,
       returning="binary_flag",
-      on_or_before = "start_date",
+      on_or_before = "covid_test_positive_date",
     ),
     
     return_expectations = {
@@ -1314,7 +1310,7 @@ study = StudyDefinition(
     test_result = "positive",
     returning = "date",
     date_format = "YYYY-MM-DD",
-    between = ["start_date + 30 days", "start_date + 90 days"],
+    between = ["covid_test_positive_date + 30 days", "covid_test_positive_date + 90 days"],
     find_first_match_in_period = True,
     restrict_to_earliest_specimen_date = False,
     return_expectations = {
@@ -1331,7 +1327,7 @@ study = StudyDefinition(
     with_patient_classification = ["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
     with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"], # emergency admissions only to exclude incidental COVID
-    between = ["start_date + 1 day", "start_date + 90 days"],
+    between = ["covid_test_positive_date + 1 day", "covid_test_positive_date + 90 days"],
     find_first_match_in_period = True,
     date_format = "YYYY-MM-DD",
     return_expectations = {
@@ -1358,7 +1354,7 @@ study = StudyDefinition(
     covid_icd10_codes,
     returning = "date_of_death",
     date_format = "YYYY-MM-DD",
-    between = ["start_date + 1 day", "start_date + 90 days"], 
+    between = ["covid_test_positive_date + 1 day", "covid_test_positive_date + 90 days"], 
     return_expectations = {
       "date": {"earliest": "2021-01-01", "latest" : end_date},
       "rate": "uniform",
