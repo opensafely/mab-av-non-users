@@ -21,8 +21,12 @@ from codelists import *
 ## Define study time variables
 from datetime import date
 
-campaign_start = "2021-12-16"
-end_date = date.today().isoformat()
+import json
+with open('lib/design/study-dates.json', 'r') as f:
+    study_dates = json.load(f)
+
+start_date = study_dates["start_date"]
+end_date = study_dates["end_date"]
 
 
 ## Define study population and variables
@@ -38,7 +42,7 @@ study = StudyDefinition(
   },
   
   ## Define index date
-  index_date = campaign_start,
+  study_start_date = start_date,
   
   # POPULATION ----
   population = patients.satisfying(
@@ -62,7 +66,7 @@ study = StudyDefinition(
     pathogen = "SARS-CoV-2",
     test_result = "positive",
     returning = "binary_flag",
-    on_or_after = "index_date",
+    on_or_after = "study_start_date",
     find_first_match_in_period = True,
     restrict_to_earliest_specimen_date = False,
     return_expectations = {
@@ -77,7 +81,7 @@ study = StudyDefinition(
     restrict_to_earliest_specimen_date = False,
     returning = "date",
     date_format = "YYYY-MM-DD",
-    on_or_after = "index_date",
+    on_or_after = "study_start_date",
     return_expectations = {
       "date": {"earliest": "2021-12-16"},
       "incidence": 0.9
