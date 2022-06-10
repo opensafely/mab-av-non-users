@@ -43,27 +43,14 @@ study = StudyDefinition(
   # POPULATION ----
   population = patients.satisfying(
     """
-    age >= 12 AND age < 110
+    age >= 18 AND age < 110
     AND NOT has_died
     AND NOT imd = 0
     AND (
      registered_eligible
       AND
-     (covid_test_positive AND NOT covid_positive_previous_30_days)
+     (covid_test_positive AND NOT covid_positive_prev_90_days AND NOT any_covid_hosp_prev_90_days)
      )
-    OR (  
-     registered_treated 
-      AND
-      (sotrovimab_covid_therapeutics 
-        OR 
-      molnupiravir_covid_therapeutics 
-        OR
-      casirivimab_covid_therapeutics
-        OR
-      paxlovid_covid_therapeutics
-        OR
-      remdesivir_covid_therapeutics)
-      )
     """,
     
   ),
@@ -170,7 +157,7 @@ study = StudyDefinition(
     pathogen = "SARS-CoV-2",
     test_result = "positive",
     returning = "binary_flag",
-    on_or_after = "index_date - 5 days",
+    on_or_after = "index_date",
     find_first_match_in_period = True,
     restrict_to_earliest_specimen_date = False,
     return_expectations = {
@@ -185,9 +172,9 @@ study = StudyDefinition(
     restrict_to_earliest_specimen_date = False,
     returning = "date",
     date_format = "YYYY-MM-DD",
-    on_or_after = "index_date - 5 days",
+    on_or_after = "index_date",
     return_expectations = {
-      "date": {"earliest": "2021-12-20"},
+      "date": {"earliest": "2021-12-16"},
       "incidence": 0.9
     },
   ),
@@ -207,27 +194,12 @@ study = StudyDefinition(
     },
   ),
   
-  ### Covid test type - add in when avaliable 
-  # covid_positive_test_type = patients.with_test_result_in_sgss(
-  #   pathogen = "SARS-CoV-2",
-  #   test_result = "positive",
-  #   returning = "case_category",
-  #   on_or_after = "index_date - 5 days",
-  #   restrict_to_earliest_specimen_date = True,
-  #   return_expectations = {
-  #     "category": {"ratios": {"LFT_Only": 0.4, "PCR_Only": 0.4, "LFT_WithPCR": 0.2}},
-  #     "incidence": 0.2,
-  #   },
-  # ),
-  
-  ### Positive covid test last 30 days 
-  # (note this will only apply to patients who first tested positive towards the beginning
-  # of the study period)
-  covid_positive_previous_30_days = patients.with_test_result_in_sgss(
+  ### Positive covid test last 90 days 
+  covid_positive_prev_90_days = patients.with_test_result_in_sgss(
     pathogen = "SARS-CoV-2",
     test_result = "positive",
     returning = "binary_flag",
-    between = ["covid_test_positive_date - 31 days", "covid_test_positive_date - 1 day"],
+    between = ["covid_test_positive_date - 91 days", "covid_test_positive_date - 1 day"],
     find_last_match_in_period = True,
     restrict_to_earliest_specimen_date = False,
     return_expectations = {
@@ -240,7 +212,7 @@ study = StudyDefinition(
     pathogen = "SARS-CoV-2",
     test_result = "any",
     returning = "symptomatic",
-    on_or_after = "index_date - 5 days",
+    on_or_after = "index_date",
     find_first_match_in_period = True,
     restrict_to_earliest_specimen_date = False,
     return_expectations={
@@ -260,16 +232,12 @@ study = StudyDefinition(
     returning = "date",
     date_format = "YYYY-MM-DD",
     find_first_match_in_period = True,
-    on_or_after = "index_date - 5 days",
+    on_or_after = "index_date",
   ),
   
   
   ## Study start date for extracting variables
-  start_date = patients.minimum_of(
-    "covid_test_positive_date", 
-    "date_treated"
-  ),
-  
+  start_date = covid_test_positive_date
   
   ## Exclusion criteria variables
   
@@ -278,34 +246,27 @@ study = StudyDefinition(
   
   ### Require hospitalisation for COVID-19
   ## NB this data lags behind the therapeutics/testing data so may be missing
-  primary_covid_hospital_discharge_date = patients.admitted_to_hospital(
-    returning = "date_discharged",
+  
+  prim_covid_hosp_prev_90_days = patients.admitted_to_hospital(
     with_these_primary_diagnoses = covid_icd10_codes,
     with_patient_classification = ["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
     with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"], # emergency admissions only to exclude incidental COVID
-    between = ["start_date - 31 days","start_date - 1 day"],
-    date_format = "YYYY-MM-DD",
-    find_first_match_in_period = False,
+    between = ["start_date - 91 days","start_date - 1 day"],
+    returning = "binary_flag",
     return_expectations = {
-      "date": {"earliest": "2021-12-20"},
-      "rate": "uniform",
       "incidence": 0.05
     },
   ),
   
-  any_covid_hospital_discharge_date = patients.admitted_to_hospital(
-    returning = "date_discharged",
+  any_covid_hosp_prev_90_days = patients.admitted_to_hospital(
     with_these_diagnoses = covid_icd10_codes,
     with_patient_classification = ["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
     with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"], # emergency admissions only to exclude incidental COVID
-    between = ["start_date - 31 days","start_date - 1 day"],
-    date_format = "YYYY-MM-DD",
-    find_first_match_in_period = False,
+    between = ["start_date - 91 days","start_date - 1 day"],
+    returning = "binary_flag",
     return_expectations = {
-      "date": {"earliest": "2021-12-20"},
-      "rate": "uniform",
       "incidence": 0.05
     },
   ),
