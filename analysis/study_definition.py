@@ -13,6 +13,9 @@ from cohortextractor import (
     patients,
     filter_codes_by_category,
     combine_codelists,
+    codelist_from_csv,
+    codelist,
+    Measure
 )
 
 # Import codelists from codelist.py (which pulls them from the codelist folder)
