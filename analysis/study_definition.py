@@ -55,7 +55,7 @@ study = StudyDefinition(
     
   ),
   
-### First positive SARS-CoV-2 test
+    ### First positive SARS-CoV-2 test
   # Note patients are eligible for treatment if diagnosed <=5d ago
   # in the latest 5 days there may be patients identified as eligible who have not yet been treated
   covid_test_positive = patients.with_test_result_in_sgss(
@@ -66,7 +66,7 @@ study = StudyDefinition(
     find_first_match_in_period = True,
     restrict_to_earliest_specimen_date = False,
     return_expectations = {
-      "incidence": 0.2
+      "incidence": 1.0
     },
   ),
   
@@ -80,7 +80,7 @@ study = StudyDefinition(
     on_or_after = "index_date",
     return_expectations = {
       "date": {"earliest": "2021-12-16"},
-      "incidence": 0.9
+      "incidence": 1.0
     },
   ),
   
