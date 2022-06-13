@@ -12,7 +12,6 @@ library('gtsummary')
 library('arrow')
 library('reshape2')
 
-
 ## Import custom user functions
 source(here::here("lib", "functions.R"))
 

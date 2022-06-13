@@ -28,6 +28,8 @@ nhsd/hiv-aids-snomed/68ca529e
 nhsd/hiv-aids-icd10/01d9c5d4
 nhsd/transplant-spl-atriskv4-snomed-ct/57747a02
 nhsd/transplant-spl-hes-opcs4/1b47de52
+opensafely/smoking-clear/2020-04-29
+
 nhsd/transplant-thymus-gland-spl-hes-opcs4/5feb5f2d
 nhsd/transplant-replacement-of-organ-spl-hes-opcs4/46dbebf8
 nhsd/transplant-conjunctiva-spl-hes-opcs4/2dcc78c3

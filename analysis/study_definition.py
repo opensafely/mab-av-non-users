@@ -55,9 +55,7 @@ study = StudyDefinition(
     
   ),
   
-    ### First positive SARS-CoV-2 test
-  # Note patients are eligible for treatment if diagnosed <=5d ago
-  # in the latest 5 days there may be patients identified as eligible who have not yet been treated
+  # MAIN ELIGIBILITY - FIRST POSITIVE SARS-CoV-2 TEST IN PERIOD 
   covid_test_positive = patients.with_test_result_in_sgss(
     pathogen = "SARS-CoV-2",
     test_result = "positive",
@@ -206,6 +204,19 @@ study = StudyDefinition(
     },
   ),
   
+  ### Prior covid hospitalisation last 90 days 
+  any_covid_hosp_prev_90_days = patients.admitted_to_hospital(
+    with_these_diagnoses = covid_icd10_codes,
+    with_patient_classification = ["1"], # ordinary admissions only - exclude day cases and regular attenders
+    # see https://docs.opensafely.org/study-def-variables/#sus for more info
+    with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"], # emergency admissions only to exclude incidental COVID
+    between = ["covid_test_positive_date - 91 days","covid_test_positive_date - 1 day"],
+    returning = "binary_flag",
+    return_expectations = {
+      "incidence": 0.05
+    },
+  ),
+  
   ### Onset of symptoms of COVID-19
   symptomatic_covid_test = patients.with_test_result_in_sgss(
     pathogen = "SARS-CoV-2",
@@ -226,6 +237,7 @@ study = StudyDefinition(
     },
   ),
   
+   ### Evidence of symptoms of COVID-19
   covid_symptoms_snomed = patients.with_these_clinical_events(
     covid_symptoms_snomed_codes,
     returning = "date",
@@ -233,17 +245,6 @@ study = StudyDefinition(
     find_first_match_in_period = True,
     on_or_after = "covid_test_positive_date",
   ),
-  
-  
-  ## Study start date for extracting variables
-  
-  ## Exclusion criteria variables
-  
-  ### Pattern of clinical presentation indicates that there is recovery rather than risk of deterioration from infection
-  #   (not currently possible to define/code)
-  
-  ### Require hospitalisation for COVID-19
-  ## NB this data lags behind the therapeutics/testing data so may be missing
   
   any_covid_hosp_prev_90_days = patients.admitted_to_hospital(
     with_these_diagnoses = covid_icd10_codes,
@@ -256,32 +257,6 @@ study = StudyDefinition(
       "incidence": 0.05
     },
   ),
-  
-  ### New supplemental oxygen requirement specifically for the management of COVID-19 symptoms
-  #   (not currently possible to define/code)
-  
-  ### Known hypersensitivity reaction to the active substances or to any of the excipients of treatments
-  #   (not currently possible to define/code)
-  
-  
-  
-  # TREATMENT SPECIFIC ELIGIBILITY CRITERIA VARIABLES ----
-  
-  ## Paxlovid - inclusion
-  
-  ### Clinical judgement deems that an antiviral is the preferred option
-  #   (not currently possible to define/code)
-  
-  ### Treatment is commenced within 5 days of symptom onset
-  #   (defined above)
-  
-  ### The patient does NOT have a history of advanced decompensated liver cirrhosis or stage 3-5 chronic kidney disease
-  #   (use renal and liver high rosk cohorts defined below)
-  
-  ## Paxlovid - exclusion
-  
-  ### Children aged less than 18 years
-  #   (defined below)
   
   ### Pregnancy
   
@@ -330,73 +305,6 @@ study = StudyDefinition(
     ),
     
   ),
-  
-  ### The patient is taking any of the medications listed in Appendix 2
-  #   (not currently possible to define/code)
-  
-  
-  ## Sotrovimab - inclusion
-  
-  ### Clinical judgement deems that an antiviral is the preferred option
-  #   (not currently possible to define/code)
-  
-  ### Treatment is commenced within 5 days of symptom onset
-  #   (defined above)
-  
-  ## Sotrovimab - exclusion
-  
-  ### Children aged less than 12 years
-  #   (defined below)
-  
-  ### Adolescents (aged 12-17) weighing 40kg and under
-  # look in last 6 months only to get a relevant weight value
-  weight = patients.with_these_clinical_events(
-    weight_opensafely_snomed_codes,
-    between = ["covid_test_positive_date - 182 days", "covid_test_positive_date"],
-    find_last_match_in_period=True,
-    date_format = "YYYY-MM-DD",
-    returning = "numeric_value",
-    return_expectations = {
-      "incidence": 0.8,
-      "float": {"distribution": "normal", "mean": 70.0, "stddev": 10.0},
-    },
-  ),
-  
-  ## Remdesivir - inclusion
-  
-  ### Clinical judgement deems that an antiviral is the preferred option
-  #   (not currently possible to define/code)
-  
-  ### Treatment is commenced within 7 days of symptom onset
-  #   (defined above)
-  
-  ## Remdesivir - exclusion
-  
-  ### Children aged less than 12 years
-  #   (defined below)
-  
-  ### Adolescents (aged 12-17) weighing 40kg and under
-  #   (defined above)
-  
-  
-  ## Molnupiravir - inclusion
-  
-  ### Clinical judgement deems that an antiviral is the preferred option
-  #   (not currently possible to define/code)
-  
-  ### Treatment is commenced within 5 days of symptom onset
-  #   (defined above)
-  
-  ## Molnupiravir - exclusion
-  
-  ### Children aged less than 18 years
-  #   (defined below)
-  
-  ### Pregnancy
-  #   (defined above)
-  
-  
-  
   
   # CENSORING ----
   
@@ -905,7 +813,7 @@ study = StudyDefinition(
   
   ## Age
   age = patients.age_as_of(
-    "covid_test_positive_date - 1 days",
+    "covid_test_positive_date",
     return_expectations = {
       "rate": "universal",
       "int": {"distribution": "population_ages"},
@@ -913,6 +821,88 @@ study = StudyDefinition(
     },
   ),
   
+  # bmi
+    # set maximum to avoid any impossibly extreme values being classified as
+    # obese
+    bmi_value=patients.most_recent_bmi(
+        on_or_after="covid_test_positive_date - 5 years",
+        minimum_age_at_measurement=16,
+        return_expectations={
+            "date": {"latest": "covid_test_positive_date"},
+            "float": {"distribution": "normal", "mean": 25.0, "stddev": 7.5},
+            "incidence": 0.8,
+        },
+    ),
+    bmi=patients.categorised_as(
+        {
+            "Not obese": "DEFAULT",
+            "Obese I (30-34.9)": """ bmi_value >= 30 AND bmi_value < 35""",
+            "Obese II (35-39.9)": """ bmi_value >= 35 AND bmi_value < 40""",
+            "Obese III (40+)": """ bmi_value >= 40 AND bmi_value < 100""",
+        },
+        return_expectations={
+            "rate": "universal",
+            "category": {
+                "ratios": {
+                    "Not obese": 0.7,
+                    "Obese I (30-34.9)": 0.1,
+                    "Obese II (35-39.9)": 0.1,
+                    "Obese III (40+)": 0.1,
+                }
+            },
+        },
+    ),
+    # smoking status
+    smoking_status=patients.categorised_as(
+        {
+            "S": "most_recent_smoking_code = 'S'",
+            "E": """
+                     most_recent_smoking_code = 'E' OR (
+                       most_recent_smoking_code = 'N' AND ever_smoked
+                    )
+                """,
+            "N": "most_recent_smoking_code = 'N' AND NOT ever_smoked",
+            "M": "DEFAULT",
+        },
+        return_expectations={
+            "rate": "universal",
+            "category": {
+                "ratios": {
+                    "S": 0.6,
+                    "E": 0.1,
+                    "N": 0.2,
+                    "M": 0.1,
+                }
+            },
+        },
+        most_recent_smoking_code=patients.with_these_clinical_events(
+            clear_smoking_codes,
+            find_last_match_in_period=True,
+            on_or_before="covid_test_positive_date",
+            returning="category",
+        ),
+        ever_smoked=patients.with_these_clinical_events(
+            filter_codes_by_category(clear_smoking_codes, include=["S", "E"]),
+            on_or_before="covid_test_positive_date",
+        ),
+    ),
+    # smoking status (combining never and missing)
+    smoking_status_comb=patients.categorised_as(
+        {
+            "S": "most_recent_smoking_code = 'S'",
+            "E": """
+                     most_recent_smoking_code = 'E' OR (
+                       most_recent_smoking_code = 'N' AND ever_smoked
+                    )
+                """,
+            "N + M": "DEFAULT",
+        },
+        return_expectations={
+            "rate": "universal",
+            "category": {"ratios": {"S": 0.6, "E": 0.1, "N + M": 0.3}, }
+        },
+    ),
+
   ## Sex
   sex = patients.sex(
     return_expectations = {
@@ -1036,7 +1026,7 @@ study = StudyDefinition(
       },
     },
   ),
-  
+
   # Rurality
   rural_urban = patients.address_as_of(
     "covid_test_positive_date",
@@ -1047,8 +1037,6 @@ study = StudyDefinition(
       "incidence": 1,
     },
   ),
-  
-  
   
   # CLINICAL GROUPS ----
   
