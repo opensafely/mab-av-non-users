@@ -246,18 +246,6 @@ study = StudyDefinition(
     on_or_after = "covid_test_positive_date",
   ),
   
-  any_covid_hosp_prev_90_days = patients.admitted_to_hospital(
-    with_these_diagnoses = covid_icd10_codes,
-    with_patient_classification = ["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"], # emergency admissions only to exclude incidental COVID
-    between = ["covid_test_positive_date - 91 days","covid_test_positive_date - 1 day"],
-    returning = "binary_flag",
-    return_expectations = {
-      "incidence": 0.05
-    },
-  ),
-  
   ### Pregnancy
   
   # pregnancy record in last 36 weeks
