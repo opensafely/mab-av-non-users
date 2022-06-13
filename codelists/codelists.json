@@ -377,6 +377,12 @@
       "url": "https://codelists.opensafely.org/codelist/opensafely/hypertension-snomed/2020-04-28/",
       "downloaded_at": "2022-03-31 23:27:44.892376Z",
       "sha": "5d5471bb6a8a01e362b191b3eb8e80c2febeb1da"
+    },
+    "opensafely-smoking-clear.csv": {
+      "id": "opensafely/smoking-clear/2020-04-29",
+      "url": "https://codelists.opensafely.org/codelist/opensafely/smoking-clear/2020-04-29/",
+      "downloaded_at": "2022-06-13 11:55:48.406053Z",
+      "sha": "0b5f3afe1db96dcce5141220e893a42ba2e5a8f7"
     }
   }
 }
