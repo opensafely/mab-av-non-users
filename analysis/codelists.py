@@ -35,6 +35,14 @@ hypertension_codes = codelist_from_csv(
     column="id"
 )
 
+# Smoking
+clear_smoking_codes = codelist_from_csv(
+    "codelists/opensafely-smoking-clear.csv",
+    system="ctv3",
+    column="CTV3Code",
+    category_column="Category",
+)
+
 ## ELIGIBILITY CRITERIA VARIABLES ----
 
 ### Onset of symptoms of COVID-19
