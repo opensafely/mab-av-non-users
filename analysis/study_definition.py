@@ -621,7 +621,7 @@ prev_treated = patients.maximum_of(
     },
   ),
   
-  imid_nhsd = patients.minimum_of("immunosuppresant_drugs_nhsd", "oral_steroid_drugs_nhsd"), - define in processing script
+  imid_nhsd = patients.minimum_of("immunosuppresant_drugs_nhsd", "oral_steroid_drugs_nhsd"), 
   
   
   ## Primary immune deficiencies
@@ -877,8 +877,8 @@ prev_treated = patients.maximum_of(
 high_risk_group = patients.maximum_of(
     "huntingtons_disease_nhsd",
     "myasthenia_gravis_nhsd",
-    "motor_neurone_disease_nhsd ",
-    "mmultiple_sclerosis_nhsd",
+    "motor_neurone_disease_nhsd",
+    "multiple_sclerosis_nhsd",
     "solid_organ_transplant_nhsd",
     "hiv_aids_nhsd",
     "immunosupression_nhsd",
