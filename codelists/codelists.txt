@@ -62,3 +62,5 @@ opensafely/chronic-respiratory-disease-snomed/2020-04-10/
 opensafely/diabetes-snomed/2020-04-15/
 opensafely/hypertension-snomed/2020-04-28/
 opensafely/smoking-clear/2020-04-29/
+opensafely/diabetes/2020-04-15
+opensafely/glycated-haemoglobin-hba1c-tests-ifcc/6d7287f8

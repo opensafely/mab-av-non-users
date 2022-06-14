@@ -517,14 +517,116 @@ study = StudyDefinition(
     date_format="YYYY-MM-DD",
   ),
 
-  haematological_disease_nhsd=patients.minimum_of("haematopoietic_stem_cell_transplant_nhsd_snomed", 
-                                                    "haematopoietic_stem_cell_transplant_nhsd_icd10", 
-                                                    "haematopoietic_stem_cell_transplant_nhsd_opcs4", 
-                                                    "haematological_malignancies_nhsd_snomed", 
-                                                    "haematological_malignancies_nhsd_icd10",
-                                                    "sickle_cell_disease_nhsd_snomed", 
-                                                    "sickle_cell_disease_nhsd_icd10"), 
-  
+  haematological_disease_nhsd=patients.minimum_of(
+    "haematopoietic_stem_cell_transplant_nhsd_snomed",
+    "haematopoietic_stem_cell_transplant_nhsd_icd10",
+    "haematopoietic_stem_cell_transplant_nhsd_opcs4",
+    "haematological_malignancies_nhsd_snomed",
+    "haematological_malignancies_nhsd_icd10",
+    "sickle_cell_disease_nhsd_snomed",
+    "sickle_cell_disease_nhsd_icd10"
+  ),
+
+  # Diabetes
+  diabetes=patients.with_these_clinical_events(
+    diabetes_codes,  # imported from codelists.py
+    returning="binary_flag",
+    on_or_before="index_date",
+    find_last_match_in_period=True,
+  ),
+  # variable indicating whether patient has had a recent test yes/no
+  hba1c_flag=patients.with_these_clinical_events(
+    combine_codelists(
+      hba1c_new_codes,
+      hba1c_old_codes
+    ),
+    returning="binary_flag",
+    between=["index_date - 15 months", "index_date"],
+    find_last_match_in_period=True,
+    return_expectations={
+      "incidence": 0.95,
+      },
+    ),
+    # hba1c value in mmol/mol of recent test
+    hba1c_mmol_per_mol=patients.with_these_clinical_events(
+        hba1c_new_codes,  # imported from codelists.py
+        returning="numeric_value",
+        between=["index_date - 15 months", "index_date"],
+        find_last_match_in_period=True,
+        include_date_of_match=True,
+        date_format="YYYY-MM",
+        return_expectations={
+            "date": {"latest": "index_date"},
+            "float": {"distribution": "normal", "mean": 40.0, "stddev": 20},
+            "incidence": 0.95,
+        },
+    ),
+    # hba1c value in % of recent test
+    hba1c_percentage=patients.with_these_clinical_events(
+        hba1c_old_codes,  # imported from codelists.py
+        returning="numeric_value",
+        between=["index_date - 15 months", "index_date"],
+        find_last_match_in_period=True,
+        include_date_of_match=True,
+        date_format="YYYY-MM",
+        return_expectations={
+            "date": {"latest": "index_date"},
+            "float": {"distribution": "normal", "mean": 5, "stddev": 2},
+            "incidence": 0.95,
+        },
+    ),
+    # Subcategorise recent hba1c measures in no recent measure (0); measure
+    # indicating controlled diabetes (1);
+    # measure indicating uncontrolled diabetes (2)
+    hba1c_category=patients.categorised_as(
+        {
+            "0": "DEFAULT",
+            "1": """
+                hba1c_flag AND (hba1c_mmol_per_mol < 58 OR
+                hba1c_percentage < 7.5)
+            """,
+            "2": """
+                hba1c_flag AND (hba1c_mmol_per_mol >= 58 OR
+                hba1c_percentage >= 7.5)
+            """,
+        },
+        return_expectations={
+                                "category": {
+                                    "ratios": {
+                                        "0": 0.2,
+                                        "1": 0.4,
+                                        "2": 0.4
+                                        }
+                                    },
+                                },
+    ),
+    # Subcategorise diabetes in no diabetes (0); controlled diabetes (1);
+    # uncontrolled diabetes (2);
+    # diabetes with missing recent hba1c measure (3)
+    diabetes_controlled=patients.categorised_as(
+        {
+            "0": "DEFAULT",
+            "1": """
+                diabetes AND hba1c_category = "1"
+                """,
+            "2": """
+                diabetes AND hba1c_category = "2"
+                """,
+            "3": """
+                diabetes AND hba1c_category = "0"
+                """
+        }, return_expectations={
+                                "category": {
+                                    "ratios": {
+                                        "0": 0.8,
+                                        "1": 0.09,
+                                        "2": 0.09,
+                                        "3": 0.02
+                                        }
+                                    },
+                                "incidence": 1.0,
+                                },
+    ),
 
   ## Renal disease
   ckd_stage_5_nhsd_snomed=patients.with_these_clinical_events(
@@ -1100,6 +1202,7 @@ study = StudyDefinition(
       "incidence": 1,
     },
   ),
+
   
   # CLINICAL GROUPS ----
   
@@ -1316,7 +1419,7 @@ study = StudyDefinition(
     },
   ),
   
- date_most_recent_cov_vac=patients.with_tpp_vaccination_record(
+  date_most_recent_cov_vac=patients.with_tpp_vaccination_record(
     target_disease_matches="SARS-2 CORONAVIRUS",
     between=["2020-06-08", "covid_test_positive_date"],
     find_last_match_in_period=True,
@@ -1384,8 +1487,7 @@ study = StudyDefinition(
       "category": {"ratios": {"B.1.617.2": 0.7, "B.1.1.7+E484K": 0.1, "No VOC detected": 0.1, "Undetermined": 0.1}},
     },
   ), 
-  
-  
+   
   
   # OUTCOMES ----
   

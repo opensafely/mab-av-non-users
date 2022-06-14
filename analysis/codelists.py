@@ -365,6 +365,24 @@ ethnicity_primis_snomed_codes = codelist_from_csv(
 
 
 # OTHER COVARIATES ----
+
+# Diabetes diagnosis
+diabetes_codes = codelist_from_csv(
+    "codelists/opensafely-diabetes.csv",
+    system="ctv3",
+    column="CTV3ID",
+)
+
+# Measures of hba1c
+# 'new' codes: hba1c in mmol/mol
+hba1c_new_codes = codelist_from_csv(
+    "codelists/opensafely-glycated-haemoglobin-hba1c-tests-ifcc.csv",
+    system="ctv3",
+    column="code",
+)
+# 'old' codes: hba1c in percentage, should not be used in clinical practice but
+#  alas it is sometimes best to use both
+hba1c_old_codes = codelist(["X772q", "XaERo", "XaERp"], system="ctv3")
  
 ## Autism
 autism_nhsd_snomed_codes = codelist_from_csv(

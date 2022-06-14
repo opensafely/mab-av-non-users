@@ -383,6 +383,18 @@
       "url": "https://codelists.opensafely.org/codelist/opensafely/smoking-clear/2020-04-29/",
       "downloaded_at": "2022-06-13 11:55:48.406053Z",
       "sha": "0b5f3afe1db96dcce5141220e893a42ba2e5a8f7"
+    },
+    "opensafely-diabetes.csv": {
+      "id": "opensafely/diabetes/2020-04-15",
+      "url": "https://codelists.opensafely.org/codelist/opensafely/diabetes/2020-04-15/",
+      "downloaded_at": "2022-06-14 15:03:32.046213Z",
+      "sha": "f2781f0c9a0617b30996d681a798eedd152a09af"
+    },
+    "opensafely-glycated-haemoglobin-hba1c-tests-ifcc.csv": {
+      "id": "opensafely/glycated-haemoglobin-hba1c-tests-ifcc/6d7287f8",
+      "url": "https://codelists.opensafely.org/codelist/opensafely/glycated-haemoglobin-hba1c-tests-ifcc/6d7287f8/",
+      "downloaded_at": "2022-06-14 15:03:32.219343Z",
+      "sha": "cd4f06e53ae5eb4c8e16f8f0c0911a417aeba94a"
     }
   }
 }
