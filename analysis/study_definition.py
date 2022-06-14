@@ -55,7 +55,7 @@ study = StudyDefinition(
       AND NOT any_covid_hosp_prev_90_days)
     )
     AND prev_treated = 0
-    AND high_risk_group = 1
+    AND high_risk_group 
     """,
   ),
 
