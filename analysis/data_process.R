@@ -25,6 +25,23 @@ read_csv(here::here("output","input.csv"),
   names() %>%
   print()
 
+data_extract <- read_csv(
+  here::here("output", "input.csv"),
+  
+  # TO DO: ADD OTHER COLS!!!!
+  col_types = cols_only(
+    
+    # Identifier
+    patient_id = col_integer(),
+    high_risk_group = col_character(),
+  )
+)    
+    
+######## Run above here
+
+
+
+
 ## Read in data and set variable types
 data_extract <- read_csv(
   here::here("output", "input.csv"),
@@ -34,6 +51,7 @@ data_extract <- read_csv(
     
     # Identifier
     patient_id = col_integer(),
+    high_risk_group = col_logical(),
     
     # Vaccines 
     vaccination_status = col_character(),

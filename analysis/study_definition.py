@@ -55,7 +55,21 @@ study = StudyDefinition(
       AND NOT any_covid_hosp_prev_90_days)
     )
     AND prev_treated = 0
-    AND high_risk_group 
+    AND (
+    huntingtons_disease_nhsd = 1 OR
+    myasthenia_gravis_nhsd = 1 OR
+    motor_neurone_disease_nhsd = 1 OR
+    multiple_sclerosis_nhsd = 1 OR
+    solid_organ_transplant_nhsd = 1 OR
+    hiv_aids_nhsd = 1 OR
+    immunosupression_nhsd = 1 OR
+    imid_nhsd = 1 OR 
+    liver_disease_nhsd = 1 OR
+    ckd_stage_5_nhsd = 1 OR
+    haematological_disease_nhsd = 1 OR
+    cancer_opensafely_snomed = 1 OR
+    downs_syndrome_nhsd = 1)
+
     """,
   ),
 
@@ -424,24 +438,26 @@ study = StudyDefinition(
   downs_syndrome_nhsd_snomed=patients.with_these_clinical_events(
     downs_syndrome_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
-    returning="date",
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
 
   downs_syndrome_nhsd_icd10=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     on_or_before="covid_test_positive_date",
     with_these_diagnoses=downs_syndrome_nhsd_icd10_codes,
-    find_last_match_in_period=True,
-    date_format="YYYY-MM-DD",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
 
-  downs_syndrome_nhsd=patients.minimum_of(
+  downs_syndrome_nhsd=patients.maximum_of(
     "downs_syndrome_nhsd_snomed",
-    "downs_syndrome_nhsd_icd10"
+    "downs_syndrome_nhsd_icd10",
   ),
-
+ 
   ## Solid cancer
   cancer_opensafely_snomed=patients.with_these_clinical_events(
     combine_codelists(
@@ -450,74 +466,78 @@ study = StudyDefinition(
       chemotherapy_radiotherapy_opensafely_snomed_codes
     ),
     between=["covid_test_positive_date - 6 months", "covid_test_positive_date"],
-    returning="date",
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
 
   ## Haematological diseases
   haematopoietic_stem_cell_transplant_nhsd_snomed=patients.with_these_clinical_events(
     haematopoietic_stem_cell_transplant_nhsd_snomed_codes,
     between=["covid_test_positive_date - 12 months", "covid_test_positive_date"],
-    returning="date",
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
 
   haematopoietic_stem_cell_transplant_nhsd_icd10=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     between=["covid_test_positive_date - 12 months", "covid_test_positive_date"],
     with_these_diagnoses=haematopoietic_stem_cell_transplant_nhsd_icd10_codes,
     find_last_match_in_period=True,
-    date_format="YYYY-MM-DD",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
 
   haematopoietic_stem_cell_transplant_nhsd_opcs4=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     between=["covid_test_positive_date - 12 months", "covid_test_positive_date"],
     with_these_procedures=haematopoietic_stem_cell_transplant_nhsd_opcs4_codes,
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
     return_expectations={
-      "date": {"earliest": "2020-02-01"},
-      "rate": "exponential_increase",
-      "incidence": 0.01,
+      "incidence": 0.4
     },
   ),
 
   haematological_malignancies_nhsd_snomed=patients.with_these_clinical_events(
     haematological_malignancies_nhsd_snomed_codes,
     between=["covid_test_positive_date - 24 months", "covid_test_positive_date"],
-    returning="date",
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
 
   haematological_malignancies_nhsd_icd10=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     between=["covid_test_positive_date - 24 months", "covid_test_positive_date"],
     with_these_diagnoses=haematological_malignancies_nhsd_icd10_codes,
-    find_last_match_in_period=True,
-    date_format="YYYY-MM-DD",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
 
   sickle_cell_disease_nhsd_snomed=patients.with_these_clinical_events(
     sickle_cell_disease_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
-    returning="date",
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
 
   sickle_cell_disease_nhsd_icd10=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     on_or_before="covid_test_positive_date",
     with_these_diagnoses=sickle_cell_disease_nhsd_icd10_codes,
-    find_last_match_in_period=True,
-    date_format="YYYY-MM-DD",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
 
-  haematological_disease_nhsd=patients.minimum_of(
+  haematological_disease_nhsd=patients.maximum_of(
     "haematopoietic_stem_cell_transplant_nhsd_snomed",
     "haematopoietic_stem_cell_transplant_nhsd_icd10",
     "haematopoietic_stem_cell_transplant_nhsd_opcs4",
@@ -531,7 +551,7 @@ study = StudyDefinition(
   diabetes=patients.with_these_clinical_events(
     diabetes_codes,  # imported from codelists.py
     returning="binary_flag",
-    on_or_before="index_date",
+    on_or_before="covid_test_positive_date",
     find_last_match_in_period=True,
   ),
   # variable indicating whether patient has had a recent test yes/no
@@ -541,7 +561,7 @@ study = StudyDefinition(
       hba1c_old_codes
     ),
     returning="binary_flag",
-    between=["index_date - 15 months", "index_date"],
+    between=["covid_test_positive_date - 15 months", "covid_test_positive_date"],
     find_last_match_in_period=True,
     return_expectations={
       "incidence": 0.95,
@@ -551,7 +571,7 @@ study = StudyDefinition(
     hba1c_mmol_per_mol=patients.with_these_clinical_events(
         hba1c_new_codes,  # imported from codelists.py
         returning="numeric_value",
-        between=["index_date - 15 months", "index_date"],
+        between=["covid_test_positive_date - 15 months", "covid_test_positive_date"],
         find_last_match_in_period=True,
         include_date_of_match=True,
         date_format="YYYY-MM",
@@ -565,7 +585,7 @@ study = StudyDefinition(
     hba1c_percentage=patients.with_these_clinical_events(
         hba1c_old_codes,  # imported from codelists.py
         returning="numeric_value",
-        between=["index_date - 15 months", "index_date"],
+        between=["covid_test_positive_date - 15 months", "covid_test_positive_date"],
         find_last_match_in_period=True,
         include_date_of_match=True,
         date_format="YYYY-MM",
@@ -632,20 +652,22 @@ study = StudyDefinition(
   ckd_stage_5_nhsd_snomed=patients.with_these_clinical_events(
     ckd_stage_5_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
-    returning="date",
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
 
   ckd_stage_5_nhsd_icd10=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     on_or_before="covid_test_positive_date",
     with_these_diagnoses=ckd_stage_5_nhsd_icd10_codes,
-    find_last_match_in_period=True,
-    date_format="YYYY-MM-DD",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
 
-  ckd_stage_5_nhsd=patients.minimum_of(
+  ckd_stage_5_nhsd=patients.maximum_of(
     "ckd_stage_5_nhsd_snomed",
     "ckd_stage_5_nhsd_icd10"
   ),
@@ -654,111 +676,98 @@ study = StudyDefinition(
   liver_disease_nhsd_snomed=patients.with_these_clinical_events(
     liver_disease_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
-    returning="date",
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
 
   liver_disease_nhsd_icd10=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     on_or_before="covid_test_positive_date",
     with_these_diagnoses=liver_disease_nhsd_icd10_codes,
-    find_last_match_in_period=True,
-    date_format="YYYY-MM-DD",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
 
-  liver_disease_nhsd=patients.minimum_of("liver_disease_nhsd_snomed", "liver_disease_nhsd_icd10"), 
+  liver_disease_nhsd=patients.maximum_of("liver_disease_nhsd_snomed", "liver_disease_nhsd_icd10"), 
 
   ## Immune-mediated inflammatory disorders (IMID)
   immunosuppresant_drugs_nhsd=patients.with_these_medications(
     codelist=combine_codelists(
       immunosuppresant_drugs_dmd_codes, 
       immunosuppresant_drugs_snomed_codes),
-    returning="date",
+    returning="binary_flag",
     between=["covid_test_positive_date - 6 months", "covid_test_positive_date"],
-    find_last_match_in_period=True,
-    date_format="YYYY-MM-DD",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
 
   oral_steroid_drugs_nhsd=patients.with_these_medications(
     codelist=combine_codelists(
       oral_steroid_drugs_dmd_codes,
       oral_steroid_drugs_snomed_codes),
-    returning="date",
+    returning="binary_flag",
     between=["covid_test_positive_date - 12 months", "covid_test_positive_date"],
-    find_last_match_in_period=True,
-    date_format="YYYY-MM-DD",
-  ),
-  
-  oral_steroid_drug_nhsd_3m_count=patients.with_these_medications(
-    codelist=combine_codelists(oral_steroid_drugs_dmd_codes, oral_steroid_drugs_snomed_codes),
-    returning="number_of_matches_in_period",
-    between=["covid_test_positive_date - 3 months", "covid_test_positive_date"],
-    return_expectations={"incidence": 0.1,
-      "int": {"distribution": "normal", "mean": 2, "stddev": 1},
+    return_expectations={
+      "incidence": 0.4
     },
   ),
   
-  oral_steroid_drug_nhsd_12m_count=patients.with_these_medications(
-    codelist=combine_codelists(oral_steroid_drugs_dmd_codes, oral_steroid_drugs_snomed_codes),
-    returning="number_of_matches_in_period",
-    between=["covid_test_positive_date - 12 months", "covid_test_positive_date"],
-    return_expectations={"incidence": 0.1,
-      "int": {"distribution": "normal", "mean": 3, "stddev": 1},
-    },
-  ),
+  imid_nhsd=patients.maximum_of("immunosuppresant_drugs_nhsd", "oral_steroid_drugs_nhsd"), 
   
-  imid_nhsd=patients.minimum_of("immunosuppresant_drugs_nhsd", "oral_steroid_drugs_nhsd"), 
-  
-  ## Primary immune deficiencies
+ ## Primary immune deficiencies
   immunosupression_nhsd=patients.with_these_clinical_events(
     immunosupression_nhsd_codes,
     on_or_before="covid_test_positive_date",
-    returning="date",
-    find_last_match_in_period=True,
-    date_format="YYYY-MM-DD",
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
   
   ## HIV/AIDs
   hiv_aids_nhsd_snomed=patients.with_these_clinical_events(
     hiv_aids_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
-    returning="date",
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
   
   hiv_aids_nhsd_icd10=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     on_or_before="covid_test_positive_date",
     with_these_diagnoses=hiv_aids_nhsd_icd10_codes,
-    find_last_match_in_period=True,
-    date_format="YYYY-MM-DD",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
   
-  hiv_aids_nhsd=patients.minimum_of("hiv_aids_nhsd_snomed", "hiv_aids_nhsd_icd10"),
+  hiv_aids_nhsd=patients.maximum_of("hiv_aids_nhsd_snomed", "hiv_aids_nhsd_icd10"),
   
   ## Solid organ transplant
   solid_organ_transplant_nhsd_snomed=patients.with_these_clinical_events(
     solid_organ_transplant_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
-    returning="date",
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
   
   solid_organ_transplant_nhsd_opcs4=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     on_or_before="covid_test_positive_date",
     with_these_procedures=solid_organ_transplant_nhsd_opcs4_codes,
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
     return_expectations={
-      "date": {"earliest": "2020-02-01"},
-      "rate": "exponential_increase",
-      "incidence": 0.01,
+      "incidence": 0.4
     },
   ),
+  
   
   transplant_all_y_codes_opcs4=patients.admitted_to_hospital(
     returning="date_admitted",
@@ -774,15 +783,11 @@ study = StudyDefinition(
   ),
   
   transplant_thymus_opcs4=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     with_these_procedures=thymus_gland_transplant_nhsd_opcs4_codes,
     between=["transplant_all_y_codes_opcs4","transplant_all_y_codes_opcs4"],
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
     return_expectations={
-      "date": {"earliest": "2020-02-01"},
-      "rate": "exponential_increase",
-      "incidence": 0.01,
+      "incidence": 0.4
     },
   ),
   
@@ -800,28 +805,20 @@ study = StudyDefinition(
   ),
   
   transplant_conjunctiva_opcs4=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     with_these_procedures=conjunctiva_transplant_nhsd_opcs4_codes,
     between=["transplant_conjunctiva_y_code_opcs4","transplant_conjunctiva_y_code_opcs4"],
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
     return_expectations={
-      "date": {"earliest": "2020-02-01"},
-      "rate": "exponential_increase",
-      "incidence": 0.01,
+      "incidence": 0.4
     },
   ),
   
   transplant_stomach_opcs4=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     with_these_procedures=stomach_transplant_nhsd_opcs4_codes,
     between=["transplant_all_y_codes_opcs4","transplant_all_y_codes_opcs4"],
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
     return_expectations={
-      "date": {"earliest": "2020-02-01"},
-      "rate": "exponential_increase",
-      "incidence": 0.01,
+      "incidence": 0.4
     },
   ),
   
@@ -840,7 +837,7 @@ study = StudyDefinition(
   
   transplant_ileum_2_Y_codes_opcs4=patients.admitted_to_hospital(
     returning="date_admitted",
-    with_these_procedures=ileum_2_y_codes_transplant_nhsd_opcs4_codes,
+    with_these_procedures=ileum_1_y_codes_transplant_nhsd_opcs4_codes,
     on_or_before="covid_test_positive_date",
     date_format="YYYY-MM-DD",
     find_last_match_in_period=True,
@@ -850,34 +847,26 @@ study = StudyDefinition(
       "incidence": 0.01,
     },
   ),
-  
+
   transplant_ileum_1_opcs4=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     with_these_procedures=ileum_1_transplant_nhsd_opcs4_codes,
     between=["transplant_ileum_1_Y_codes_opcs4","transplant_ileum_1_Y_codes_opcs4"],
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
     return_expectations={
-      "date": {"earliest": "2020-02-01"},
-      "rate": "exponential_increase",
-      "incidence": 0.01,
+      "incidence": 0.4
     },
   ),
   
   transplant_ileum_2_opcs4=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     with_these_procedures=ileum_2_transplant_nhsd_opcs4_codes,
     between=["transplant_ileum_2_Y_codes_opcs4","transplant_ileum_2_Y_codes_opcs4"],
-    date_format="YYYY-MM-DD",
-    find_first_match_in_period=True,
     return_expectations={
-      "date": {"earliest": "2020-02-01"},
-      "rate": "exponential_increase",
-      "incidence": 0.01,
+      "incidence": 0.4
     },
   ),
   
-  solid_organ_transplant_nhsd=patients.minimum_of(
+  solid_organ_transplant_nhsd=patients.maximum_of(
     "solid_organ_transplant_nhsd_snomed",
     "solid_organ_transplant_nhsd_opcs4",
     "transplant_thymus_opcs4",
@@ -893,95 +882,105 @@ study = StudyDefinition(
   multiple_sclerosis_nhsd_snomed=patients.with_these_clinical_events(
     multiple_sclerosis_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
-    returning="date",
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
   
   multiple_sclerosis_nhsd_icd10=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     on_or_before="covid_test_positive_date",
     with_these_diagnoses=multiple_sclerosis_nhsd_icd10_codes,
-    find_last_match_in_period=True,
-    date_format="YYYY-MM-DD",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
   
-  multiple_sclerosis_nhsd=patients.minimum_of("multiple_sclerosis_nhsd_snomed", "multiple_sclerosis_nhsd_icd10"), 
+  multiple_sclerosis_nhsd=patients.maximum_of("multiple_sclerosis_nhsd_snomed", "multiple_sclerosis_nhsd_icd10"), 
   
   ### Motor neurone disease
   motor_neurone_disease_nhsd_snomed=patients.with_these_clinical_events(
     motor_neurone_disease_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
-    returning="date",
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
   
   motor_neurone_disease_nhsd_icd10=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     on_or_before="covid_test_positive_date",
     with_these_diagnoses=motor_neurone_disease_nhsd_icd10_codes,
-    find_last_match_in_period=True,
-    date_format="YYYY-MM-DD",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
   
-  motor_neurone_disease_nhsd=patients.minimum_of("motor_neurone_disease_nhsd_snomed", "motor_neurone_disease_nhsd_icd10"),
+  motor_neurone_disease_nhsd=patients.maximum_of("motor_neurone_disease_nhsd_snomed", "motor_neurone_disease_nhsd_icd10"),
   
   ### Myasthenia gravis
   myasthenia_gravis_nhsd_snomed=patients.with_these_clinical_events(
     myasthenia_gravis_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
-    returning="date",
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
   
   myasthenia_gravis_nhsd_icd10=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     on_or_before="covid_test_positive_date",
     with_these_diagnoses=myasthenia_gravis_nhsd_icd10_codes,
-    find_last_match_in_period=True,
-    date_format="YYYY-MM-DD",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
   
-  myasthenia_gravis_nhsd=patients.minimum_of("myasthenia_gravis_nhsd_snomed", "myasthenia_gravis_nhsd_icd10"),
+  myasthenia_gravis_nhsd=patients.maximum_of("myasthenia_gravis_nhsd_snomed", "myasthenia_gravis_nhsd_icd10"),
   
   ### Huntington’s disease
   huntingtons_disease_nhsd_snomed=patients.with_these_clinical_events(
     huntingtons_disease_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
-    returning="date",
-    date_format="YYYY-MM-DD",
-    find_last_match_in_period=True,
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
   
   huntingtons_disease_nhsd_icd10=patients.admitted_to_hospital(
-    returning="date_admitted",
+    returning="binary_flag",
     on_or_before="covid_test_positive_date",
     with_these_diagnoses=huntingtons_disease_nhsd_icd10_codes,
-    find_last_match_in_period=True,
-    date_format="YYYY-MM-DD",
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
   
-  huntingtons_disease_nhsd=patients.minimum_of("huntingtons_disease_nhsd_snomed", "huntingtons_disease_nhsd_icd10"),
+  huntingtons_disease_nhsd=patients.maximum_of("huntingtons_disease_nhsd_snomed", "huntingtons_disease_nhsd_icd10"),
+  
   
   ## high risk ehr recorded
-  high_risk_group=patients.maximum_of(
-    "huntingtons_disease_nhsd",
-    "myasthenia_gravis_nhsd",
-    "motor_neurone_disease_nhsd",
-    "multiple_sclerosis_nhsd",
-    "solid_organ_transplant_nhsd",
-    "hiv_aids_nhsd",
-    "immunosupression_nhsd",
-    "imid_nhsd",
-    "liver_disease_nhsd",
-    "ckd_stage_5_nhsd",
-    "haematological_disease_nhsd",
-    "cancer_opensafely_snomed",
-    "downs_syndrome_nhsd"
+  high_risk_group=patients.satisfying(
+    """
+    huntingtons_disease_nhsd = 1 OR
+    myasthenia_gravis_nhsd = 1 OR
+    motor_neurone_disease_nhsd = 1 OR
+    multiple_sclerosis_nhsd = 1 OR
+    solid_organ_transplant_nhsd = 1 OR
+    hiv_aids_nhsd = 1 OR
+    immunosupression_nhsd = 1 OR
+    imid_nhsd = 1 OR 
+    liver_disease_nhsd = 1 OR
+    ckd_stage_5_nhsd = 1 OR
+    haematological_disease_nhsd = 1 OR
+    cancer_opensafely_snomed = 1 OR
+    downs_syndrome_nhsd = 1 
+    """,
   ),
-  
   
   # CLINICAL/DEMOGRAPHIC COVARIATES ----
   
