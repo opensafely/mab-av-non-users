@@ -19,134 +19,134 @@ source(here::here("lib", "functions.R"))
 sessionInfo()
 
 ## Print variable names
-read_csv(here::here("output","input.csv"),
-         n_max = 0,
-         col_types = cols()) %>%
-  names() %>%
-  print()
-
-data_extract <- read_csv(
-  here::here("output", "input.csv"),
-  
-  # TO DO: ADD OTHER COLS!!!!
-  col_types = cols_only(
-    
-    # Identifier
-    patient_id = col_integer(),
-    high_risk_group = col_character(),
-  )
-)    
-    
-######## Run above here
-
-
-
-
+cat("#### read in data extract ####\n")
 ## Read in data and set variable types
 data_extract <- read_csv(
-  here::here("output", "input.csv"),
-  
-  # TO DO: ADD OTHER COLS!!!!
+  here::here("output", "input.csv.gz"),
   col_types = cols_only(
-    
+   
     # Identifier
     patient_id = col_integer(),
+    
+    # POPULATION ----
+    age = col_integer(),
+    has_died = col_logical() , 
+    sex = col_character(),
+    imd = col_character(),
+    stp = col_character(),
+    registered_eligible = col_logical(),
+    covid_positive_prev_90_days =col_logical(),
+    any_covid_hosp_prev_90_days = col_logical(),
+    high_risk_group = col_logical(),
+    covid_test_positive = col_logical(),
+    prev_treated = col_logical(),
     high_risk_group = col_logical(),
     
-    # Vaccines 
-    vaccination_status = col_character(),
-    pfizer_most_recent_cov_vac = col_logical() ,                   
-    az_most_recent_cov_vac = col_logical() ,                         
-    moderna_most_recent_cov_vac = col_logical(), 
-    date_most_recent_cov_vac = col_date(format = "%Y-%m-%d"),
+    # MAIN ELIGIBILITY - FIRST POSITIVE SARS-CoV-2 TEST IN PERIOD ----
+    covid_test_positive_date = col_date(format = "%Y-%m-%d"),
     
-    # CENSORING ----
-    death_date = col_date(format = "%Y-%m-%d"),
-    has_died = col_logical(),
-    dereg_date = col_date(format = "%Y-%m-%d"),
-    registered_eligible = col_logical(),
-    registered_treated = col_logical(),
-    
-    # NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
+    # TREATMENT - NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
     paxlovid_covid_therapeutics = col_date(format = "%Y-%m-%d"),
     sotrovimab_covid_therapeutics = col_date(format = "%Y-%m-%d"),
     remdesivir_covid_therapeutics = col_date(format = "%Y-%m-%d"),
     molnupiravir_covid_therapeutics = col_date(format = "%Y-%m-%d"),
     casirivimab_covid_therapeutics = col_date(format = "%Y-%m-%d"),
+    date_treated = col_date(format = "%Y-%m-%d"),
     
-    # ELIGIBILITY CRITERIA VARIABLES ----
-    covid_test_positive = col_logical(),
-    covid_test_positive_date = col_date(format = "%Y-%m-%d"),
+    # PREVIOUS TREATMENT - NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
+    date_treated = col_date(format = "%Y-%m-%d"),
+    prev_treated = col_logical(),
+    
+    # OVERALL ELIGIBILITY CRITERIA VARIABLES ----
     covid_test_positive_date2 = col_date(format = "%Y-%m-%d"),
-    #covid_positive_test_type = col_character(),
-    covid_positive_prev_90_days = col_logical(),
-    any_covid_hosp_prev_90_days = col_logical(),
     symptomatic_covid_test = col_character(),
+    pregnancy =col_logical() , 
     covid_symptoms_snomed = col_date(format = "%Y-%m-%d"),
-    age = col_integer(),
-    pregnancy = col_logical(),
-    pregdel = col_logical(),
-    preg_36wks_date = col_date(format = "%Y-%m-%d"),
-    weight =  col_double(),
+    
+    # CENSORING ----
+    death_date = col_date(format = "%Y-%m-%d"),
+    dereg_date = col_date(format = "%Y-%m-%d"),
     
     # HIGH RISK GROUPS ----
     high_risk_cohort_covid_therapeutics = col_character(),
-    downs_syndrome_nhsd = col_date(format = "%Y-%m-%d"),
-    cancer_opensafely_snomed = col_date(format = "%Y-%m-%d"),
-    haematological_disease_nhsd = col_date(format = "%Y-%m-%d"), 
-    ckd_stage_5_nhsd = col_date(format = "%Y-%m-%d"),
-    liver_disease_nhsd = col_date(format = "%Y-%m-%d"),
-    immunosuppresant_drugs_nhsd = col_date(format = "%Y-%m-%d"),
-    oral_steroid_drugs_nhsd = col_date(format = "%Y-%m-%d"),
-    oral_steroid_drug_nhsd_3m_count = col_integer(),
-    oral_steroid_drug_nhsd_12m_count = col_integer(),
-    immunosupression_nhsd = col_date(format = "%Y-%m-%d"),
-    hiv_aids_nhsd = col_date(format = "%Y-%m-%d"),
-    solid_organ_transplant_nhsd = col_date(format = "%Y-%m-%d"),
-    multiple_sclerosis_nhsd = col_date(format = "%Y-%m-%d"),
-    motor_neurone_disease_nhsd = col_date(format = "%Y-%m-%d"),
-    myasthenia_gravis_nhsd = col_date(format = "%Y-%m-%d"),
-    huntingtons_disease_nhsd = col_date(format = "%Y-%m-%d"),
-    
+
+    huntingtons_disease_nhsd =col_logical() , 
+    myasthenia_gravis_nhsd =col_logical() , 
+    motor_neurone_disease_nhsd =col_logical() , 
+    multiple_sclerosis_nhsd =col_logical() , 
+    solid_organ_transplant_nhsd =col_logical() , 
+    hiv_aids_nhsd =col_logical() , 
+    immunosupression_nhsd =col_logical() , 
+    imid_nhsd =col_logical() , 
+    liver_disease_nhsd =col_logical() , 
+    ckd_stage_5_nhsd =col_logical() , 
+    haematological_disease_nhsd =col_logical() , 
+    cancer_opensafely_snomed =col_logical() , 
+    downs_syndrome_nhsd  =col_logical() , 
+
     # CLINICAL/DEMOGRAPHIC COVARIATES ----
+    diabetes = col_logical(),
+    bmi = col_character(),
+    smoking_status = col_character(),
     sex = col_character(),
-    ethnicity_primis = col_character(),
-    ethnicity_sus = col_character(),
-    imd = col_character(),
+    ethnicity_primis = col_double(),
+    ethnicity_sus = col_double(),
+    imd = col_double(),
     region_nhs = col_character(),
-    region_covid_therapeutics = col_character(),
     stp = col_character(),
     rural_urban = col_character(),
-    
-    
-    # CLINICAL GROUPS ----
-    autism_nhsd = col_logical(),
-    care_home_primis = col_logical(),
-    dementia_nhsd = col_logical(),
-    housebound_opensafely = col_logical(),
-    learning_disability_primis = col_logical(),
-    shielded_primis = col_logical(),
-    serious_mental_illness_nhsd = col_logical(),
-    sickle_cell_disease_nhsd = col_date(format = "%Y-%m-%d"),
-   
-    
-    # COVID VARIENT
+    vaccination_status = col_character(),
+    date_most_recent_cov_vac = col_date(format = "%Y-%m-%d"),
+    pfizer_most_recent_cov_vac = col_logical(),
+    az_most_recent_cov_vac = col_logical(),
+    moderna_most_recent_cov_vac = col_logical(),
     sgtf = col_character(),
     variant = col_character(),
     
     # OUTCOMES ----
     covid_positive_test_30_days_post_elig_or_treat = col_date(format = "%Y-%m-%d"),
-    covid_hospitalisation_outcome_date = col_date(format = "%Y-%m-%d"),
-    covid_hospitalisation_critical_care = col_integer(),
+    covid_hosp_outcome_date0 = col_date(format = "%Y-%m-%d"),
+    covid_hosp_outcome_date1 = col_date(format = "%Y-%m-%d"),
+    covid_hosp_outcome_date2 = col_date(format = "%Y-%m-%d"),
+    covid_hosp_discharge_date0 = col_date(format = "%Y-%m-%d"),
+    covid_hosp_discharge_date1 = col_date(format = "%Y-%m-%d"),
+    covid_hosp_discharge_date2 = col_date(format = "%Y-%m-%d"),
+    covid_hosp_outcome_day_date0 = col_date(format = "%Y-%m-%d"),
+    covid_hosp_outcome_day_date1 = col_date(format = "%Y-%m-%d"),
+    covid_hosp_outcome_day_date2 = col_date(format = "%Y-%m-%d"),
+    covid_hosp_discharge_day_date0 = col_date(format = "%Y-%m-%d"),
+    covid_hosp_discharge_day_date2 = col_date(format = "%Y-%m-%d"),
+    covid_hosp_date_emergency0 =col_date(format = "%Y-%m-%d"),
+    covid_hosp_date_emergency1 = col_date(format = "%Y-%m-%d"),
+    covid_hosp_date_emergency2 = col_date(format = "%Y-%m-%d"),
+    covid_emerg_discharge_date0 = col_date(format = "%Y-%m-%d"),
+    covid_emerg_discharge_date1 = col_date(format = "%Y-%m-%d"),
+    covid_emerg_discharge_date2 = col_date(format = "%Y-%m-%d"),
+    covid_hosp_date_mabs_procedure = col_date(format = "%Y-%m-%d"),
+    covid_hosp_date_mabs_not_pri = col_date(format = "%Y-%m-%d"),
+    covid_hosp_date_mabs_day = col_date(format = "%Y-%m-%d"),
+    covid_hosp_date0_not_primary = col_date(format = "%Y-%m-%d"),
+    covid_hosp_date1_not_primary = col_date(format = "%Y-%m-%d"),
+    covid_hosp_date2_not_primary =col_date(format = "%Y-%m-%d"),
+    covid_discharge_date0_not_pri = col_date(format = "%Y-%m-%d"),
+    covid_discharge_date1_not_pri =col_date(format = "%Y-%m-%d"),
+    covid_discharge_date2_not_pri = col_date(format = "%Y-%m-%d"),
     death_with_covid_on_the_death_certificate_date = col_date(format = "%Y-%m-%d"),
-    death_with_28_days_of_covid_positive_test = col_logical()
-  
-  ),
-  na = character() # more stable to convert to missing later
+    death_with_covid_underlying_date = col_date(format = "%Y-%m-%d"),
+    hospitalisation_outcome_date0 = col_date(format = "%Y-%m-%d"),
+    hospitalisation_outcome_date1 = col_date(format = "%Y-%m-%d"),
+    hospitalisation_outcome_date2 = col_date(format = "%Y-%m-%d"),
+    hosp_discharge_date0 = col_date(format = "%Y-%m-%d"),
+    hosp_discharge_date1 = col_date(format = "%Y-%m-%d"),
+    hosp_discharge_date2 = col_date(format = "%Y-%m-%d"),
+    covid_hosp_date_mabs_all_cause = col_date(format = "%Y-%m-%d"),
+    
+),
+  na = character(), # more stable to convert to missing later
 )
 
 ## Parse NAs
-data_extract <- data_extract %>%
+data_extract2 <- data_extract %>%
   mutate(across(
     .cols = where(is.character),
     .fns = ~na_if(.x, "")
@@ -164,145 +164,15 @@ data_extract <- data_extract %>%
   arrange(patient_id) 
 
 # data cleaning
+cat("#### data cleaning ####\n")
 
 ## Format columns (i.e, set factor levels)
-data_processed <- data_extract %>%
+data_processed <- data_extract2 %>%
   mutate(
-    
-    # NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
-    treatment_date = as.Date(pmin(paxlovid_covid_therapeutics, sotrovimab_covid_therapeutics, 
-                                  remdesivir_covid_therapeutics, molnupiravir_covid_therapeutics, 
-                                  casirivimab_covid_therapeutics, na.rm = TRUE), origin = "1970-01-01"),
-    treatment_type = case_when(
-      treatment_date == paxlovid_covid_therapeutics ~ "Paxlovid", 
-      treatment_date == sotrovimab_covid_therapeutics ~ "Sotrovimab", 
-      treatment_date == remdesivir_covid_therapeutics ~ "Remdesivir", 
-      treatment_date == molnupiravir_covid_therapeutics ~ "Molnupiravir", 
-      treatment_date == casirivimab_covid_therapeutics ~ "Casirivimab", 
-      TRUE ~ NA_character_),
-    
-    
-    # ELIGIBILITY VARIABLES ----
-    
-    ## Time between positive test and treatment
-    tb_postest_treat = ifelse(covid_test_positive == 1, as.numeric(treatment_date - covid_test_positive_date), NA),
-    
-    ## Time between positive test and symptom onset
-    tb_symponset_treat = as.numeric(treatment_date -
-                                      pmin(as.Date(ifelse(covid_test_positive == 1 & symptomatic_covid_test == "Y", covid_test_positive_date, NA), origin = "1970-01-01"),
-                                           covid_symptoms_snomed, na.rm = T)),
-    
-    ## IMID - only include patients on corticosteroids (where 2 prescriptions have been issued in 3 month, or 4 prescriptions in 12 months) 
-    oral_steroid_drugs_nhsd = as.Date(ifelse(oral_steroid_drug_nhsd_3m_count >= 2 | oral_steroid_drug_nhsd_12m_count >= 4, 
-                                             oral_steroid_drugs_nhsd, NA), origin = "1970-01-01"),
-    imid_nhsd = pmin(oral_steroid_drugs_nhsd, immunosuppresant_drugs_nhsd, na.rm = T),
-    
-    ## Convert sickle cell disease from date
-    sickle_cell_disease_nhsd = ifelse(!is.na(sickle_cell_disease_nhsd), 1, 0),
-    
-    # Combine subgoups of rare neurological conditions cohort
-    rare_neurological_conditions_nhsd =  pmin(multiple_sclerosis_nhsd, motor_neurone_disease_nhsd, myasthenia_gravis_nhsd,
-                                              huntingtons_disease_nhsd, na.rm = T),
-    ## Eligibility window
-    high_risk_group_nhsd_date = pmin(downs_syndrome_nhsd, cancer_opensafely_snomed,
-                                     haematological_disease_nhsd, ckd_stage_5_nhsd, liver_disease_nhsd, imid_nhsd,
-                                     immunosupression_nhsd, hiv_aids_nhsd, solid_organ_transplant_nhsd, rare_neurological_conditions_nhsd,
-                                     na.rm = TRUE),
-    
-    elig_start = as.Date(ifelse(covid_test_positive <= Sys.Date() & covid_test_positive == 1 & (covid_test_positive_date >= high_risk_group_nhsd_date), 
-                                covid_test_positive_date, NA), origin = "1970-01-01"),
-    # HIGH RISK GROUPS ----
-    downs_syndrome_nhsd_name = ifelse(!is.na(downs_syndrome_nhsd), "Down's syndrome", NA),
-    cancer_opensafely_name = ifelse(!is.na(cancer_opensafely_snomed), "solid cancer", NA),
-    haematological_disease_nhsd_name = ifelse(!is.na(haematological_disease_nhsd), "haematological diseases and stem cell transplant recipients", NA),
-    ckd_stage_5_nhsd_name = ifelse(!is.na(ckd_stage_5_nhsd), "renal disease", NA),
-    liver_disease_nhsd_name = ifelse(!is.na(liver_disease_nhsd), "liver disease", NA),
-    imid_nhsd_name = ifelse(!is.na(imid_nhsd), "IMID", NA),
-    immunosupression_nhsd_name = ifelse(!is.na(immunosupression_nhsd), "primary immune deficiencies", NA),
-    hiv_aids_nhsd_name = ifelse(!is.na(hiv_aids_nhsd), "HIV or AIDS immunosupression", NA),
-    solid_organ_transplant_nhsd_name = ifelse(!is.na(solid_organ_transplant_nhsd), "solid organ recipients", NA),
-    rare_neurological_conditions_nhsd_name = ifelse(!is.na(rare_neurological_conditions_nhsd), "rare neurological conditions", NA),
-    
-    downs_syndrome_nhsd = ifelse(!is.na(downs_syndrome_nhsd), 1, NA),
-    cancer_opensafely = ifelse(!is.na(cancer_opensafely_snomed), 1, NA),
-    haematological_disease_nhsd = ifelse(!is.na(haematological_disease_nhsd), 1, NA),
-    ckd_stage_5_nhsd = ifelse(!is.na(ckd_stage_5_nhsd), 1, NA),
-    liver_disease_nhsd = ifelse(!is.na(liver_disease_nhsd), 1, NA),
-    imid_nhsd = ifelse(!is.na(imid_nhsd), 1, NA),
-    immunosupression_nhsd = ifelse(!is.na(immunosupression_nhsd), 1, NA),
-    hiv_aids_nhsd = ifelse(!is.na(hiv_aids_nhsd), 1, NA),
-    solid_organ_transplant_nhsd = ifelse(!is.na(solid_organ_transplant_nhsd), 1, NA),
-    rare_neurological_conditions_nhsd = ifelse(!is.na(rare_neurological_conditions_nhsd), 1, NA),
-    
-    high_risk_cohort_covid_therapeutics =ifelse(high_risk_cohort_covid_therapeutics == "other", NA, high_risk_cohort_covid_therapeutics),
-    downs_syndrome_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "Downs syndrome") == TRUE, 1, NA),
-    cancer_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "solid cancer") == TRUE, 1, NA),
-    haematological_disease_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "haematological diseases and stem cell transplant recipients") == TRUE, 1, NA),
-    haematological_disease_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "haematological diseases") == TRUE, 1, haematological_disease_therapeutics),
-    haematological_disease_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "haematologic malignancy") == TRUE, 1, haematological_disease_therapeutics),
-    haematological_disease_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "stem cell transplant recipients") == TRUE, 1, haematological_disease_therapeutics),
-    haematological_disease_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "sickle cell disease") == TRUE, 1, haematological_disease_therapeutics),
-    ckd_stage_5_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "renal disease") == TRUE, 1, NA),
-    liver_disease_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "liver disease") == TRUE, 1, NA),
-    imid_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "IMID") == TRUE, 1, NA),
-    immunosupression_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "primary immune deficiencies") == TRUE, 1, NA),
-    hiv_aids_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "HIV or AIDS") == TRUE, 1, NA),
-    solid_organ_transplant_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "solid organ recipients") == TRUE, 1, NA),
-    solid_organ_transplant_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "solid organ transplant recipients") == TRUE, 1, solid_organ_transplant_therapeutics),
-    rare_neurological_conditions_therapeutics = ifelse(str_detect(high_risk_cohort_covid_therapeutics, "rare neurological conditions") == TRUE, 1, NA),   
-    
-    downs_syndrome = ifelse(downs_syndrome_nhsd == 1 | downs_syndrome_therapeutics == 1, 1, NA),
-    solid_cancer = ifelse(cancer_opensafely == 1 | cancer_therapeutics == 1, 1, NA),
-    haematological_disease = ifelse(haematological_disease_nhsd == 1 | haematological_disease_therapeutics == 1, 1, NA),
-    renal_disease = ifelse(ckd_stage_5_nhsd == 1 | ckd_stage_5_therapeutics == 1, 1, NA),
-    liver_disease = ifelse(liver_disease_nhsd == 1 | liver_disease_therapeutics == 1, 1, NA),
-    imid = ifelse(imid_nhsd == 1 | imid_therapeutics == 1, 1, NA),
-    immunosupression = ifelse(immunosupression_nhsd == 1 | immunosupression_therapeutics == 1, 1, NA),
-    hiv_aids = ifelse(hiv_aids_nhsd == 1 | hiv_aids_therapeutics == 1, 1, NA),
-    solid_organ_transplant = ifelse(solid_organ_transplant_nhsd == 1 | solid_organ_transplant_therapeutics == 1, 1, NA),
-    rare_neurological_conditions = ifelse(rare_neurological_conditions_nhsd == 1 | rare_neurological_conditions_therapeutics == 1, 1, NA)
-    
-  ) %>%
-  unite("high_risk_group_nhsd_combined", downs_syndrome_nhsd_name, cancer_opensafely_name,
-        haematological_disease_nhsd_name, ckd_stage_5_nhsd_name, liver_disease_nhsd_name, imid_nhsd_name, immunosupression_nhsd_name, 
-        hiv_aids_nhsd_name, solid_organ_transplant_nhsd_name, rare_neurological_conditions_nhsd_name, sep = ",", na.rm = T) %>%
-  mutate(
-    
-    ## Find matches between nhsd high risk cohorts and therapeutics high risk cohorts 
-    ind_therapeutic_groups = map_chr(strsplit(high_risk_cohort_covid_therapeutics, ","), paste,collapse="|"),
-    #match = str_detect(high_risk_group_nhsd_combined, ind_therapeutic_groups),
-    match = ifelse(downs_syndrome_nhsd == 1 & downs_syndrome_therapeutics == 1 |
-                     cancer_opensafely == 1 & cancer_therapeutics == 1 |
-                     haematological_disease_nhsd == 1 & haematological_disease_therapeutics == 1 |
-                     ckd_stage_5_nhsd == 1 & ckd_stage_5_therapeutics == 1 |
-                     liver_disease_nhsd == 1 & liver_disease_therapeutics == 1 |
-                     imid_nhsd == 1 & imid_therapeutics == 1 |
-                     immunosupression_nhsd == 1 & immunosupression_therapeutics == 1 |
-                     hiv_aids_nhsd == 1 & hiv_aids_therapeutics == 1 |
-                     solid_organ_transplant_nhsd == 1 & solid_organ_transplant_therapeutics == 1 |
-                     rare_neurological_conditions_nhsd == 1 & rare_neurological_conditions_therapeutics == 1, 1, NA),
-    
-    ## Parse NAs
-    high_risk_group_nhsd_combined = ifelse(high_risk_group_nhsd_combined == "", NA, high_risk_group_nhsd_combined),
-    high_risk_cohort_covid_therapeutics = ifelse(high_risk_cohort_covid_therapeutics == "", NA, high_risk_cohort_covid_therapeutics)
-  ) %>%
-  ## Combine groups
-  unite("high_risk_group_combined", c(high_risk_group_nhsd_combined, high_risk_cohort_covid_therapeutics), sep = ",", 
-        na.rm = TRUE, remove = FALSE) %>%
-  rowwise() %>%
-  mutate(high_risk_group_combined = as.character(paste(unique(unlist(strsplit(high_risk_group_combined, ","))), collapse = ",")),
-         high_risk_group_combined = ifelse(high_risk_group_combined == "", NA, high_risk_group_combined),
-         high_risk_group_combined_count = ifelse(high_risk_group_combined != "" | high_risk_group_combined != "NA" | !is.na(high_risk_group_combined), 
-                                                 str_count(high_risk_group_combined,",") + 1, NA)) %>%
-  ungroup() %>%
-  mutate(
-    
-    # Cinic/demo variables
+    # Cinic/demo variables -----
     sex = fct_case_when(
       sex == "F" ~ "Female",
       sex == "M" ~ "Male",
-      #sex == "I" ~ "Inter-sex",
-      #sex == "U" ~ "Unknown",
       TRUE ~ NA_character_
     ),
     
@@ -317,17 +187,23 @@ data_processed <- data_extract %>%
       #TRUE ~ "Unknown"
       TRUE ~ NA_character_),
     
-    imd = na_if(imd, "0"),
-    imd = fct_case_when(
-      imd == 1 ~ "1 most deprived",
-      imd == 2 ~ "2",
-      imd == 3 ~ "3",
-      imd == 4 ~ "4",
-      imd == 5 ~ "5 least deprived",
-      #TRUE ~ "Unknown",
-      TRUE ~ NA_character_
-    ),
+    smoking_status = fct_case_when(
+      smoking_status == "S" ~ "Smoker",
+      smoking_status == "E" ~ "Ever",
+      smoking_status == "N" ~ "Never",
+      smoking_status == "M" ~ "Missing",
+      #TRUE ~ "Unknown"
+      TRUE ~ NA_character_),
     
+    imd = fct_case_when(
+      imd == "5" ~ "5 (least deprived)",
+      imd == "4" ~ "4",
+      imd == "3" ~ "3",
+      imd == "2" ~ "2",
+      imd == "1" ~ "1 (most deprived)",
+      imd == "0" ~ NA_character_
+    ),
+  
     region_nhs = fct_case_when(
       region_nhs == "London" ~ "London",
       region_nhs == "East" ~ "East of England",
@@ -352,156 +228,124 @@ data_processed <- data_extract %>%
       rural_urban %in% c(7:8) ~ "Rural - village and dispersed",
       #TRUE ~ "Unknown",
       TRUE ~ NA_character_
-    )
+    ),
     
+    # NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
+    # Treatment assignment window
+    treat_window = covid_test_positive_date + days(5),
+    
+    # Day of treatment
+    tb_postest_treat = ifelse(covid_test_positive == 1, as.numeric(date_treated - covid_test_positive_date), NA),
+    
+    # Flag records where treatment date falls in treatment assignment window
+    treat_check = ifelse(date_treated >= covid_test_positive & date_treated <= treat_window, 1, 0),
+    
+    # Treatment strategy sep
+    treatment_strategy_sep = case_when(
+      date_treated == sotrovimab_covid_therapeutics & treat_check == 1 ~ "Sotrovimab",
+      date_treated == molnupiravir_covid_therapeutics & treat_check == 1 ~ "Molnupiravir",
+      TRUE ~ "Untreated",
+    ),
+    
+    # Treatment strategy overall
+    treatment_strategy_overall = case_when(
+      (date_treated == sotrovimab_covid_therapeutics & treat_check == 1) | (date_treated == molnupiravir_covid_therapeutics & treat_check == 1)  ~ "Sot/Mol",
+      TRUE ~ "Untreated",
+    ),
+    
+    # Identify patients treated with sot and mol on same day
+    treated_sot_mol = ifelse(sotrovimab_covid_therapeutics==molnupiravir_covid_therapeutics, 1,0
+    ),
+    
+    # TO BE ADDED: Time between symptom onset and treatment
+    #tb_symponset_treat = as.numeric(pmin(as.Date(ifelse(covid_test_positive == 1 & symptomatic_covid_test == "Y", covid_test_positive_date, NA), origin = "1970-01-01"),
+    #                                       covid_symptoms_snomed, na.rm = T) - date_treated),
+    
+
     # OUTCOMES ----
+    #earliest of covid_test_positive + 28days
+    #dereg_date
+    #death_date
+    #hospitalisation 
+    #primary -> covid only 
+    #secondary -> all-cause
     
+    # Ignore day cases and mab procedures in day 0/1
+    ## Primary: COVID-19 Hosp + Death (composite)
+    # Censor at earliest of 
     
-  )
+  ) 
 
-# Save dataset(s) ----
-write_rds(data_processed, here::here("output", "data", "data_processed.rds"), compress = "gz")
-
-
-# Process clean data ----
-cat("#### process clean data ####\n")
-
-## Apply eligibility and exclusion criteria
+## Apply additional eligibility and exclusion criteria
 data_processed_eligible <- data_processed %>%
   filter(
-    # Alive and registered
-    has_died == 0,
-    registered_eligible == 1,
-    
-    # Overall eligibility criteria
-    covid_test_positive == 1,
-    covid_positive_previous_90_days != 1,
-    #symptomatic_covid_test != "N",
-    !is.na(high_risk_group_nhsd_combined) | high_risk_group_nhsd_combined != "NA",
-    !is.na(elig_start)
-    
-    # Overall exclusion criteria
-    
-    # hosp and other stuff to be added
-  ) %>%
-  mutate(eligibility_status = "Eligible")
+    # Patients treated with both sot and mol on the same day 
+    treated_sot_mol  == 0,
+  ) 
 
-cat("#### eligible patients ####\n")
+cat("#### data_processed ####\n")
+print(dim(data_processed))
+
+cat("#### data_processed_eligible ####\n")
 print(dim(data_processed_eligible))
-print(table(data_processed_eligible$match))
-print(table(data_processed_eligible$symptomatic_covid_test))
-
-## Include registered treated patients not flagged as eligible
-data_processed_treated <- data_processed %>%
-  filter(
-    # Treated but non-eligible patients
-    !is.na(treatment_date),
-    !(patient_id %in% unique(data_processed_eligible$patient_id))
-    
-  ) %>%
-  mutate(elig_start = coalesce(elig_start, treatment_date),
-         eligibility_status = "Treated")
-
-cat("#### treated patients ####\n")
-print(dim(data_processed_treated))
-print(table(data_processed_treated$match))
-print(table(data_processed_treated$symptomatic_covid_test))
-
-## Free up space and combine
-rm(data_processed)
-
-data_processed_combined <- rbind(data_processed_eligible, data_processed_treated)
-
-rm(data_processed_eligible)
-rm(data_processed_treated)
-
-cat("#### All patients ####\n")
-print(dim(data_processed_combined))
-print(table(data_processed_combined$eligibility_status))
-print(table(data_processed_combined$eligibility_status, data_processed_combined$match))
-
-## Exclude patients issued more than one treatment within two weeks
-dup_ids <- data_processed_combined %>%
-  select(patient_id, treatment_date, covid_test_positive_date, paxlovid_covid_therapeutics, sotrovimab_covid_therapeutics, remdesivir_covid_therapeutics,
-         molnupiravir_covid_therapeutics, casirivimab_covid_therapeutics) %>%
-  filter(!is.na(treatment_date)) %>%
-  mutate(pax_sot_diff = as.numeric(paxlovid_covid_therapeutics - sotrovimab_covid_therapeutics),
-         pax_mol_diff = as.numeric(paxlovid_covid_therapeutics - remdesivir_covid_therapeutics),
-         pax_rem_diff = as.numeric(paxlovid_covid_therapeutics - molnupiravir_covid_therapeutics),
-         pax_cas_diff = as.numeric(paxlovid_covid_therapeutics - casirivimab_covid_therapeutics),
-         sot_rem_diff = as.numeric(sotrovimab_covid_therapeutics - remdesivir_covid_therapeutics),
-         sot_mol_diff = as.numeric(sotrovimab_covid_therapeutics - molnupiravir_covid_therapeutics),
-         sot_cas_diff = as.numeric(sotrovimab_covid_therapeutics - casirivimab_covid_therapeutics),
-         rem_mol_diff = as.numeric(remdesivir_covid_therapeutics - molnupiravir_covid_therapeutics),
-         rem_cas_diff = as.numeric(remdesivir_covid_therapeutics - casirivimab_covid_therapeutics),
-         mol_cas_diff = as.numeric(molnupiravir_covid_therapeutics - casirivimab_covid_therapeutics)) %>%
-  melt(id.var = "patient_id", measure.vars = c("pax_sot_diff", "pax_mol_diff", "pax_rem_diff", "pax_cas_diff",
-                                               "sot_rem_diff", "sot_mol_diff", "sot_cas_diff", "rem_mol_diff",
-                                               "rem_cas_diff", "mol_cas_diff")) %>%
-  filter(!is.na(value),
-         value <= 14 | value >= -14) %>%
-  group_by(patient_id) %>%
-  arrange(patient_id)
-
-cat("#### patients with more than one treatment ####\n")
-print(length(unique(dup_ids$patient_id)))
-
-## Exclude patients with implausible treatment date
-date_ids <- data_processed_combined %>%
-  select(patient_id, treatment_date, covid_test_positive_date) %>%
-  filter((treatment_date <= covid_test_positive_date - 21 | treatment_date >= Sys.Date()))
-
-cat("#### patients with implausible treatment date ####\n")
-print(length(unique(date_ids$patient_id)))
 
 ## Clean data
-data_processed_clean <- data_processed_combined %>%
-  filter(elig_start <= Sys.Date(),
-         !(patient_id %in% unique(dup_ids$patient_id)),
-         !(patient_id %in% unique(date_ids$patient_id))) %>%
+data_processed_clean <- data_processed_eligible %>% 
   select(
     
-    # ID
-    patient_id, eligibility_status,
+    # Identifier
+    patient_id,
     
-    # Censoring
-    start_date, has_died, death_date, dereg_date, registered_eligible, registered_treated,
+    # POPULATION ----
+    age, has_died, sex, imd, stp, registered_eligible, covid_positive_prev_90_days,
+    any_covid_hosp_prev_90_days, high_risk_group, covid_test_positive, prev_treated, high_risk_group ,
     
-    # Eligibility
-    covid_test_positive, symptomatic_covid_test, covid_test_positive_date, covid_positive_previous_30_days, tb_postest_treat, 
-    tb_symponset_treat, elig_start, primary_covid_hospital_discharge_date, any_covid_hospital_discharge_date, pregnancy,
-    weight,
+    # MAIN ELIGIBILITY - FIRST POSITIVE SARS-CoV-2 TEST IN PERIOD ----
+    covid_test_positive_date, 
     
-    # Treatment
-    paxlovid_covid_therapeutics, sotrovimab_covid_therapeutics, remdesivir_covid_therapeutics, molnupiravir_covid_therapeutics, 
-    casirivimab_covid_therapeutics, treatment_date, treatment_type,
+    # TREATMENT - NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ---
+    treat_window, tb_postest_treat ,treat_check , treatment_strategy_sep, treatment_strategy_overall , date_treated ,
+   
+    # OVERALL ELIGIBILITY CRITERIA VARIABLES ----
+    covid_test_positive_date2, symptomatic_covid_test, pregnancy, covid_symptoms_snomed,
     
-    # High risk cohort
-    downs_syndrome, solid_cancer, haematological_disease, renal_disease, liver_disease, imid, immunosupression, 
-    hiv_aids, solid_organ_transplant, rare_neurological_conditions, high_risk_group_nhsd_combined, high_risk_cohort_covid_therapeutics, 
-    match, high_risk_group_combined, high_risk_group_combined_count, 
+    # CENSORING ----
+    death_date,dereg_date ,
     
-    # Clinical and demographic variables
-    age, sex, ethnicity, imd, rural_urban, region_nhs, region_covid_therapeutics, stp,
+    # HIGH RISK GROUPS ----
+    high_risk_cohort_covid_therapeutics ,
+    huntingtons_disease_nhsd , 
+    myasthenia_gravis_nhsd  , 
+    motor_neurone_disease_nhsd,
+    multiple_sclerosis_nhsd , 
+    solid_organ_transplant_nhsd , 
+    hiv_aids_nhsd , 
+    immunosupression_nhsd = , 
+    imid_nhsd  , 
+    liver_disease_nhsd  , 
+    ckd_stage_5_nhsd  , 
+    haematological_disease_nhsd , 
+    cancer_opensafely_snomed  , 
+    downs_syndrome_nhsd  , 
     
-    # Clinical groups
-    autism_nhsd, care_home_primis, dementia_nhsd, housebound_opensafely, learning_disability_primis, shielded_primis, 
-    serious_mental_illness_nhsd, sickle_cell_disease_nhsd, vaccination_status,
-    
-    # COVID variant
-    sgtf, variant,
-    
-    # Outcomes
-    covid_positive_test_30_days_post_elig_or_treat, covid_positive_test_30_days_post_elig_or_treat_date,
-    covid_hospital_admission, covid_hospitalisation_outcome_date,
-    covid_hospitalisation_critical_care,
-    covid_death, any_death)
-
-cat("#### patients excluded ####\n")
-print(dim(data_processed_combined)[1] - dim(data_processed_clean)[1])
-
-rm(data_processed_combined)
-
-# apply any other criteria not in the python code
-# ADD TO yaml
+    # CLINICAL/DEMOGRAPHIC COVARIATES ----
+    diabetes  ,
+    bmi  ,
+    smoking_status ,
+    sex ,
+    ethnicity  ,
+    imd  ,
+    region_nhs ,
+    stp  ,
+    rural_urban  ,
+    vaccination_status  ,
+    date_most_recent_cov_vac  ,
+    pfizer_most_recent_cov_vac,
+    az_most_recent_cov_vac ,
+    moderna_most_recent_cov_vac ,
+    sgtf ,
+    variant,
+)
 # save data
+write_rds(data_processed_clean, here::here("output", "data", "data_processed.rds"), compress = "gz")
+write_csv(data_processed_clean, here::here("output", "data", "data_processed.csv"))
