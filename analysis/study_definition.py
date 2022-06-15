@@ -55,21 +55,7 @@ study = StudyDefinition(
       AND NOT any_covid_hosp_prev_90_days)
     )
     AND prev_treated = 0
-    AND (
-    huntingtons_disease_nhsd = 1 OR
-    myasthenia_gravis_nhsd = 1 OR
-    motor_neurone_disease_nhsd = 1 OR
-    multiple_sclerosis_nhsd = 1 OR
-    solid_organ_transplant_nhsd = 1 OR
-    hiv_aids_nhsd = 1 OR
-    immunosupression_nhsd = 1 OR
-    imid_nhsd = 1 OR 
-    liver_disease_nhsd = 1 OR
-    ckd_stage_5_nhsd = 1 OR
-    haematological_disease_nhsd = 1 OR
-    cancer_opensafely_snomed = 1 OR
-    downs_syndrome_nhsd = 1)
-
+    AND high_risk_group
     """,
   ),
 
@@ -966,19 +952,19 @@ study = StudyDefinition(
   ## high risk ehr recorded
   high_risk_group=patients.satisfying(
     """
-    huntingtons_disease_nhsd = 1 OR
-    myasthenia_gravis_nhsd = 1 OR
-    motor_neurone_disease_nhsd = 1 OR
-    multiple_sclerosis_nhsd = 1 OR
-    solid_organ_transplant_nhsd = 1 OR
-    hiv_aids_nhsd = 1 OR
-    immunosupression_nhsd = 1 OR
-    imid_nhsd = 1 OR 
-    liver_disease_nhsd = 1 OR
-    ckd_stage_5_nhsd = 1 OR
-    haematological_disease_nhsd = 1 OR
-    cancer_opensafely_snomed = 1 OR
-    downs_syndrome_nhsd = 1 
+    huntingtons_disease_nhsd OR
+    myasthenia_gravis_nhsd OR
+    motor_neurone_disease_nhsd OR
+    multiple_sclerosis_nhsd OR
+    solid_organ_transplant_nhsd OR
+    hiv_aids_nhsd OR
+    immunosupression_nhsd OR
+    imid_nhsd OR 
+    liver_disease_nhsd OR
+    ckd_stage_5_nhsd OR
+    haematological_disease_nhsd OR
+    cancer_opensafely_snomed OR
+    downs_syndrome_nhsd  
     """,
   ),
   
