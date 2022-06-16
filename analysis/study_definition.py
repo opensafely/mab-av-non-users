@@ -54,7 +54,7 @@ study = StudyDefinition(
       AND NOT covid_positive_prev_90_days
       AND NOT any_covid_hosp_prev_90_days)
     )
-    AND prev_treated = 0
+    AND NOT prev_treated
     AND high_risk_group
     """,
   ),
@@ -79,7 +79,7 @@ study = StudyDefinition(
     restrict_to_earliest_specimen_date=False,
     returning="date",
     date_format="YYYY-MM-DD",
-    on_or_after="index_date",
+    between=["index_date", end_date],
     return_expectations={
       "date": {"earliest": "2021-12-16"},
       "incidence": 1.0
@@ -224,12 +224,17 @@ study = StudyDefinition(
     },
   ),
   ## previously treated
-  prev_treated=patients.maximum_of(
-    "paxlovid_covid_prev",
-    "sotrovimab_covid_prev",
-    "remdesivir_covid_prev",
-    "molnupiravir_covid_prev",
-    "casirivimab_covid_prev",
+  prev_treated=patients.satisfying(
+    """
+    paxlovid_covid_prev OR
+    sotrovimab_covid_prev OR
+    remdesivir_covid_prev OR
+    molnupiravir_covid_prev OR
+    casirivimab_covid_prev
+    """,
+    return_expectations={
+      "incidence": 0.4,
+    },
   ),
 
   # OVERALL ELIGIBILITY CRITERIA VARIABLES ----
@@ -307,6 +312,14 @@ study = StudyDefinition(
   ),
 
   ### Pregnancy
+  ## Sex
+  sex=patients.sex(
+    return_expectations={
+      "rate": "universal",
+      "category": {"ratios": {"M": 0.49, "F": 0.51}},
+    }
+  ),
+
   # pregnancy record in last 36 weeks
   preg_36wks_date=patients.with_these_clinical_events(
     pregnancy_primis_codes,
@@ -328,15 +341,9 @@ study = StudyDefinition(
   ),
   pregnancy=patients.satisfying(
     """
-    gender='F' AND preg_age <= 50
+    sex = "F" AND preg_age <= 50
     AND (preg_36wks_date AND NOT pregdel)
     """,
-    gender=patients.sex(
-      return_expectations={
-        "rate": "universal",
-        "category": {"ratios": {"M": 0.49, "F": 0.51}},
-      }
-    ),
     preg_age=patients.age_as_of(
       "preg_36wks_date",
       return_expectations={
@@ -426,7 +433,7 @@ study = StudyDefinition(
     on_or_before="covid_test_positive_date",
     returning="binary_flag",
     return_expectations={
-      "incidence": 0.4
+      "incidence": 0.05
     },
   ),
 
@@ -435,13 +442,15 @@ study = StudyDefinition(
     on_or_before="covid_test_positive_date",
     with_these_diagnoses=downs_syndrome_nhsd_icd10_codes,
     return_expectations={
-      "incidence": 0.4
+      "incidence": 0.05
     },
   ),
 
-  downs_syndrome_nhsd=patients.maximum_of(
-    "downs_syndrome_nhsd_snomed",
-    "downs_syndrome_nhsd_icd10",
+  downs_syndrome_nhsd=patients.satisfying(
+    "downs_syndrome_nhsd_snomed OR downs_syndrome_nhsd_icd10",
+    return_expectations={
+      "incidence": 0.05,
+    },
   ),
  
   ## Solid cancer
@@ -523,116 +532,20 @@ study = StudyDefinition(
     },
   ),
 
-  haematological_disease_nhsd=patients.maximum_of(
-    "haematopoietic_stem_cell_transplant_nhsd_snomed",
-    "haematopoietic_stem_cell_transplant_nhsd_icd10",
-    "haematopoietic_stem_cell_transplant_nhsd_opcs4",
-    "haematological_malignancies_nhsd_snomed",
-    "haematological_malignancies_nhsd_icd10",
-    "sickle_cell_disease_nhsd_snomed",
-    "sickle_cell_disease_nhsd_icd10"
-  ),
-
-  # Diabetes
-  diabetes=patients.with_these_clinical_events(
-    diabetes_codes,  # imported from codelists.py
-    returning="binary_flag",
-    on_or_before="covid_test_positive_date",
-    find_last_match_in_period=True,
-  ),
-  # variable indicating whether patient has had a recent test yes/no
-  hba1c_flag=patients.with_these_clinical_events(
-    combine_codelists(
-      hba1c_new_codes,
-      hba1c_old_codes
-    ),
-    returning="binary_flag",
-    between=["covid_test_positive_date - 15 months", "covid_test_positive_date"],
-    find_last_match_in_period=True,
+  haematological_disease_nhsd=patients.satisfying(
+    """
+    haematopoietic_stem_cell_transplant_nhsd_snomed OR
+    haematopoietic_stem_cell_transplant_nhsd_icd10 OR
+    haematopoietic_stem_cell_transplant_nhsd_opcs4 OR
+    haematological_malignancies_nhsd_snomed OR
+    haematological_malignancies_nhsd_icd10 OR
+    sickle_cell_disease_nhsd_snomed OR
+    sickle_cell_disease_nhsd_icd10
+    """,
     return_expectations={
-      "incidence": 0.95,
-      },
-    ),
-    # hba1c value in mmol/mol of recent test
-    hba1c_mmol_per_mol=patients.with_these_clinical_events(
-        hba1c_new_codes,  # imported from codelists.py
-        returning="numeric_value",
-        between=["covid_test_positive_date - 15 months", "covid_test_positive_date"],
-        find_last_match_in_period=True,
-        include_date_of_match=True,
-        date_format="YYYY-MM",
-        return_expectations={
-            "date": {"latest": "index_date"},
-            "float": {"distribution": "normal", "mean": 40.0, "stddev": 20},
-            "incidence": 0.95,
-        },
-    ),
-    # hba1c value in % of recent test
-    hba1c_percentage=patients.with_these_clinical_events(
-        hba1c_old_codes,  # imported from codelists.py
-        returning="numeric_value",
-        between=["covid_test_positive_date - 15 months", "covid_test_positive_date"],
-        find_last_match_in_period=True,
-        include_date_of_match=True,
-        date_format="YYYY-MM",
-        return_expectations={
-            "date": {"latest": "index_date"},
-            "float": {"distribution": "normal", "mean": 5, "stddev": 2},
-            "incidence": 0.95,
-        },
-    ),
-    # Subcategorise recent hba1c measures in no recent measure (0); measure
-    # indicating controlled diabetes (1);
-    # measure indicating uncontrolled diabetes (2)
-    hba1c_category=patients.categorised_as(
-        {
-            "0": "DEFAULT",
-            "1": """
-                hba1c_flag AND (hba1c_mmol_per_mol < 58 OR
-                hba1c_percentage < 7.5)
-            """,
-            "2": """
-                hba1c_flag AND (hba1c_mmol_per_mol >= 58 OR
-                hba1c_percentage >= 7.5)
-            """,
-        },
-        return_expectations={
-                                "category": {
-                                    "ratios": {
-                                        "0": 0.2,
-                                        "1": 0.4,
-                                        "2": 0.4
-                                        }
-                                    },
-                                },
-    ),
-    # Subcategorise diabetes in no diabetes (0); controlled diabetes (1);
-    # uncontrolled diabetes (2);
-    # diabetes with missing recent hba1c measure (3)
-    diabetes_controlled=patients.categorised_as(
-        {
-            "0": "DEFAULT",
-            "1": """
-                diabetes AND hba1c_category = "1"
-                """,
-            "2": """
-                diabetes AND hba1c_category = "2"
-                """,
-            "3": """
-                diabetes AND hba1c_category = "0"
-                """
-        }, return_expectations={
-                                "category": {
-                                    "ratios": {
-                                        "0": 0.8,
-                                        "1": 0.09,
-                                        "2": 0.09,
-                                        "3": 0.02
-                                        }
-                                    },
-                                "incidence": 1.0,
-                                },
-    ),
+      "incidence": 0.05,
+    },
+  ),
 
   ## Renal disease
   ckd_stage_5_nhsd_snomed=patients.with_these_clinical_events(
@@ -653,9 +566,11 @@ study = StudyDefinition(
     },
   ),
 
-  ckd_stage_5_nhsd=patients.maximum_of(
-    "ckd_stage_5_nhsd_snomed",
-    "ckd_stage_5_nhsd_icd10"
+  ckd_stage_5_nhsd=patients.satisfying(
+    "ckd_stage_5_nhsd_snomed OR ckd_stage_5_nhsd_icd10",
+    return_expectations={
+      "incidence": 0.05
+    },
   ),
 
   ## Liver disease
@@ -677,7 +592,12 @@ study = StudyDefinition(
     },
   ),
 
-  liver_disease_nhsd=patients.maximum_of("liver_disease_nhsd_snomed", "liver_disease_nhsd_icd10"), 
+  liver_disease_nhsd=patients.satisfying(
+    "liver_disease_nhsd_snomed OR liver_disease_nhsd_icd10",
+    return_expectations={
+      "incidence": 0.05
+    },
+  ),
 
   ## Immune-mediated inflammatory disorders (IMID)
   immunosuppresant_drugs_nhsd=patients.with_these_medications(
@@ -702,9 +622,14 @@ study = StudyDefinition(
     },
   ),
   
-  imid_nhsd=patients.maximum_of("immunosuppresant_drugs_nhsd", "oral_steroid_drugs_nhsd"), 
+  imid_nhsd=patients.satisfying(
+    "immunosuppresant_drugs_nhsd OR oral_steroid_drugs_nhsd",
+    return_expectations={
+      "incidence": 0.05
+    },
+  ),
   
- ## Primary immune deficiencies
+  ## Primary immune deficiencies
   immunosupression_nhsd=patients.with_these_clinical_events(
     immunosupression_nhsd_codes,
     on_or_before="covid_test_positive_date",
@@ -732,8 +657,13 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
-  hiv_aids_nhsd=patients.maximum_of("hiv_aids_nhsd_snomed", "hiv_aids_nhsd_icd10"),
+
+  hiv_aids_nhsd=patients.satisfying(
+    "hiv_aids_nhsd_snomed OR hiv_aids_nhsd_icd10",
+    return_expectations={
+      "incidence": 0.05
+    },
+  ),
   
   ## Solid organ transplant
   solid_organ_transplant_nhsd_snomed=patients.with_these_clinical_events(
@@ -753,7 +683,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   
   transplant_all_y_codes_opcs4=patients.admitted_to_hospital(
     returning="date_admitted",
@@ -852,16 +781,21 @@ study = StudyDefinition(
     },
   ),
   
-  solid_organ_transplant_nhsd=patients.maximum_of(
-    "solid_organ_transplant_nhsd_snomed",
-    "solid_organ_transplant_nhsd_opcs4",
-    "transplant_thymus_opcs4",
-    "transplant_conjunctiva_opcs4",
-    "transplant_stomach_opcs4",
-    "transplant_ileum_1_opcs4",
-    "transplant_ileum_2_opcs4"
-  ), 
-  
+  solid_organ_transplant_nhsd=patients.satisfying(
+    """
+    solid_organ_transplant_nhsd_snomed OR
+    solid_organ_transplant_nhsd_opcs4 OR
+    transplant_thymus_opcs4 OR
+    transplant_conjunctiva_opcs4 OR
+    transplant_stomach_opcs4 OR
+    transplant_ileum_1_opcs4 OR
+    transplant_ileum_2_opcs4
+    """,
+    return_expectations={
+      "incidence": 0.05
+    },
+  ),
+
   ## Rare neurological conditions
   
   ### Multiple sclerosis
@@ -883,7 +817,12 @@ study = StudyDefinition(
     },
   ),
   
-  multiple_sclerosis_nhsd=patients.maximum_of("multiple_sclerosis_nhsd_snomed", "multiple_sclerosis_nhsd_icd10"), 
+  multiple_sclerosis_nhsd=patients.satisfying(
+    "multiple_sclerosis_nhsd_snomed OR multiple_sclerosis_nhsd_icd10",
+    return_expectations={
+      "incidence": 0.05
+    },
+  ),
   
   ### Motor neurone disease
   motor_neurone_disease_nhsd_snomed=patients.with_these_clinical_events(
@@ -904,7 +843,12 @@ study = StudyDefinition(
     },
   ),
   
-  motor_neurone_disease_nhsd=patients.maximum_of("motor_neurone_disease_nhsd_snomed", "motor_neurone_disease_nhsd_icd10"),
+  motor_neurone_disease_nhsd=patients.satisfying(
+    "motor_neurone_disease_nhsd_snomed OR motor_neurone_disease_nhsd_icd10",
+    return_expectations={
+      "incidence": 0.05
+    },
+  ),
   
   ### Myasthenia gravis
   myasthenia_gravis_nhsd_snomed=patients.with_these_clinical_events(
@@ -925,7 +869,12 @@ study = StudyDefinition(
     },
   ),
   
-  myasthenia_gravis_nhsd=patients.maximum_of("myasthenia_gravis_nhsd_snomed", "myasthenia_gravis_nhsd_icd10"),
+  myasthenia_gravis_nhsd=patients.satisfying(
+    "myasthenia_gravis_nhsd_snomed OR myasthenia_gravis_nhsd_icd10",
+    return_expectations={
+      "incidence": 0.05
+    },
+  ),
   
   ### Huntington’s disease
   huntingtons_disease_nhsd_snomed=patients.with_these_clinical_events(
@@ -946,8 +895,12 @@ study = StudyDefinition(
     },
   ),
   
-  huntingtons_disease_nhsd=patients.maximum_of("huntingtons_disease_nhsd_snomed", "huntingtons_disease_nhsd_icd10"),
-  
+  huntingtons_disease_nhsd=patients.satisfying(
+    "huntingtons_disease_nhsd_snomed OR huntingtons_disease_nhsd_icd10",
+    return_expectations={
+      "incidence": 0.05
+    },
+  ),  
   
   ## high risk ehr recorded
   high_risk_group=patients.satisfying(
@@ -966,6 +919,9 @@ study = StudyDefinition(
     cancer_opensafely_snomed OR
     downs_syndrome_nhsd  
     """,
+    return_expectations={
+      "incidence": 0.4
+    },
   ),
   
   # CLINICAL/DEMOGRAPHIC COVARIATES ----
@@ -1009,6 +965,7 @@ study = StudyDefinition(
           "Obese III (40+)": 0.1,
         }
       },
+      "incidence": 1.0,
     },
   ),
   ## Smoking status
@@ -1044,13 +1001,6 @@ study = StudyDefinition(
       on_or_before="covid_test_positive_date",
     ),
   ),
-  ## Sex
-  sex = patients.sex(
-    return_expectations={
-      "rate": "universal",
-      "category": {"ratios": {"M": 0.49, "F": 0.51}},
-    }
-  ),
   ## Ethnicity
   ethnicity_primis=patients.with_these_clinical_events(
     ethnicity_primis_snomed_codes,
@@ -1069,6 +1019,29 @@ study = StudyDefinition(
     return_expectations={
       "category": {"ratios": {"1": 0.2, "2": 0.2, "3": 0.2, "4": 0.2, "5": 0.2}},
       "incidence": 0.8,
+    },
+  ),
+  ethnicity=patients.categorised_as(
+    {
+      "0": "DEFAULT",
+      "1": "ethnicity_primis='1' OR (NOT ethnicity_primis AND ethnicity_sus='1')",
+      "2": "ethnicity_primis='2' OR (NOT ethnicity_primis AND ethnicity_sus='2')",
+      "3": "ethnicity_primis='3' OR (NOT ethnicity_primis AND ethnicity_sus='3')",
+      "4": "ethnicity_primis='4' OR (NOT ethnicity_primis AND ethnicity_sus='4')",
+      "5": "ethnicity_primis='5' OR (NOT ethnicity_primis AND ethnicity_sus='5')",
+    },
+    return_expectations={
+      "category": {
+        "ratios": {
+            "0": 0.5,  # missing in 50%
+            "1": 0.1,
+            "2": 0.1,
+            "3": 0.1,
+            "4": 0.1,
+            "5": 0.1
+        }
+      },
+      "incidence": 1.0,
     },
   ),
   ## Index of multiple deprivation
@@ -1209,35 +1182,32 @@ study = StudyDefinition(
   
   ## Dementia
   dementia_nhsd=patients.satisfying(
-    
     """
     dementia_all
     AND
     age > 39
     """, 
-    
     return_expectations={
       "incidence": 0.01,
     },
-    
     dementia_all=patients.with_these_clinical_events(
       dementia_nhsd_snomed_codes,
       on_or_before="covid_test_positive_date",
       returning="binary_flag",
       return_expectations={"incidence": 0.05}
     ),
-    
   ),
   
   ## Housebound
   housebound_opensafely=patients.satisfying(
-    """housebound_date
-                AND NOT no_longer_housebound
-                AND NOT moved_into_care_home""",
+    """
+    housebound_date
+    AND NOT no_longer_housebound
+    AND NOT moved_into_care_home
+    """,
     return_expectations={
       "incidence": 0.01,
     },
-    
     housebound_date=patients.with_these_clinical_events( 
       housebound_opensafely_snomed_codes, 
       on_or_before="covid_test_positive_date",
@@ -1245,17 +1215,14 @@ study = StudyDefinition(
       returning="date",
       date_format="YYYY-MM-DD",
     ),   
-    
     no_longer_housebound=patients.with_these_clinical_events( 
       no_longer_housebound_opensafely_snomed_codes, 
       on_or_after="housebound_date",
     ),
-    
     moved_into_care_home=patients.with_these_clinical_events(
       care_home_primis_snomed_codes,
       on_or_after="housebound_date",
     ),
-    
   ),
   
   ## Learning disability
@@ -1276,20 +1243,17 @@ study = StudyDefinition(
     return_expectations={
       "incidence": 0.01,
     },
-    
     ### SHIELDED GROUP - first flag all patients with "high risk" codes
     severely_clinically_vulnerable=patients.with_these_clinical_events(
       high_risk_primis_snomed_codes, # note no date limits set
       find_last_match_in_period=True,
       return_expectations={"incidence": 0.02,},
     ),
-    
     # find date at which the high risk code was added
     date_severely_clinically_vulnerable=patients.date_of(
       "severely_clinically_vulnerable", 
       date_format  ="YYYY-MM-DD",   
     ),
-    
     ### NOT SHIELDED GROUP (medium and low risk) - only flag if later than 'shielded'
     less_vulnerable=patients.with_these_clinical_events(
       not_high_risk_primis_snomed_codes, 
@@ -1300,14 +1264,14 @@ study = StudyDefinition(
   
   # flag the newly expanded shielding group as of 15 feb (should be a subset of the previous flag)
   shielded_since_feb_15=patients.satisfying(
-    """severely_clinically_vulnerable_since_feb_15
-                AND NOT new_shielding_status_reduced
-                AND NOT previous_flag
-            """,
+    """
+    severely_clinically_vulnerable_since_feb_15
+    AND NOT new_shielding_status_reduced
+    AND NOT previous_flag
+    """,
     return_expectations={
       "incidence": 0.01,
     },
-    
     ### SHIELDED GROUP - first flag all patients with "high risk" codes
     severely_clinically_vulnerable_since_feb_15=patients.with_these_clinical_events(
       high_risk_primis_snomed_codes, 
@@ -1315,21 +1279,18 @@ study = StudyDefinition(
       find_last_match_in_period=False,
       return_expectations={"incidence": 0.02,},
     ),
-    
     # find date at which the high risk code was added
     date_vulnerable_since_feb_15=patients.date_of(
       "severely_clinically_vulnerable_since_feb_15", 
       date_format="YYYY-MM-DD",   
     ),
-    
-    ### check that patient's shielding status has not since been reduced to a lower risk level 
+    # check that patient's shielding status has not since been reduced to a lower risk level 
     # e.g. due to improved clinical condition of patient
     new_shielding_status_reduced=patients.with_these_clinical_events(
       not_high_risk_primis_snomed_codes,
       on_or_after="date_vulnerable_since_feb_15",
       return_expectations={"incidence": 0.01,},
     ),
-    
     # anyone with a previous flag of any risk level will not be added to the new shielding group
     previous_flag=patients.with_these_clinical_events(
       combine_codelists(high_risk_primis_snomed_codes, not_high_risk_primis_snomed_codes),
@@ -1347,8 +1308,13 @@ study = StudyDefinition(
   ),
   
   ## Sickle cell disease
-  sickle_cell_disease_nhsd=patients.minimum_of("sickle_cell_disease_nhsd_snomed", "sickle_cell_disease_nhsd_icd10"), 
-  
+  sickle_cell_disease_nhsd=patients.satisfying(
+    "sickle_cell_disease_nhsd_snomed OR sickle_cell_disease_nhsd_icd10",
+    return_expectations={
+      "incidence": 0.01,
+    }, 
+  ),
+
   ## Vaccination status
   vaccination_status=patients.categorised_as(
     {
@@ -1358,7 +1324,6 @@ study = StudyDefinition(
       "Two vaccinations": """ covid_vax_2 AND NOT covid_vax_3 """,
       "Three or more vaccinations": """ covid_vax_3 """
     },
-    
     # first vaccine from during trials and up to treatment/test date
     covid_vax_1=patients.with_tpp_vaccination_record(
       target_disease_matches="SARS-2 CORONAVIRUS",
@@ -1367,7 +1332,6 @@ study = StudyDefinition(
       returning="date",
       date_format="YYYY-MM-DD"
     ),
-    
     covid_vax_2=patients.with_tpp_vaccination_record(
       target_disease_matches="SARS-2 CORONAVIRUS",
       between=["covid_vax_1 + 19 days", "covid_test_positive_date"],
@@ -1375,7 +1339,6 @@ study = StudyDefinition(
       returning="date",
       date_format="YYYY-MM-DD"
     ),
-    
     covid_vax_3=patients.with_tpp_vaccination_record(
       target_disease_matches="SARS-2 CORONAVIRUS",
       between=["covid_vax_2 + 56 days", "covid_test_positive_date"],
@@ -1383,13 +1346,11 @@ study = StudyDefinition(
       returning="date",
       date_format="YYYY-MM-DD"
     ),
-    
     covid_vax_declined=patients.with_these_clinical_events(
       covid_vaccine_declined_codes,
       returning="binary_flag",
       on_or_before="covid_test_positive_date",
     ),
-    
     return_expectations={
       "rate": "universal",
       "category": {
@@ -1443,8 +1404,109 @@ study = StudyDefinition(
   ),
 
   # CLINICAL CO-MORBIDITIES TBC ----
+    # Diabetes
+  diabetes=patients.with_these_clinical_events(
+    diabetes_codes,  # imported from codelists.py
+    returning="binary_flag",
+    on_or_before="covid_test_positive_date",
+    find_last_match_in_period=True,
+  ),
+  # variable indicating whether patient has had a recent test yes/no
+  hba1c_flag=patients.with_these_clinical_events(
+    combine_codelists(
+      hba1c_new_codes,
+      hba1c_old_codes
+    ),
+    returning="binary_flag",
+    between=["covid_test_positive_date - 15 months", "covid_test_positive_date"],
+    find_last_match_in_period=True,
+    return_expectations={
+      "incidence": 0.95,
+      },
+    ),
+  # hba1c value in mmol/mol of recent test
+  hba1c_mmol_per_mol=patients.with_these_clinical_events(
+    hba1c_new_codes,  # imported from codelists.py
+    returning="numeric_value",
+    between=["covid_test_positive_date - 15 months", "covid_test_positive_date"],
+    find_last_match_in_period=True,
+    include_date_of_match=True,
+    date_format="YYYY-MM",
+    return_expectations={
+      "date": {"latest": "index_date"},
+      "float": {"distribution": "normal", "mean": 40.0, "stddev": 20},
+      "incidence": 0.95,
+    },
+    ),
+  # hba1c value in % of recent test
+  hba1c_percentage=patients.with_these_clinical_events(
+    hba1c_old_codes,  # imported from codelists.py
+    returning="numeric_value",
+    between=["covid_test_positive_date - 15 months", "covid_test_positive_date"],
+    find_last_match_in_period=True,
+    include_date_of_match=True,
+    date_format="YYYY-MM",
+    return_expectations={
+      "date": {"latest": "index_date"},
+      "float": {"distribution": "normal", "mean": 5, "stddev": 2},
+      "incidence": 0.95,
+    },
+  ),
+  # Subcategorise recent hba1c measures in no recent measure (0); measure
+  # indicating controlled diabetes (1);
+  # measure indicating uncontrolled diabetes (2)
+  hba1c_category=patients.categorised_as(
+    {
+      "0": "DEFAULT",
+      "1": """
+           hba1c_flag AND (hba1c_mmol_per_mol < 58 OR
+           hba1c_percentage < 7.5)
+           """,
+      "2": """
+          hba1c_flag AND (hba1c_mmol_per_mol >= 58 OR
+          hba1c_percentage >= 7.5)
+      """,
+    },
+    return_expectations={
+      "category": {
+        "ratios": {
+          "0": 0.2,
+          "1": 0.4,
+          "2": 0.4
+        }
+      },
+    },
+  ),
+  # Subcategorise diabetes in no diabetes (0); controlled diabetes (1);
+  # uncontrolled diabetes (2);
+  # diabetes with missing recent hba1c measure (3)
+  diabetes_controlled=patients.categorised_as(
+    {
+      "0": "DEFAULT",
+      "1": """
+          diabetes AND hba1c_category = "1"
+          """,
+      "2": """
+          diabetes AND hba1c_category = "2"
+          """,
+      "3": """
+          diabetes AND hba1c_category = "0"
+          """
+    },
+    return_expectations={
+      "category": {
+        "ratios": {
+          "0": 0.8,
+          "1": 0.09,
+          "2": 0.09,
+          "3": 0.02
+        }
+      },
+      "incidence": 1.0,
+    },
+  ),
   
-  # COVID VARIENT
+  # COVID VARIENT ----
   
   ## S-Gene Target Failure
   sgtf=patients.with_test_result_in_sgss(
@@ -1476,10 +1538,8 @@ study = StudyDefinition(
   
   # OUTCOMES ----
   
-  # OUTCOMES ----
-  
   ## COVID re-infection
-  covid_positive_test_30_days_post_elig_or_treat=patients.with_test_result_in_sgss(
+  covid_positive_test_30_days_post_pos_test=patients.with_test_result_in_sgss(
     pathogen="SARS-CoV-2",
     test_result="positive",
     returning="date",
@@ -1977,7 +2037,7 @@ study = StudyDefinition(
       "incidence": 0.6},
   ),  
 
-#all-cause hosp; all-cause death already defined
+# all-cause hosp; all-cause death already defined
   hospitalisation_outcome_date0=patients.admitted_to_hospital(
     returning="date_admitted",
     with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
