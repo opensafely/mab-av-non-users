@@ -390,6 +390,13 @@ dialysis_codes = codelist_from_csv(
   column="CTV3ID",
 )
  
+# Heam cancer
+haem_cancer_codes = codelist_from_csv(
+    "codelists/opensafely-haematological-cancer.csv",
+    system="ctv3",
+    column="CTV3ID",
+)
+
 ## Autism
 autism_nhsd_snomed_codes = codelist_from_csv(
   "codelists/nhsd-primary-care-domain-refsets-autism_cod.csv",

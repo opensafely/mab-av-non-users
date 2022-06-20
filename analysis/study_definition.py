@@ -78,25 +78,6 @@ study = StudyDefinition(
       "incidence": 1.0
     },
   ),
-  # Type of positive test
-  covid_test_positive_type=patients.with_test_result_in_sgss(
-    pathogen="SARS-CoV-2",
-    test_result="positive",
-    find_first_match_in_period=True,
-    restrict_to_earliest_specimen_date=True,  # checking if neededß
-    returning="case_category",
-    between=["covid_test_positive_date", "covid_test_positive_date"],
-    return_expectations={
-      "incidence": 1.0,
-      "category": {
-        "ratios": {
-          "LFT_Only": 0.2,
-          "PCR_Only": 0.2,
-          "LFT_WithPCR": 0.6,
-        }
-      },
-    },
-  ),
   # Was patients registered at the time of a positive test?
   registered_eligible=patients.registered_as_of("covid_test_positive_date"),
   # Was patient alive?
@@ -1155,13 +1136,6 @@ study = StudyDefinition(
     returning="binary_flag",
     return_expectations={"incidence": 0.1}
   ),
-  # Sickle cell disease
-  sickle_cell_disease_nhsd=patients.satisfying(
-    "sickle_cell_disease_nhsd_snomed OR sickle_cell_disease_nhsd_icd10",
-    return_expectations={
-      "incidence": 0.01,
-    }, 
-  ),
 
   # VACCINATION STATUS ----
   vaccination_status=patients.categorised_as(
@@ -1249,7 +1223,14 @@ study = StudyDefinition(
       },
   ),
 
-  # CLINICAL CO-MORBIDITIES TBC ----
+  # CLINICAL CO-MORBIDITIES ----
+  # Sickle cell disease
+  sickle_cell_disease_nhsd=patients.satisfying(
+    "sickle_cell_disease_nhsd_snomed OR sickle_cell_disease_nhsd_icd10",
+    return_expectations={
+      "incidence": 0.01,
+    }, 
+  ),
   # Diabetes
   diabetes=patients.with_these_clinical_events(
     diabetes_codes,  # imported from codelists.py
@@ -1369,13 +1350,40 @@ study = StudyDefinition(
   dialysis=patients.with_these_clinical_events(
     dialysis_codes,  # imported from codelists.py
     returning="binary_flag",
-    on_or_before="index_date",
+    on_or_before="covid_test_positive_date",
     find_last_match_in_period=True,
     include_date_of_match=True,  # generates dialysis_date
     date_format="YYYY-MM-DD",
   ),
+  # Cancer
+  cancer=patients.with_these_clinical_events(
+    non_haematological_cancer_opensafely_snomed_codes,
+    returning="binary_flag",
+    between=["covid_test_positive_date - 5 years", "covid_test_positive_date"],
+    find_last_match_in_period=True,
+    include_date_of_match=True,
+    date_format="YYYY-MM-DD",
+  ),
+  # Lung cancer
+  lung_cancer=patients.with_these_clinical_events(
+    lung_cancer_opensafely_snomed_codes,
+    returning="binary_flag",
+    between=["covid_test_positive_date - 5 years", "covid_test_positive_date"],
+    find_last_match_in_period=True,
+    include_date_of_match=True,
+    date_format="YYYY-MM-DD",
+  ),
+  # Haematological malignancy
+  haem_cancer=patients.with_these_clinical_events(
+    haem_cancer_codes,  # imported from codelists.py
+    returning="binary_flag",
+    between=["covid_test_positive_date - 5 years", "covid_test_positive_date"],
+    find_last_match_in_period=True,
+    include_date_of_match=True,
+    date_format="YYYY-MM-DD",
+  ),
   
-  # COVID VARIENT ----
+  # COVID VARIANT ----
   # S-Gene Target Failure
   sgtf=patients.with_test_result_in_sgss(
     pathogen="SARS-CoV-2",
@@ -1519,10 +1527,9 @@ study = StudyDefinition(
   # extract multiple COVID hosp events per patient because the first hosp may be for receiving sotro or day cases (Day 0 and 1):
   covid_hosp_outcome_day_date0=patients.admitted_to_hospital(
     returning="date_admitted",
-    with_these_primary_diagnoses=covid_icd10_codes,
-    #with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
+    with_these_diagnoses=covid_icd10_codes,
+    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    # with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"], # emergency admissions only to exclude incidental COVID
     between=["covid_test_positive_date", "covid_test_positive_date"],
     find_first_match_in_period=True,
     date_format="YYYY-MM-DD",

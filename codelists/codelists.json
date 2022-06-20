@@ -401,6 +401,12 @@
       "url": "https://codelists.opensafely.org/codelist/opensafely/dialysis/2020-07-16/",
       "downloaded_at": "2022-06-20 09:39:29.669950Z",
       "sha": "3404a792805335e5501bdff03bb900c06fed248b"
+    },
+    "opensafely-haematological-cancer.csv": {
+      "id": "opensafely/haematological-cancer/2020-04-15",
+      "url": "https://codelists.opensafely.org/codelist/opensafely/haematological-cancer/2020-04-15/",
+      "downloaded_at": "2022-06-20 21:10:29.160118Z",
+      "sha": "59d65c613a7b984ba46eca8a74eedcc6320609fe"
     }
   }
 }
