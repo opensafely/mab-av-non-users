@@ -363,7 +363,6 @@ ethnicity_primis_snomed_codes = codelist_from_csv(
   category_column="grouping_6_id",
 )
 
-
 # OTHER COVARIATES ----
 
 # Diabetes diagnosis
@@ -383,6 +382,13 @@ hba1c_new_codes = codelist_from_csv(
 # 'old' codes: hba1c in percentage, should not be used in clinical practice but
 #  alas it is sometimes best to use both
 hba1c_old_codes = codelist(["X772q", "XaERo", "XaERp"], system="ctv3")
+
+# Dialysis
+dialysis_codes = codelist_from_csv(
+  "codelists/opensafely-dialysis.csv",
+  system="ctv3",
+  column="CTV3ID",
+)
  
 ## Autism
 autism_nhsd_snomed_codes = codelist_from_csv(

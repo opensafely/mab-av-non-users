@@ -78,6 +78,25 @@ study = StudyDefinition(
       "incidence": 1.0
     },
   ),
+  # Type of positive test
+  covid_test_positive_type=patients.with_test_result_in_sgss(
+    pathogen="SARS-CoV-2",
+    test_result="positive",
+    find_first_match_in_period=True,
+    restrict_to_earliest_specimen_date=True,  # checking if neededß
+    returning="case_category",
+    between=["covid_test_positive_date", "covid_test_positive_date"],
+    return_expectations={
+      "incidence": 1.0,
+      "category": {
+        "ratios": {
+          "LFT_Only": 0.2,
+          "PCR_Only": 0.2,
+          "LFT_WithPCR": 0.6,
+        }
+      },
+    },
+  ),
   # Was patients registered at the time of a positive test?
   registered_eligible=patients.registered_as_of("covid_test_positive_date"),
   # Was patient alive?
@@ -1331,6 +1350,29 @@ study = StudyDefinition(
       },
       "incidence": 1.0,
     },
+  ),
+  # Chronic obstructive pulmonary disease
+  copd=patients.with_these_clinical_events(
+    chronic_respiratory_dis_codes,  # imported from codelists.py
+    returning="binary_flag",
+    on_or_before="covid_test_positive_date",
+    find_last_match_in_period=True,
+  ),
+  # Chronic heart disease
+  chronic_cardiac_disease=patients.with_these_clinical_events(
+    chronic_cardiac_dis_codes,  # imported from codelists.py
+    returning="binary_flag",
+    on_or_before="covid_test_positive_date",
+    find_last_match_in_period=True,
+  ),
+  # Dialysis
+  dialysis=patients.with_these_clinical_events(
+    dialysis_codes,  # imported from codelists.py
+    returning="binary_flag",
+    on_or_before="index_date",
+    find_last_match_in_period=True,
+    include_date_of_match=True,  # generates dialysis_date
+    date_format="YYYY-MM-DD",
   ),
   
   # COVID VARIENT ----

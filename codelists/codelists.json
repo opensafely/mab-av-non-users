@@ -395,6 +395,12 @@
       "url": "https://codelists.opensafely.org/codelist/opensafely/glycated-haemoglobin-hba1c-tests-ifcc/6d7287f8/",
       "downloaded_at": "2022-06-14 15:03:32.219343Z",
       "sha": "cd4f06e53ae5eb4c8e16f8f0c0911a417aeba94a"
+    },
+    "opensafely-dialysis.csv": {
+      "id": "opensafely/dialysis/2020-07-16",
+      "url": "https://codelists.opensafely.org/codelist/opensafely/dialysis/2020-07-16/",
+      "downloaded_at": "2022-06-20 09:39:29.669950Z",
+      "sha": "3404a792805335e5501bdff03bb900c06fed248b"
     }
   }
 }
