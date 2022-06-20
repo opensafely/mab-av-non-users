@@ -1,42 +1,34 @@
 # IMPORT STATEMENTS ----
-
-## Import code building blocks from cohort extractor package
+# Import code building blocks from cohort extractor package
 from cohortextractor import (
   StudyDefinition,
   patients,
   filter_codes_by_category,
   combine_codelists,
 )
-
-## Import codelists from codelist.py (which pulls them from the codelist
+# Import codelists from codelist.py (which pulls them from the codelist
 # folder)
 from codelists import *
-
-# DEFINE STUDY POPULATION ----
-
-## Define study time variables
-# Import config variables
+# Define study time variables by importing study-dates
 # Import json module
 import json
 with open('lib/design/study-dates.json', 'r') as f:
     study_dates = json.load(f)
-
 start_date = study_dates["start_date"]
 end_date = study_dates["end_date"]
 
-## Define study population and variables
+# DEFINE STUDY POPULATION ----
+# Define study population and variables
 study = StudyDefinition(
 
   # PRELIMINARIES ----
-
-  ## Configure the expectations framework
+  # Configure the expectations framework
   default_expectations={
     "date": {"earliest": "2021-11-01", "latest": "today"},
     "rate": "uniform",
     "incidence": 0.05,
-  },
-
-  ## Define index date
+  }, 
+  # Define index date
   index_date=start_date,
 
   # POPULATION ----
@@ -60,6 +52,7 @@ study = StudyDefinition(
   ),
 
   # MAIN ELIGIBILITY - FIRST POSITIVE SARS-CoV-2 TEST IN PERIOD ----
+  # Positive test yes/no
   covid_test_positive=patients.with_test_result_in_sgss(
     pathogen="SARS-CoV-2",
     test_result="positive",
@@ -71,7 +64,7 @@ study = StudyDefinition(
       "incidence": 1.0
     },
   ),
-
+  # Date of positive test
   covid_test_positive_date=patients.with_test_result_in_sgss(
     pathogen="SARS-CoV-2",
     test_result="positive",
@@ -85,11 +78,17 @@ study = StudyDefinition(
       "incidence": 1.0
     },
   ),
+  # Was patients registered at the time of a positive test?
+  registered_eligible=patients.registered_as_of("covid_test_positive_date"),
+  # Was patient alive?
+  has_died=patients.died_from_any_cause(
+    on_or_before="covid_test_positive_date - 1 day",
+    returning="binary_flag",
+  ),
 
   # TREATMENT - NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
-  ## Paxlovid
+  # Paxlovid
   paxlovid_covid_therapeutics=patients.with_covid_therapeutics(
-    # with_these_statuses=["Approved", "Treatment Complete"],
     with_these_therapeutics="Paxlovid",
     with_these_indications="non_hospitalised",
     between=["covid_test_positive_date", end_date],
@@ -101,9 +100,8 @@ study = StudyDefinition(
       "incidence": 0.05
     },
   ),
-  ## Sotrovimab
+  # Sotrovimab
   sotrovimab_covid_therapeutics=patients.with_covid_therapeutics(
-    # with_these_statuses=["Approved", "Treatment Complete"],
     with_these_therapeutics="Sotrovimab",
     with_these_indications="non_hospitalised",
     between=["covid_test_positive_date", end_date],
@@ -115,9 +113,8 @@ study = StudyDefinition(
       "incidence": 0.2
     },
   ),
-  ## Remdesivir
+  # Remdesivir
   remdesivir_covid_therapeutics=patients.with_covid_therapeutics(
-    # with_these_statuses=["Approved", "Treatment Complete"],
     with_these_therapeutics="Remdesivir",
     with_these_indications="non_hospitalised",
     between=["covid_test_positive_date", end_date],
@@ -129,9 +126,8 @@ study = StudyDefinition(
       "incidence": 0.2
     },
   ),
-  ## Molnupiravir
+  # Molnupiravir
   molnupiravir_covid_therapeutics=patients.with_covid_therapeutics(
-    # with_these_statuses=["Approved", "Treatment Complete"],
     with_these_therapeutics="Molnupiravir",
     with_these_indications="non_hospitalised",
     between=["covid_test_positive_date", end_date],
@@ -143,9 +139,8 @@ study = StudyDefinition(
       "incidence": 0.2
     },
   ),
-  ## Casirivimab and imdevimab
+  # Casirivimab and imdevimab
   casirivimab_covid_therapeutics=patients.with_covid_therapeutics(
-    # with_these_statuses=["Approved", "Treatment Complete"],
     with_these_therapeutics="Casirivimab and imdevimab",
     with_these_indications="non_hospitalised",
     between=["covid_test_positive_date", end_date],
@@ -157,7 +152,7 @@ study = StudyDefinition(
       "incidence": 0.05
     },
   ),
-  ## Date treated
+  # Date treated
   date_treated=patients.minimum_of(
     "paxlovid_covid_therapeutics",
     "sotrovimab_covid_therapeutics",
@@ -167,9 +162,8 @@ study = StudyDefinition(
   ),
 
   # PREVIOUS TREATMENT - NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
-  ## Paxlovid
+  # Paxlovid
   paxlovid_covid_prev=patients.with_covid_therapeutics(
-    # with_these_statuses=["Approved", "Treatment Complete"],
     with_these_therapeutics="Paxlovid",
     with_these_indications="non_hospitalised",
     on_or_after="covid_test_positive_date - 1 day",
@@ -178,9 +172,8 @@ study = StudyDefinition(
       "incidence": 0.01
     },
   ),
-  ## Sotrovimab
+  # Sotrovimab
   sotrovimab_covid_prev=patients.with_covid_therapeutics(
-    # with_these_statuses=["Approved", "Treatment Complete"],
     with_these_therapeutics="Sotrovimab",
     with_these_indications="non_hospitalised",
     on_or_before="covid_test_positive_date - 1 day",
@@ -189,9 +182,8 @@ study = StudyDefinition(
       "incidence": 0.01
     },
   ),
-  ## Remdesivir
+  # Remdesivir
   remdesivir_covid_prev=patients.with_covid_therapeutics(
-    # with_these_statuses=["Approved", "Treatment Complete"],
     with_these_therapeutics="Remdesivir",
     with_these_indications="non_hospitalised",
     on_or_before="covid_test_positive_date - 1 day",
@@ -200,21 +192,19 @@ study = StudyDefinition(
       "incidence": 0.01
     },
   ),
-  ## Molnupiravir
+  # Molnupiravir
   molnupiravir_covid_prev=patients.with_covid_therapeutics(
-    # with_these_statuses=["Approved", "Treatment Complete"],
     with_these_therapeutics="Molnupiravir",
     with_these_indications="non_hospitalised",
     on_or_before="covid_test_positive_date - 1 day",
     returning="binary_flag",
     date_format="YYYY-MM-DD",
     return_expectations={
-    "incidence": 0.01
+      "incidence": 0.01
     },
   ),
-  ## Casirivimab and imdevimab
+  # Casirivimab and imdevimab
   casirivimab_covid_prev=patients.with_covid_therapeutics(
-    # with_these_statuses=["Approved", "Treatment Complete"],
     with_these_therapeutics="Casirivimab and imdevimab",
     with_these_indications="non_hospitalised",
     on_or_before="covid_test_positive_date - 1 day",
@@ -223,7 +213,7 @@ study = StudyDefinition(
       "incidence": 0.05
     },
   ),
-  ## previously treated
+  # previously treated
   prev_treated=patients.satisfying(
     """
     paxlovid_covid_prev OR
@@ -238,25 +228,8 @@ study = StudyDefinition(
   ),
 
   # OVERALL ELIGIBILITY CRITERIA VARIABLES ----
-
-  ## Inclusion criteria variables
-
-  ### Second positive SARS-CoV-2 test
-  covid_test_positive_date2=patients.with_test_result_in_sgss(
-    pathogen="SARS-CoV-2",
-    test_result="positive",
-    find_first_match_in_period=True,
-    restrict_to_earliest_specimen_date=False,
-    returning="date",
-    date_format="YYYY-MM-DD",
-    between=["covid_test_positive_date + 1 day", "covid_test_positive_date + 30 days"],
-    return_expectations={
-      "date": {"earliest": "2021-12-20"},
-      "incidence": 0.1
-    },
-  ),
-
-  ### Positive covid test last 90 days
+  # Inclusion criteria variables
+  # Positive covid test last 90 days
   covid_positive_prev_90_days=patients.with_test_result_in_sgss(
     pathogen="SARS-CoV-2",
     test_result="positive",
@@ -268,27 +241,26 @@ study = StudyDefinition(
       "incidence": 0.05
     },
   ),
-
-  ### Prior covid hospitalisation last 90 days 
+  # Prior covid hospitalisation last 90 days
   any_covid_hosp_prev_90_days=patients.admitted_to_hospital(
     with_these_diagnoses=covid_icd10_codes,
     with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"], # emergency admissions only to exclude incidental COVID
+    with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"],  # emergency admissions only to exclude incidental COVID
     between=["covid_test_positive_date - 91 days", "covid_test_positive_date - 1 day"],
     returning="binary_flag",
     return_expectations={
       "incidence": 0.05
     },
   ),
-
-  ### Onset of symptoms of COVID-19
+  # Onset of symptoms of COVID-19
   symptomatic_covid_test=patients.with_test_result_in_sgss(
     pathogen="SARS-CoV-2",
     test_result="any",
     returning="symptomatic",
     on_or_after="covid_test_positive_date",
-    find_first_match_in_period=True,
+    find_first_match_in_period=True,  # same record as the record used to
+    # include patient
     restrict_to_earliest_specimen_date=False,
     return_expectations={
       "incidence": 0.1,
@@ -301,25 +273,22 @@ study = StudyDefinition(
       },
     },
   ),
-
-  ### Evidence of symptoms of COVID-19
+  # Evidence of symptoms of COVID-19
   covid_symptoms_snomed=patients.with_these_clinical_events(
     covid_symptoms_snomed_codes,
     returning="date",
+    between=["covid_test_positive_date", "covid_test_positive_date + 5 days"],
     date_format="YYYY-MM-DD",
     find_first_match_in_period=True,
-    on_or_after="covid_test_positive_date",
   ),
-
-  ### Pregnancy
-  ## Sex
+  # Pregnancy
+  # Sex
   sex=patients.sex(
     return_expectations={
       "rate": "universal",
       "category": {"ratios": {"M": 0.49, "F": 0.51}},
     }
   ),
-
   # pregnancy record in last 36 weeks
   preg_36wks_date=patients.with_these_clinical_events(
     pregnancy_primis_codes,
@@ -355,8 +324,7 @@ study = StudyDefinition(
   ),
 
   # CENSORING ----
-
-  ## Death of any cause
+  # Death of any cause
   death_date=patients.died_from_any_cause(
     returning="date_of_death",
     date_format="YYYY-MM-DD",
@@ -366,13 +334,7 @@ study = StudyDefinition(
       "incidence": 0.1
     },
   ),
-
-  has_died=patients.died_from_any_cause(
-    on_or_before="covid_test_positive_date - 1 day",
-    returning="binary_flag",
-  ),
-
-  ## De-registration
+  # De-registration
   dereg_date=patients.date_deregistered_from_all_supported_practices(
     on_or_after="covid_test_positive_date",
     date_format="YYYY-MM-DD",
@@ -382,23 +344,9 @@ study = StudyDefinition(
     },
   ),
 
-  registered_eligible=patients.registered_as_of("covid_test_positive_date"),
-  registered_treated=patients.registered_as_of("date_treated"),
-
   # HIGH RISK GROUPS ----
-
-  ## NHSD ‘high risk’ cohort (codelist to be defined if/when data avaliable)
-  # high_risk_cohort_nhsd=patients.with_these_clinical_events(
-  #   high_risk_cohort_nhsd_codes,
-  #   between=[campaign_start, index_date],
-  #   returning="date",
-  #   date_format="YYYY-MM-DD",
-  #   find_first_match_in_period=True,
-  # ),
-
-  ## Blueteq ‘high risk’ cohort
+  # Blueteq ‘high risk’ cohort
   high_risk_cohort_covid_therapeutics=patients.with_covid_therapeutics(
-    #with_these_statuses=["Approved", "Treatment Complete"],
     with_these_therapeutics=["Sotrovimab", "Molnupiravir","Casirivimab and imdevimab", "Paxlovid", "Remdesivir"],
     with_these_indications="non_hospitalised",
     on_or_after="covid_test_positive_date",
@@ -426,8 +374,8 @@ study = StudyDefinition(
       },
     },
   ),
-
-  ## Down's syndrome
+  # Definition of high risk using regular codelists
+  # Down's syndrome
   downs_syndrome_nhsd_snomed=patients.with_these_clinical_events(
     downs_syndrome_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
@@ -436,7 +384,6 @@ study = StudyDefinition(
       "incidence": 0.05
     },
   ),
-
   downs_syndrome_nhsd_icd10=patients.admitted_to_hospital(
     returning="binary_flag",
     on_or_before="covid_test_positive_date",
@@ -445,15 +392,13 @@ study = StudyDefinition(
       "incidence": 0.05
     },
   ),
-
   downs_syndrome_nhsd=patients.satisfying(
     "downs_syndrome_nhsd_snomed OR downs_syndrome_nhsd_icd10",
     return_expectations={
       "incidence": 0.05,
     },
   ),
- 
-  ## Solid cancer
+  # Solid cancer
   cancer_opensafely_snomed=patients.with_these_clinical_events(
     combine_codelists(
       non_haematological_cancer_opensafely_snomed_codes,
@@ -466,8 +411,7 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-
-  ## Haematological diseases
+  # Haematological diseases
   haematopoietic_stem_cell_transplant_nhsd_snomed=patients.with_these_clinical_events(
     haematopoietic_stem_cell_transplant_nhsd_snomed_codes,
     between=["covid_test_positive_date - 12 months", "covid_test_positive_date"],
@@ -476,7 +420,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-
   haematopoietic_stem_cell_transplant_nhsd_icd10=patients.admitted_to_hospital(
     returning="binary_flag",
     between=["covid_test_positive_date - 12 months", "covid_test_positive_date"],
@@ -486,7 +429,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-
   haematopoietic_stem_cell_transplant_nhsd_opcs4=patients.admitted_to_hospital(
     returning="binary_flag",
     between=["covid_test_positive_date - 12 months", "covid_test_positive_date"],
@@ -495,7 +437,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-
   haematological_malignancies_nhsd_snomed=patients.with_these_clinical_events(
     haematological_malignancies_nhsd_snomed_codes,
     between=["covid_test_positive_date - 24 months", "covid_test_positive_date"],
@@ -504,7 +445,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-
   haematological_malignancies_nhsd_icd10=patients.admitted_to_hospital(
     returning="binary_flag",
     between=["covid_test_positive_date - 24 months", "covid_test_positive_date"],
@@ -513,7 +453,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-
   sickle_cell_disease_nhsd_snomed=patients.with_these_clinical_events(
     sickle_cell_disease_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
@@ -522,7 +461,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-
   sickle_cell_disease_nhsd_icd10=patients.admitted_to_hospital(
     returning="binary_flag",
     on_or_before="covid_test_positive_date",
@@ -531,7 +469,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-
   haematological_disease_nhsd=patients.satisfying(
     """
     haematopoietic_stem_cell_transplant_nhsd_snomed OR
@@ -546,8 +483,7 @@ study = StudyDefinition(
       "incidence": 0.05,
     },
   ),
-
-  ## Renal disease
+  # Renal disease
   ckd_stage_5_nhsd_snomed=patients.with_these_clinical_events(
     ckd_stage_5_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
@@ -556,7 +492,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-
   ckd_stage_5_nhsd_icd10=patients.admitted_to_hospital(
     returning="binary_flag",
     on_or_before="covid_test_positive_date",
@@ -565,15 +500,13 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-
   ckd_stage_5_nhsd=patients.satisfying(
     "ckd_stage_5_nhsd_snomed OR ckd_stage_5_nhsd_icd10",
     return_expectations={
       "incidence": 0.05
     },
   ),
-
-  ## Liver disease
+  # Liver disease
   liver_disease_nhsd_snomed=patients.with_these_clinical_events(
     liver_disease_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
@@ -582,7 +515,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-
   liver_disease_nhsd_icd10=patients.admitted_to_hospital(
     returning="binary_flag",
     on_or_before="covid_test_positive_date",
@@ -591,15 +523,13 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-
   liver_disease_nhsd=patients.satisfying(
     "liver_disease_nhsd_snomed OR liver_disease_nhsd_icd10",
     return_expectations={
       "incidence": 0.05
     },
   ),
-
-  ## Immune-mediated inflammatory disorders (IMID)
+  # Immune-mediated inflammatory disorders (IMID)
   immunosuppresant_drugs_nhsd=patients.with_these_medications(
     codelist=combine_codelists(
       immunosuppresant_drugs_dmd_codes, 
@@ -610,7 +540,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-
   oral_steroid_drugs_nhsd=patients.with_these_medications(
     codelist=combine_codelists(
       oral_steroid_drugs_dmd_codes,
@@ -621,15 +550,13 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   imid_nhsd=patients.satisfying(
     "immunosuppresant_drugs_nhsd OR oral_steroid_drugs_nhsd",
     return_expectations={
       "incidence": 0.05
     },
   ),
-  
-  ## Primary immune deficiencies
+  # Primary immune deficiencies
   immunosupression_nhsd=patients.with_these_clinical_events(
     immunosupression_nhsd_codes,
     on_or_before="covid_test_positive_date",
@@ -638,8 +565,7 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
-  ## HIV/AIDs
+  # HIV/AIDs
   hiv_aids_nhsd_snomed=patients.with_these_clinical_events(
     hiv_aids_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
@@ -648,7 +574,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   hiv_aids_nhsd_icd10=patients.admitted_to_hospital(
     returning="binary_flag",
     on_or_before="covid_test_positive_date",
@@ -657,15 +582,13 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-
   hiv_aids_nhsd=patients.satisfying(
     "hiv_aids_nhsd_snomed OR hiv_aids_nhsd_icd10",
     return_expectations={
       "incidence": 0.05
     },
   ),
-  
-  ## Solid organ transplant
+  # Solid organ transplant
   solid_organ_transplant_nhsd_snomed=patients.with_these_clinical_events(
     solid_organ_transplant_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
@@ -674,7 +597,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   solid_organ_transplant_nhsd_opcs4=patients.admitted_to_hospital(
     returning="binary_flag",
     on_or_before="covid_test_positive_date",
@@ -683,7 +605,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   transplant_all_y_codes_opcs4=patients.admitted_to_hospital(
     returning="date_admitted",
     with_these_procedures=replacement_of_organ_transplant_nhsd_opcs4_codes,
@@ -696,7 +617,6 @@ study = StudyDefinition(
       "incidence": 0.01,
     },
   ),
-  
   transplant_thymus_opcs4=patients.admitted_to_hospital(
     returning="binary_flag",
     with_these_procedures=thymus_gland_transplant_nhsd_opcs4_codes,
@@ -705,7 +625,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   transplant_conjunctiva_y_code_opcs4=patients.admitted_to_hospital(
     returning="date_admitted",
     with_these_procedures=conjunctiva_y_codes_transplant_nhsd_opcs4_codes,
@@ -718,7 +637,6 @@ study = StudyDefinition(
       "incidence": 0.01,
     },
   ),
-  
   transplant_conjunctiva_opcs4=patients.admitted_to_hospital(
     returning="binary_flag",
     with_these_procedures=conjunctiva_transplant_nhsd_opcs4_codes,
@@ -727,7 +645,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   transplant_stomach_opcs4=patients.admitted_to_hospital(
     returning="binary_flag",
     with_these_procedures=stomach_transplant_nhsd_opcs4_codes,
@@ -736,7 +653,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   transplant_ileum_1_Y_codes_opcs4=patients.admitted_to_hospital(
     returning="date_admitted",
     with_these_procedures=ileum_1_y_codes_transplant_nhsd_opcs4_codes,
@@ -749,7 +665,6 @@ study = StudyDefinition(
       "incidence": 0.01,
     },
   ),
-  
   transplant_ileum_2_Y_codes_opcs4=patients.admitted_to_hospital(
     returning="date_admitted",
     with_these_procedures=ileum_1_y_codes_transplant_nhsd_opcs4_codes,
@@ -762,7 +677,6 @@ study = StudyDefinition(
       "incidence": 0.01,
     },
   ),
-
   transplant_ileum_1_opcs4=patients.admitted_to_hospital(
     returning="binary_flag",
     with_these_procedures=ileum_1_transplant_nhsd_opcs4_codes,
@@ -771,7 +685,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   transplant_ileum_2_opcs4=patients.admitted_to_hospital(
     returning="binary_flag",
     with_these_procedures=ileum_2_transplant_nhsd_opcs4_codes,
@@ -780,7 +693,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   solid_organ_transplant_nhsd=patients.satisfying(
     """
     solid_organ_transplant_nhsd_snomed OR
@@ -795,10 +707,8 @@ study = StudyDefinition(
       "incidence": 0.05
     },
   ),
-
-  ## Rare neurological conditions
-  
-  ### Multiple sclerosis
+  # Rare neurological conditions
+  # Multiple sclerosis
   multiple_sclerosis_nhsd_snomed=patients.with_these_clinical_events(
     multiple_sclerosis_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
@@ -807,7 +717,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   multiple_sclerosis_nhsd_icd10=patients.admitted_to_hospital(
     returning="binary_flag",
     on_or_before="covid_test_positive_date",
@@ -816,15 +725,13 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   multiple_sclerosis_nhsd=patients.satisfying(
     "multiple_sclerosis_nhsd_snomed OR multiple_sclerosis_nhsd_icd10",
     return_expectations={
       "incidence": 0.05
     },
   ),
-  
-  ### Motor neurone disease
+  # Motor neurone disease
   motor_neurone_disease_nhsd_snomed=patients.with_these_clinical_events(
     motor_neurone_disease_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
@@ -833,7 +740,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   motor_neurone_disease_nhsd_icd10=patients.admitted_to_hospital(
     returning="binary_flag",
     on_or_before="covid_test_positive_date",
@@ -842,15 +748,13 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   motor_neurone_disease_nhsd=patients.satisfying(
     "motor_neurone_disease_nhsd_snomed OR motor_neurone_disease_nhsd_icd10",
     return_expectations={
       "incidence": 0.05
     },
   ),
-  
-  ### Myasthenia gravis
+  # Myasthenia gravis
   myasthenia_gravis_nhsd_snomed=patients.with_these_clinical_events(
     myasthenia_gravis_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
@@ -859,7 +763,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   myasthenia_gravis_nhsd_icd10=patients.admitted_to_hospital(
     returning="binary_flag",
     on_or_before="covid_test_positive_date",
@@ -868,15 +771,13 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   myasthenia_gravis_nhsd=patients.satisfying(
     "myasthenia_gravis_nhsd_snomed OR myasthenia_gravis_nhsd_icd10",
     return_expectations={
       "incidence": 0.05
     },
   ),
-  
-  ### Huntington’s disease
+  # Huntington’s disease
   huntingtons_disease_nhsd_snomed=patients.with_these_clinical_events(
     huntingtons_disease_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
@@ -885,7 +786,6 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   huntingtons_disease_nhsd_icd10=patients.admitted_to_hospital(
     returning="binary_flag",
     on_or_before="covid_test_positive_date",
@@ -894,15 +794,13 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
   huntingtons_disease_nhsd=patients.satisfying(
     "huntingtons_disease_nhsd_snomed OR huntingtons_disease_nhsd_icd10",
     return_expectations={
       "incidence": 0.05
     },
-  ),  
-  
-  ## high risk ehr recorded
+  ),
+  # High risk ehr recorded
   high_risk_group=patients.satisfying(
     """
     huntingtons_disease_nhsd OR
@@ -923,20 +821,19 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
+
   # CLINICAL/DEMOGRAPHIC COVARIATES ----
-  
-  ## Age
+  # Age
   age=patients.age_as_of(
     "covid_test_positive_date",
     return_expectations={
       "rate": "universal",
       "int": {"distribution": "population_ages"},
-      "incidence" : 0.9
+      "incidence": 0.9
     },
   ),
-  
-  ## Bmi
+  # Sex is defined in pregnancy section above
+  # Bmi
   # set maximum to avoid any impossibly extreme values being classified as
   # obese
   bmi_value=patients.most_recent_bmi(
@@ -968,7 +865,7 @@ study = StudyDefinition(
       "incidence": 1.0,
     },
   ),
-  ## Smoking status
+  # Smoking status
   smoking_status=patients.categorised_as(
     {
       "S": "most_recent_smoking_code = 'S'",
@@ -1001,7 +898,7 @@ study = StudyDefinition(
       on_or_before="covid_test_positive_date",
     ),
   ),
-  ## Ethnicity
+  # Ethnicity
   ethnicity_primis=patients.with_these_clinical_events(
     ethnicity_primis_snomed_codes,
     returning="category",
@@ -1044,8 +941,8 @@ study = StudyDefinition(
       "incidence": 1.0,
     },
   ),
-  ## Index of multiple deprivation
-  ## https://docs.opensafely.org/study-def-tricks/#grouping-imd-by-quintile
+  # Index of multiple deprivation
+  # https://docs.opensafely.org/study-def-tricks/#grouping-imd-by-quintile
   imd=patients.address_as_of(
     "covid_test_positive_date",
     returning="index_of_multiple_deprivation",
@@ -1087,32 +984,10 @@ study = StudyDefinition(
       },
     },
   ),
-  ## Region - NHS England 9 regions
+  # Region - NHS England 9 regions
   region_nhs=patients.registered_practice_as_of(
     "covid_test_positive_date",
     returning="nuts1_region_name",
-    return_expectations={
-      "rate": "universal",
-      "category": {
-        "ratios": {
-          "North East": 0.1,
-          "North West": 0.1,
-          "Yorkshire and The Humber": 0.1,
-          "East Midlands": 0.1,
-          "West Midlands": 0.1,
-          "East": 0.1,
-          "London": 0.2,
-          "South West": 0.1,
-          "South East": 0.1,},},
-    },
-  ),
-  region_covid_therapeutics=patients.with_covid_therapeutics(
-    #with_these_statuses=["Approved", "Treatment Complete"],
-    #with_these_therapeutics=["Sotrovimab", "Molnupiravir", "Casirivimab and imdevimab"],
-    with_these_indications="non_hospitalised",
-    on_or_after="covid_test_positive_date",
-    find_first_match_in_period=True,
-    returning="region",
     return_expectations={
       "rate": "universal",
       "category": {
@@ -1161,26 +1036,22 @@ study = StudyDefinition(
     },
   ),
 
-  
   # CLINICAL GROUPS ----
-  
-  ## Autism
+  # Autism
   autism_nhsd=patients.with_these_clinical_events(
     autism_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
     returning="binary_flag",
     return_expectations={"incidence": 0.3}
   ),
-  
-  ## Care home 
+  # Care home
   care_home_primis=patients.with_these_clinical_events(
     care_home_primis_snomed_codes,
     returning="binary_flag",
     on_or_before="covid_test_positive_date",
     return_expectations={"incidence": 0.15,}
   ),
-  
-  ## Dementia
+  # Dementia
   dementia_nhsd=patients.satisfying(
     """
     dementia_all
@@ -1197,8 +1068,7 @@ study = StudyDefinition(
       return_expectations={"incidence": 0.05}
     ),
   ),
-  
-  ## Housebound
+  # Housebound
   housebound_opensafely=patients.satisfying(
     """
     housebound_date
@@ -1224,16 +1094,14 @@ study = StudyDefinition(
       on_or_after="housebound_date",
     ),
   ),
-  
-  ## Learning disability
+  # Learning disability
   learning_disability_primis=patients.with_these_clinical_events(
     wider_ld_primis_snomed_codes,
     on_or_before="covid_test_positive_date",
     returning="binary_flag",
     return_expectations={"incidence": 0.2}
   ),
-  
-  ## Shielded
+  # Shielded
   shielded_primis=patients.satisfying(
     """ 
     severely_clinically_vulnerable
@@ -1243,7 +1111,7 @@ study = StudyDefinition(
     return_expectations={
       "incidence": 0.01,
     },
-    ### SHIELDED GROUP - first flag all patients with "high risk" codes
+    # SHIELDED GROUP - first flag all patients with "high risk" codes
     severely_clinically_vulnerable=patients.with_these_clinical_events(
       high_risk_primis_snomed_codes, # note no date limits set
       find_last_match_in_period=True,
@@ -1254,60 +1122,21 @@ study = StudyDefinition(
       "severely_clinically_vulnerable", 
       date_format  ="YYYY-MM-DD",   
     ),
-    ### NOT SHIELDED GROUP (medium and low risk) - only flag if later than 'shielded'
+    # NOT SHIELDED GROUP (medium and low risk) - only flag if later than 'shielded'
     less_vulnerable=patients.with_these_clinical_events(
       not_high_risk_primis_snomed_codes, 
       on_or_after="date_severely_clinically_vulnerable",
       return_expectations={"incidence": 0.01,},
     ),
-  ),
-  
-  # flag the newly expanded shielding group as of 15 feb (should be a subset of the previous flag)
-  shielded_since_feb_15=patients.satisfying(
-    """
-    severely_clinically_vulnerable_since_feb_15
-    AND NOT new_shielding_status_reduced
-    AND NOT previous_flag
-    """,
-    return_expectations={
-      "incidence": 0.01,
-    },
-    ### SHIELDED GROUP - first flag all patients with "high risk" codes
-    severely_clinically_vulnerable_since_feb_15=patients.with_these_clinical_events(
-      high_risk_primis_snomed_codes, 
-      on_or_after="2021-02-15",
-      find_last_match_in_period=False,
-      return_expectations={"incidence": 0.02,},
-    ),
-    # find date at which the high risk code was added
-    date_vulnerable_since_feb_15=patients.date_of(
-      "severely_clinically_vulnerable_since_feb_15", 
-      date_format="YYYY-MM-DD",   
-    ),
-    # check that patient's shielding status has not since been reduced to a lower risk level 
-    # e.g. due to improved clinical condition of patient
-    new_shielding_status_reduced=patients.with_these_clinical_events(
-      not_high_risk_primis_snomed_codes,
-      on_or_after="date_vulnerable_since_feb_15",
-      return_expectations={"incidence": 0.01,},
-    ),
-    # anyone with a previous flag of any risk level will not be added to the new shielding group
-    previous_flag=patients.with_these_clinical_events(
-      combine_codelists(high_risk_primis_snomed_codes, not_high_risk_primis_snomed_codes),
-      on_or_before="2021-02-14",
-      return_expectations={"incidence": 0.01,},
-    ),
-  ),
-  
-  ### Serious Mental Illness
+  ),  
+  # Serious Mental Illness
   serious_mental_illness_nhsd=patients.with_these_clinical_events(
     serious_mental_illness_nhsd_snomed_codes,
     on_or_before="covid_test_positive_date",
     returning="binary_flag",
     return_expectations={"incidence": 0.1}
   ),
-  
-  ## Sickle cell disease
+  # Sickle cell disease
   sickle_cell_disease_nhsd=patients.satisfying(
     "sickle_cell_disease_nhsd_snomed OR sickle_cell_disease_nhsd_icd10",
     return_expectations={
@@ -1315,7 +1144,7 @@ study = StudyDefinition(
     }, 
   ),
 
-  ## Vaccination status
+  # VACCINATION STATUS ----
   vaccination_status=patients.categorised_as(
     {
       "Un-vaccinated": "DEFAULT",
@@ -1364,7 +1193,7 @@ study = StudyDefinition(
       },
     },
   ),
-  
+  # Date of most recent covid vaccination
   date_most_recent_cov_vac=patients.with_tpp_vaccination_record(
     target_disease_matches="SARS-2 CORONAVIRUS",
     between=["2020-06-08", "covid_test_positive_date"],
@@ -1372,7 +1201,7 @@ study = StudyDefinition(
     returning="date",
     date_format="YYYY-MM-DD"
   ),
- 
+  # Most recent covid covid vaccination
   pfizer_most_recent_cov_vac=patients.with_tpp_vaccination_record(
     product_name_matches="COVID-19 mRNA Vaccine Comirnaty 30micrograms/0.3ml dose conc for susp for inj MDV (Pfizer)",
     between=["date_most_recent_cov_vac", "date_most_recent_cov_vac"],
@@ -1382,9 +1211,8 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ), 
-
   az_most_recent_cov_vac=patients.with_tpp_vaccination_record(
-    product_name_matches="COVID-19 Vac AstraZeneca (ChAdOx1 S recomb) 5x10000000000 viral particles/0.5ml dose sol for inj MDV",
+    product_name_matches="COVID-19 Vaccine Vaxzevria 0.5ml inj multidose vials (AstraZeneca)",
     between=["date_most_recent_cov_vac", "date_most_recent_cov_vac"],
     find_last_match_in_period=True,
     returning="binary_flag",
@@ -1392,7 +1220,6 @@ study = StudyDefinition(
       "incidence": 0.5
     },
   ),
-
   moderna_most_recent_cov_vac=patients.with_tpp_vaccination_record(
     product_name_matches="COVID-19 mRNA Vaccine Spikevax (nucleoside modified) 0.1mg/0.5mL dose disp for inj MDV (Moderna)",
     between=["date_most_recent_cov_vac", "date_most_recent_cov_vac"],
@@ -1404,7 +1231,7 @@ study = StudyDefinition(
   ),
 
   # CLINICAL CO-MORBIDITIES TBC ----
-    # Diabetes
+  # Diabetes
   diabetes=patients.with_these_clinical_events(
     diabetes_codes,  # imported from codelists.py
     returning="binary_flag",
@@ -1507,8 +1334,7 @@ study = StudyDefinition(
   ),
   
   # COVID VARIENT ----
-  
-  ## S-Gene Target Failure
+  # S-Gene Target Failure
   sgtf=patients.with_test_result_in_sgss(
     pathogen="SARS-CoV-2",
     test_result="positive",
@@ -1520,8 +1346,7 @@ study = StudyDefinition(
       "category": {"ratios": {"0": 0.7, "1": 0.1, "9": 0.1, "": 0.1}},
     },
   ), 
-  
-  ## Variant
+  # Variant
   variant=patients.with_test_result_in_sgss(
     pathogen="SARS-CoV-2",
     test_result="positive",
@@ -1534,11 +1359,9 @@ study = StudyDefinition(
       "category": {"ratios": {"B.1.617.2": 0.7, "B.1.1.7+E484K": 0.1, "No VOC detected": 0.1, "Undetermined": 0.1}},
     },
   ), 
-   
-  
-  # OUTCOMES ----
-  
-  ## COVID re-infection
+
+  # OUTCOMES ----  
+  # COVID re-infection
   covid_positive_test_30_days_post_pos_test=patients.with_test_result_in_sgss(
     pathogen="SARS-CoV-2",
     test_result="positive",
@@ -1553,8 +1376,7 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  
-  ## COVID-related hospitalisation 
+  # COVID-related hospitalisation 
   # extract multiple COVID hosp events per patient because the first hosp may be for receiving sotro or day cases (Day 0 and 1):
   covid_hosp_outcome_date0=patients.admitted_to_hospital(
     returning="date_admitted",
