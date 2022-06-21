@@ -64,3 +64,5 @@ opensafely/hypertension-snomed/2020-04-28/
 opensafely/smoking-clear/2020-04-29/
 opensafely/diabetes/2020-04-15
 opensafely/glycated-haemoglobin-hba1c-tests-ifcc/6d7287f8
+opensafely/dialysis/2020-07-16
+opensafely/haematological-cancer/2020-04-15
