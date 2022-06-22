@@ -13,7 +13,7 @@ library('arrow')
 library('reshape2')
 
 ## Import custom user functions
-source(here::here("lib", "functions.R"))
+source(here::here("lib", "functions", "functions.R"))
 
 ## Print session info to metadata log file
 sessionInfo()
