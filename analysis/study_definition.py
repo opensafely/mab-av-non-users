@@ -1353,12 +1353,12 @@ study = StudyDefinition(
   # If a patient is admitted and discharged on the same day OR one day apart AND patient 
   # received sotrovimab --> this event should not be counted as an outcome
   # COVID-related hospitalisation is here defined as icd10 code mentioned on the EHR (primary or underlying)
-  **hosp_admission_loop_over_days(days={"0", "1", "2", "3", "4", "5", "6"}, prefix="covid", diagnoses=covid_icd10_codes, primary_diagnoses=None),
+  **hosp_admission_loop_over_days(days={"0", "1", "2", "3", "4", "5", "6"}, prefix="covid", diagnoses=None, primary_diagnoses=covid_icd10_codes),
   # Day 8 - 28ad
   # assuming no day case admission after day 7
   covid_hosp_admission_first_date7_27=patients.admitted_to_hospital(
     returning="date_admitted",
-    with_these_diagnoses=covid_icd10_codes,
+    with_these_primary_diagnoses=covid_icd10_codes,
     with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
     between=["covid_test_positive_date + 7 days", "covid_test_positive_date + 27 days"],
@@ -1377,7 +1377,7 @@ study = StudyDefinition(
   # max admission for sotro is day 6 (2 days after day 4), so max discharge is day 7
   covid_hosp_discharge_first_date0_7=patients.admitted_to_hospital(
     returning="date_discharged",
-    with_these_diagnoses=covid_icd10_codes,
+    with_these_primary_diagnoses=covid_icd10_codes,
     with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
     between=["covid_hosp_admission_date0", "covid_hosp_admission_date0 + 7 days"],
@@ -1391,10 +1391,10 @@ study = StudyDefinition(
   ),
   # mention of mabs procedure
   # --> if so, hospital admission should not be counted as outcome
-  # (could this occur if patient gets mabs in hospital????)
+  # (could this occur if patient gets mabs while hospitalised????)
   covid_hosp_date_mabs_procedure=patients.admitted_to_hospital(
     returning="date_admitted",
-    with_these_diagnoses=covid_icd10_codes,
+    with_these_primary_diagnoses=covid_icd10_codes,
     with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
     with_these_procedures=mabs_procedure_codes,
