@@ -17,6 +17,36 @@ with open('lib/design/study-dates.json', 'r') as f:
 start_date = study_dates["start_date"]
 end_date = study_dates["end_date"]
 
+
+# Function to create variable covid_hosp_admission_date
+def make_hosp_admission(day, prefix, diagnoses, primary_diagnoses):
+    return{
+        f"{prefix}_hosp_admission_date{day}": (
+            patients.admitted_to_hospital(
+                returning="date_admitted",
+                with_these_diagnoses=diagnoses,
+                with_these_primary_diagnoses=primary_diagnoses,
+                with_patient_classification=["1"],  # ordinary admissions only - exclude day cases and regular attenders
+                # see https://docs.opensafely.org/study-def-variables/#sus for more info
+                between=[f"covid_test_positive_date + {day} days", f"covid_test_positive_date + {day} days"],
+                find_first_match_in_period=True,
+                date_format="YYYY-MM-DD",
+                return_expectations={
+                  "date": {"earliest": "2022-02-16"},
+                  "rate": "uniform",
+                  "incidence": 0.1},
+            )
+        )
+    }
+
+
+def hosp_admission_loop_over_days(days, prefix, diagnoses, primary_diagnoses):
+    variables = {}
+    for day in days:
+        variables.update(make_hosp_admission(day=day, prefix=prefix, diagnoses=diagnoses, primary_diagnoses=primary_diagnoses))
+    return variables
+
+
 # DEFINE STUDY POPULATION ----
 # Define study population and variables
 study = StudyDefinition(
@@ -1238,100 +1268,6 @@ study = StudyDefinition(
     on_or_before="covid_test_positive_date",
     find_last_match_in_period=True,
   ),
-  # variable indicating whether patient has had a recent test yes/no
-  hba1c_flag=patients.with_these_clinical_events(
-    combine_codelists(
-      hba1c_new_codes,
-      hba1c_old_codes
-    ),
-    returning="binary_flag",
-    between=["covid_test_positive_date - 15 months", "covid_test_positive_date"],
-    find_last_match_in_period=True,
-    return_expectations={
-      "incidence": 0.95,
-      },
-    ),
-  # hba1c value in mmol/mol of recent test
-  hba1c_mmol_per_mol=patients.with_these_clinical_events(
-    hba1c_new_codes,  # imported from codelists.py
-    returning="numeric_value",
-    between=["covid_test_positive_date - 15 months", "covid_test_positive_date"],
-    find_last_match_in_period=True,
-    include_date_of_match=True,
-    date_format="YYYY-MM",
-    return_expectations={
-      "date": {"latest": "index_date"},
-      "float": {"distribution": "normal", "mean": 40.0, "stddev": 20},
-      "incidence": 0.95,
-    },
-    ),
-  # hba1c value in % of recent test
-  hba1c_percentage=patients.with_these_clinical_events(
-    hba1c_old_codes,  # imported from codelists.py
-    returning="numeric_value",
-    between=["covid_test_positive_date - 15 months", "covid_test_positive_date"],
-    find_last_match_in_period=True,
-    include_date_of_match=True,
-    date_format="YYYY-MM",
-    return_expectations={
-      "date": {"latest": "index_date"},
-      "float": {"distribution": "normal", "mean": 5, "stddev": 2},
-      "incidence": 0.95,
-    },
-  ),
-  # Subcategorise recent hba1c measures in no recent measure (0); measure
-  # indicating controlled diabetes (1);
-  # measure indicating uncontrolled diabetes (2)
-  hba1c_category=patients.categorised_as(
-    {
-      "0": "DEFAULT",
-      "1": """
-           hba1c_flag AND (hba1c_mmol_per_mol < 58 OR
-           hba1c_percentage < 7.5)
-           """,
-      "2": """
-          hba1c_flag AND (hba1c_mmol_per_mol >= 58 OR
-          hba1c_percentage >= 7.5)
-      """,
-    },
-    return_expectations={
-      "category": {
-        "ratios": {
-          "0": 0.2,
-          "1": 0.4,
-          "2": 0.4
-        }
-      },
-    },
-  ),
-  # Subcategorise diabetes in no diabetes (0); controlled diabetes (1);
-  # uncontrolled diabetes (2);
-  # diabetes with missing recent hba1c measure (3)
-  diabetes_controlled=patients.categorised_as(
-    {
-      "0": "DEFAULT",
-      "1": """
-          diabetes AND hba1c_category = "1"
-          """,
-      "2": """
-          diabetes AND hba1c_category = "2"
-          """,
-      "3": """
-          diabetes AND hba1c_category = "0"
-          """
-    },
-    return_expectations={
-      "category": {
-        "ratios": {
-          "0": 0.8,
-          "1": 0.09,
-          "2": 0.09,
-          "3": 0.02
-        }
-      },
-      "incidence": 1.0,
-    },
-  ),
   # Chronic obstructive pulmonary disease
   copd=patients.with_these_clinical_events(
     chronic_respiratory_dis_codes,  # imported from codelists.py
@@ -1411,122 +1347,18 @@ study = StudyDefinition(
   ), 
 
   # OUTCOMES ----  
-  # COVID-related hospitalisation day 0 (+ve test), 1, 2, 4, 5 or 6 
+  # COVID-related hospitalisation on day 0 (+ve test), 1, 2, 3, 4, 5 or 6 
   # These events are extracted seperately in case patient is admitted twice, and first time was for sotrovimab
   # infusion
   # If a patient is admitted and discharged on the same day OR one day apart AND patient 
-  # received sotrovimab --> this event should not be counted as 
+  # received sotrovimab --> this event should not be counted as an outcome
   # COVID-related hospitalisation is here defined as icd10 code mentioned on the EHR (primary or underlying)
-  # Day 1
-  covid_hosp_outcome_date0=patients.admitted_to_hospital(
-    returning="date_admitted",
-    with_these_diagnoses=covid_icd10_codes,
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_test_positive_date", "covid_test_positive_date"],
-    find_first_match_in_period=True,
-    date_format="YYYY-MM-DD",
-    return_expectations={
-      "date": {"earliest": "2022-02-16"},
-      "rate": "uniform",
-      "incidence": 0.1
-    },
-  ),
-  # Day 2
-  covid_hosp_outcome_date1=patients.admitted_to_hospital(
-    returning="date_admitted",
-    with_these_diagnoses=covid_icd10_codes,
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_test_positive_date + 1 day", "covid_test_positive_date + 1 day"],
-    find_first_match_in_period=True,
-    date_format="YYYY-MM-DD",
-    return_expectations={
-      "date": {"earliest": "2022-02-16"},
-      "rate": "uniform",
-      "incidence": 0.1
-    },
-  ),
-  # Day 3
-  covid_hosp_outcome_date2=patients.admitted_to_hospital(
-    returning="date_admitted",
-    with_these_diagnoses=covid_icd10_codes,
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_test_positive_date + 2 days", "covid_test_positive_date + 2 days"],
-    find_first_match_in_period=True,
-    date_format="YYYY-MM-DD",
-    return_expectations={
-      "date": {"earliest": "2022-02-16"},
-      "rate": "uniform",
-      "incidence": 0.1
-    },
-  ),
-  # Day 4
-  covid_hosp_outcome_date3=patients.admitted_to_hospital(
-    returning="date_admitted",
-    with_these_diagnoses=covid_icd10_codes,
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_test_positive_date + 3 days", "covid_test_positive_date + 3 days"],
-    find_first_match_in_period=True,
-    date_format="YYYY-MM-DD",
-    return_expectations={
-      "date": {"earliest": "2022-02-16"},
-      "rate": "uniform",
-      "incidence": 0.1
-    },
-  ),
-  # Day 5
-  covid_hosp_outcome_date4=patients.admitted_to_hospital(
-    returning="date_admitted",
-    with_these_diagnoses=covid_icd10_codes,
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_test_positive_date + 4 days", "covid_test_positive_date + 4 days"],
-    find_first_match_in_period=True,
-    date_format="YYYY-MM-DD",
-    return_expectations={
-      "date": {"earliest": "2022-02-16"},
-      "rate": "uniform",
-      "incidence": 0.1
-    },
-  ),
-  # Day 6
-  covid_hosp_outcome_date5=patients.admitted_to_hospital(
-    returning="date_admitted",
-    with_these_diagnoses=covid_icd10_codes,
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_test_positive_date + 5 days", "covid_test_positive_date + 5 days"],
-    find_first_match_in_period=True,
-    date_format="YYYY-MM-DD",
-    return_expectations={
-      "date": {"earliest": "2022-02-16"},
-      "rate": "uniform",
-      "incidence": 0.1
-    },
-  ),
-  # Day 7
-  covid_hosp_outcome_date6=patients.admitted_to_hospital(
-    returning="date_admitted",
-    with_these_diagnoses=covid_icd10_codes,
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_test_positive_date + 6 days", "covid_test_positive_date + 6 days"],
-    find_first_match_in_period=True,
-    date_format="YYYY-MM-DD",
-    return_expectations={
-      "date": {"earliest": "2022-02-16"},
-      "rate": "uniform",
-      "incidence": 0.1
-    },
-  ),
-  # Day 8 - 28
+  **hosp_admission_loop_over_days(days={"0", "1", "2", "3", "4", "5", "6"}, prefix="covid", diagnoses=None, primary_diagnoses=covid_icd10_codes),
+  # Day 8 - 28ad
   # assuming no day case admission after day 7
-  covid_hosp_outcome_date8_28=patients.admitted_to_hospital(
+  covid_hosp_admission_first_date7_27=patients.admitted_to_hospital(
     returning="date_admitted",
-    with_these_diagnoses=covid_icd10_codes,
+    with_these_primary_diagnoses=covid_icd10_codes,
     with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
     between=["covid_test_positive_date + 7 days", "covid_test_positive_date + 27 days"],
@@ -1542,12 +1374,13 @@ study = StudyDefinition(
   # return discharge date to (make sure) identify and ignore day cases
   # We only want to know date of first discharge (find_first_match_in_period = TRUE)
   # --> needed to identify day cases for sotrovimab infusions
-  covid_hosp_discharge=patients.admitted_to_hospital(
+  # max admission for sotro is day 6 (2 days after day 4), so max discharge is day 7
+  covid_hosp_discharge_first_date0_7=patients.admitted_to_hospital(
     returning="date_discharged",
-    with_these_diagnoses=covid_icd10_codes,
+    with_these_primary_diagnoses=covid_icd10_codes,
     with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_hosp_outcome_date0", "covid_hosp_outcome_date0 + 6 days"],
+    between=["covid_hosp_admission_date0", "covid_hosp_admission_date0 + 7 days"],
     find_first_match_in_period=True,
     date_format="YYYY-MM-DD",
     return_expectations={
@@ -1558,10 +1391,10 @@ study = StudyDefinition(
   ),
   # mention of mabs procedure
   # --> if so, hospital admission should not be counted as outcome
-  # (could this occur if patient gets mabs in hospital????)
+  # (could this occur if patient gets mabs while hospitalised????)
   covid_hosp_date_mabs_procedure=patients.admitted_to_hospital(
     returning="date_admitted",
-    with_these_diagnoses=covid_icd10_codes,
+    with_these_primary_diagnoses=covid_icd10_codes,
     with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
     with_these_procedures=mabs_procedure_codes,
@@ -1578,106 +1411,10 @@ study = StudyDefinition(
   # All cause hospitalisation (censoring)
   # Day 1 - day 7 extracted seperately in order to being able to identify day cases (those should not be censored)
   # Day 1
-  allcause_hosp_outcome_date0=patients.admitted_to_hospital(
-    returning="date_admitted",
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_test_positive_date", "covid_test_positive_date"],
-    find_first_match_in_period=True,
-    date_format="YYYY-MM-DD",
-    return_expectations={
-      "date": {"earliest": "2022-02-16"},
-      "rate": "uniform",
-      "incidence": 0.1
-    },
-  ),
-  # Day 2
-  allcause_hosp_outcome_date1=patients.admitted_to_hospital(
-    returning="date_admitted",
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_test_positive_date + 1 day", "covid_test_positive_date + 1 day"],
-    find_first_match_in_period=True,
-    date_format="YYYY-MM-DD",
-    return_expectations={
-      "date": {"earliest": "2022-02-16"},
-      "rate": "uniform",
-      "incidence": 0.1
-    },
-  ),
-  # Day 3
-  allcause_hosp_outcome_date2=patients.admitted_to_hospital(
-    returning="date_admitted",
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_test_positive_date + 2 days", "covid_test_positive_date + 2 days"],
-    find_first_match_in_period=True,
-    date_format="YYYY-MM-DD",
-    return_expectations={
-      "date": {"earliest": "2022-02-16"},
-      "rate": "uniform",
-      "incidence": 0.1
-    },
-  ),
-  # Day 4
-  allcause_hosp_outcome_date3=patients.admitted_to_hospital(
-    returning="date_admitted",
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_test_positive_date + 3 days", "covid_test_positive_date + 3 days"],
-    find_first_match_in_period=True,
-    date_format="YYYY-MM-DD",
-    return_expectations={
-      "date": {"earliest": "2022-02-16"},
-      "rate": "uniform",
-      "incidence": 0.1
-    },
-  ),
-  # Day 5
-  allcause_hosp_outcome_date4=patients.admitted_to_hospital(
-    returning="date_admitted",
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_test_positive_date + 4 days", "covid_test_positive_date + 4 days"],
-    find_first_match_in_period=True,
-    date_format="YYYY-MM-DD",
-    return_expectations={
-      "date": {"earliest": "2022-02-16"},
-      "rate": "uniform",
-      "incidence": 0.1
-    },
-  ),
-  # Day 6
-  allcause_hosp_outcome_date5=patients.admitted_to_hospital(
-    returning="date_admitted",
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_test_positive_date + 5 days", "covid_test_positive_date + 5 days"],
-    find_first_match_in_period=True,
-    date_format="YYYY-MM-DD",
-    return_expectations={
-      "date": {"earliest": "2022-02-16"},
-      "rate": "uniform",
-      "incidence": 0.1
-    },
-  ),
-  # Day 7
-  allcause_hosp_outcome_date6=patients.admitted_to_hospital(
-    returning="date_admitted",
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
-    # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_test_positive_date + 6 days", "covid_test_positive_date + 6 days"],
-    find_first_match_in_period=True,
-    date_format="YYYY-MM-DD",
-    return_expectations={
-      "date": {"earliest": "2022-02-16"},
-      "rate": "uniform",
-      "incidence": 0.1
-    },
-  ),
+  **hosp_admission_loop_over_days(days={"0", "1", "2", "3", "4", "5", "6"}, prefix="allcause", diagnoses=None, primary_diagnoses=None),
   # Day 8 - 28
   # assuming no day case admission after day 7
-  allcause_hosp_outcome_date8_28=patients.admitted_to_hospital(
+  allcause_hosp_admission_first_date7_27=patients.admitted_to_hospital(
     returning="date_admitted",
     with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
@@ -1694,11 +1431,11 @@ study = StudyDefinition(
   # return discharge date to (make sure) identify and ignore day cases
   # We only want to know date of first discharge (find_first_match_in_period = TRUE)
   # --> needed to identify day cases for sotrovimab infusions
-  allcause_hosp_discharge=patients.admitted_to_hospital(
+  allcause_hosp_discharge_first_date0_7=patients.admitted_to_hospital(
     returning="date_discharged",
     with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
-    between=["covid_hosp_outcome_date0", "covid_hosp_outcome_date0 + 6 days"],
+    between=["allcause_hosp_admission_date0", "allcause_hosp_admission_date0 + 7 days"],
     find_first_match_in_period=True,
     date_format="YYYY-MM-DD",
     return_expectations={
@@ -1724,10 +1461,11 @@ study = StudyDefinition(
   ),
   # covid related death
   # Patients with ONS-registered death
-  died_ons_covid_flag_any=patients.with_these_codes_on_death_certificate(
+  died_ons_covid_any_date=patients.with_these_codes_on_death_certificate(
     covid_icd10_codes,  # imported from codelists.py
-    returning="binary_flag",
-    between=["index_date", "last_day_of_month(index_date)"],
+    returning="date_of_death",
+    between=["covid_test_positive_date", "covid_test_positive_date + 27 days"],
+    date_format="YYYY-MM-DD",
     match_only_underlying_cause=False,  # boolean for indicating if filters
     # results to only specified cause of death
     return_expectations={
