@@ -55,7 +55,7 @@ data_extract <- read_csv(
     # PREVIOUS TREATMENT - NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
     
     # OVERALL ELIGIBILITY CRITERIA VARIABLES ----
-    symptomatic_covid_test = col_date(format = "%Y-%m-%d"),
+    symptomatic_covid_test = col_character(),
     covid_symptoms_snomed = col_date(format = "%Y-%m-%d"),
     pregnancy = col_logical(),
     
@@ -160,6 +160,7 @@ data_processed <- data_extract2 %>%
     ),
     
     ethnicity = fct_case_when(
+      ethnicity == "0" ~ "Unknown",
       ethnicity == "1" ~ "White",
       ethnicity == "2" ~ "Mixed",
       ethnicity == "3" ~ "Asian or Asian British",
@@ -212,37 +213,41 @@ data_processed <- data_extract2 %>%
     ),
     
     # NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
-    # Treatment assignment window
-    treat_window = covid_test_positive_date + days(5),
+    # Treatment assignment window 'treated within 5 days -> <= 4 days'
+    treat_window = covid_test_positive_date + days(4),
     
-    # Day of treatment
+    # Time-between positive test and day of treatment
     tb_postest_treat = ifelse(!is.na(date_treated), difftime(date_treated, covid_test_positive_date), NA),
     
     # Flag records where treatment date falls in treatment assignment window
     treat_check = ifelse(date_treated >= covid_test_positive_date & date_treated <= treat_window, 1, 0),
     
-    # Treatment strategy sep
-    treatment_strategy_sep = case_when(
+    # Treatment strategy categories
+    treatment_strategy_cat = case_when(
       date_treated == sotrovimab_covid_therapeutics & treat_check == 1 ~ "Sotrovimab",
       date_treated == molnupiravir_covid_therapeutics & treat_check == 1 ~ "Molnupiravir",
       TRUE ~ "Untreated",
     ),
     
     # Treatment strategy overall
-    treatment_strategy_overall = case_when(
-      (date_treated == sotrovimab_covid_therapeutics & treat_check == 1) | (date_treated == molnupiravir_covid_therapeutics & treat_check == 1)  ~ "Sot/Mol",
+    treatment = case_when(
+      (date_treated == sotrovimab_covid_therapeutics & treat_check == 1) | (date_treated == molnupiravir_covid_therapeutics & treat_check == 1)  ~ "Treated",
       TRUE ~ "Untreated",
     ),
     
-    # Identify patients treated with sot and mol on same day
-    treated_sot_mol = ifelse(sotrovimab_covid_therapeutics==molnupiravir_covid_therapeutics, 1,0
+    # Treatment date
+    treatment_date = ifelse(treatment == "Treated", date_treated, NA
     ),
     
-    # TO BE ADDED: Time between symptom onset and treatment
-    #tb_symponset_treat = as.numeric(pmin(as.Date(ifelse(covid_test_positive == 1 & symptomatic_covid_test == "Y", covid_test_positive_date, NA), origin = "1970-01-01"),
-    #                                       covid_symptoms_snomed, na.rm = T) - date_treated),
+    # Identify patients treated with sot and mol on same day
+    treated_sot_mol_same_day = ifelse(sotrovimab_covid_therapeutics==molnupiravir_covid_therapeutics, 1,0
+    ),
     
-
+    # Time-between symptom onset and treatment in those treatead
+    tb_symponset_treat = as.numeric(pmin(base::as.Date(ifelse(symptomatic_covid_test == "Y", covid_test_positive_date, NA), origin = "1970-01-01"),
+                                          covid_symptoms_snomed, na.rm = T) - treatment_date
+    ),
+    
     # OUTCOMES ----
     #earliest of covid_test_positive + 28days
     #dereg_date
@@ -262,8 +267,8 @@ data_processed <- data_extract2 %>%
 ## Apply additional eligibility and exclusion criteria
 data_processed_eligible <- data_processed %>%
   filter(
-    # Patients treated with both sot and mol on the same day 
-    treated_sot_mol  == 0,
+    # Exclude patients treated with both sotrovimab and molnupiravir on the same day 
+    treated_sot_mol_same_day  == 0,
   ) 
 
 cat("#### data_processed ####\n")
