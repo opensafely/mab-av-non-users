@@ -14,6 +14,8 @@ library('reshape2')
 
 ## Import custom user functions
 source(here::here("lib", "functions", "functions.R"))
+source(here::here("lib", "functions", "define_covid_hosp_admissions.R"))
+source(here::here("lib", "functions", "define_allcause_hosp_admissions.R"))
 
 ## Print session info to metadata log file
 sessionInfo()
@@ -253,7 +255,9 @@ data_processed <- data_extract2 %>%
     ## Primary: COVID-19 Hosp + Death (composite)
     # Censor at earliest of 
     
-  ) 
+  ) %>%
+  summarise_covid_admissions() %>%
+  summarise_allcause_admissions()
 
 ## Apply additional eligibility and exclusion criteria
 data_processed_eligible <- data_processed %>%
