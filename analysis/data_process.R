@@ -53,7 +53,7 @@ data_extract <- read_csv(
     # PREVIOUS TREATMENT - NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
     
     # OVERALL ELIGIBILITY CRITERIA VARIABLES ----
-    symptomatic_covid_test = col_date(format = "%Y-%m-%d"),
+    symptomatic_covid_test = col_character(),
     covid_symptoms_snomed = col_date(format = "%Y-%m-%d"),
     pregnancy = col_logical(),
     
@@ -241,9 +241,9 @@ data_processed <- data_extract2 %>%
     ),
     
     # Time-between symptom onset and treatment in those treatead
-    tb_symponset_treat = as.numeric(pmin(as.Date(ifelse(symptomatic_covid_test == "Y", covid_test_positive_date, NA), origin = "1970-01-01"),
-                                          covid_symptoms_snomed, na.rm = T) - treatment_date),
-    
+    tb_symponset_treat = as.numeric(pmin(base::as.Date(ifelse(symptomatic_covid_test == "Y", covid_test_positive_date, NA), origin = "1970-01-01"),
+                                          covid_symptoms_snomed, na.rm = T) - treatment_date
+    ),
     
     # OUTCOMES ----
     #earliest of covid_test_positive + 28days
@@ -263,7 +263,7 @@ data_processed <- data_extract2 %>%
 data_processed_eligible <- data_processed %>%
   filter(
     # Exclude patients treated with both sotrovimab and molnupiravir on the same day 
-    treated_sot_mol  == 0,
+    treated_sot_mol_same_day  == 0,
   ) 
 
 cat("#### data_processed ####\n")
