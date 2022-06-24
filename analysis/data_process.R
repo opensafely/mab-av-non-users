@@ -158,6 +158,7 @@ data_processed <- data_extract2 %>%
     ),
     
     ethnicity = fct_case_when(
+      ethnicity == "0" ~ "Unknown",
       ethnicity == "1" ~ "White",
       ethnicity == "2" ~ "Mixed",
       ethnicity == "3" ~ "Asian or Asian British",
