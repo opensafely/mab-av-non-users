@@ -36,6 +36,7 @@ summarise_allcause_admissions <- function(data){
   #    number of days between first covid admission and discharge because if 
   #    discharge is quickly after admission, this might be the admission for
   #    sotro infusion
+  rowwise() %>%
   mutate(
     allcause_hosp_admission_first =
       first(na.omit(c(allcause_hosp_admission_date0,
@@ -71,7 +72,7 @@ summarise_allcause_admissions <- function(data){
       # NA if one or both NA_Date_
       difftime(allcause_hosp_discharge_first_date0_7,
                allcause_hosp_admission_first_date0_6) %>% as.numeric() 
-  )
+  ) %>% ungroup()
 }
 
 # Function 'add_hosp_admission_outcome' add admissions outcome

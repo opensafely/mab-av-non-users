@@ -51,7 +51,7 @@ dir.create(here(output_dir), showWarnings = FALSE, recursive=TRUE)
 capture.output(
   skimr::skim_without_charts(data),
   file = here(output_dir, paste0(filenamebase, "_skim", ".txt")),
-  split=FALSE
+  split = FALSE
 )
 
 ## list of column types ----

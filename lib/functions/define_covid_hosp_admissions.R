@@ -72,7 +72,7 @@ summarise_covid_admissions <- function(data){
       # NA if one or both NA_Date_
       difftime(covid_hosp_discharge_first_date0_7,
                covid_hosp_admission_first_date0_6) %>% as.numeric() 
-  )
+  ) %>% ungroup()
 }
 
 # Function 'add_hosp_admission_outcome' add admissions outcome
