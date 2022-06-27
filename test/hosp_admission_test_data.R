@@ -1,0 +1,26 @@
+data <- 
+  tibble(
+    covid_test_positive_date = ymd("20211216"),
+    date_treated = ymd("20211218"),
+    covid_hosp_admission_date0 = NA_Date_,
+    covid_hosp_admission_date1 = NA_Date_,
+    covid_hosp_admission_date2 = NA_Date_,
+    covid_hosp_admission_date3 = NA_Date_,
+    covid_hosp_admission_date4 = ymd("20211220"),
+    covid_hosp_admission_date5 = NA_Date_, 
+    covid_hosp_admission_date6 = NA_Date_,
+    covid_hosp_admission_first_date7_27 = ymd("20211225"),
+    covid_hosp_discharge_first_date0_7 = NA_Date_,
+    covid_hosp_date_mabs_procedure = ymd("20211220"),
+    # all cause
+    allcause_hosp_admission_date0 = NA_Date_,
+    allcause_hosp_admission_date1 = NA_Date_,
+    allcause_hosp_admission_date2 = NA_Date_,
+    allcause_hosp_admission_date3 = NA_Date_,
+    allcause_hosp_admission_date4 = NA_Date_,
+    allcause_hosp_admission_date5 = NA_Date_,
+    allcause_hosp_admission_date6 = NA_Date_,
+    allcause_hosp_admission_first_date7_27 = NA_Date_,
+    allcause_hosp_discharge_first_date0_7 = NA_Date_,
+    allcause_hosp_date_mabs_procedure = NA_Date_,
+  )
