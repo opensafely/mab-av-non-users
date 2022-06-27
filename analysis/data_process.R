@@ -13,17 +13,18 @@ library('arrow')
 library('reshape2')
 
 ## Import custom user functions
-source(here::here("lib", "functions", "functions.R"))
+source(here::here("lib", "functions", "fct_case_when.R"))
 source(here::here("lib", "functions", "define_covid_hosp_admissions.R"))
 source(here::here("lib", "functions", "define_allcause_hosp_admissions.R"))
+source(here::here("lib", "functions", "define_status_and_fu_all.R"))
+source(here::here("lib", "functions", "define_status_and_fu_primary.R"))
+source(here::here("lib", "functions", "define_status_and_fu_secondary.R"))
 
 ## Print session info to metadata log file
 sessionInfo()
 
 ## Print variable names
 cat("#### read in data extract ####\n")
-## Read in data and set variable types
-data <- read_csv(here::here("output", "input.csv.gz"))
 
 data_extract <- read_csv(
   here::here("output", "input.csv.gz"),
@@ -38,7 +39,7 @@ data_extract <- read_csv(
     ethnicity = col_character(),
     imdQ5 = col_character(),
     region_nhs = col_character(),
-    stp = col_character(),
+    stp = col_factor(),
     rural_urban = col_character(),
     
     # MAIN ELIGIBILITY - FIRST POSITIVE SARS-CoV-2 TEST IN PERIOD ----
@@ -64,7 +65,7 @@ data_extract <- read_csv(
     dereg_date = col_date(format = "%Y-%m-%d"),
     
     # HIGH RISK GROUPS ----
-    high_risk_cohort_covid_therapeutics = col_character(),
+    high_risk_cohort_covid_therapeutics = col_factor(),
     huntingtons_disease_nhsd = col_logical() , 
     myasthenia_gravis_nhsd = col_logical() , 
     motor_neurone_disease_nhsd = col_logical() , 
@@ -80,7 +81,7 @@ data_extract <- read_csv(
     downs_syndrome_nhsd  = col_logical(), 
 
     # CLINICAL/DEMOGRAPHIC COVARIATES ----
-    diabetes = col_character(),
+    diabetes = col_logical(),
     bmi = col_character(),
     smoking_status = col_character(),
     copd = col_logical(),
@@ -90,15 +91,15 @@ data_extract <- read_csv(
     haem_cancer = col_logical(),
     
     # VACCINATION ----
-    vaccination_status = col_character(),
+    vaccination_status = col_factor(),
     date_most_recent_cov_vac = col_date(format = "%Y-%m-%d"),
     pfizer_most_recent_cov_vac = col_logical(),
     az_most_recent_cov_vac = col_logical(),
     moderna_most_recent_cov_vac = col_logical(),
     
     # VARIANT ----
-    sgtf = col_character(),
-    variant = col_character(),
+    sgtf = col_factor(),
+    variant = col_factor(),
     
     # OUTCOMES ----
     # covid specific
@@ -125,32 +126,14 @@ data_extract <- read_csv(
     allcause_hosp_date_mabs_procedure = col_date(format = "%Y-%m-%d"),
     # death
     died_ons_covid_any_date = col_date(format = "%Y-%m-%d")
-),
-  na = character(), # more stable to convert to missing later
+  ),
 )
-
-data_extract2 <- data_extract %>%
-  mutate(across(
-    .cols = where(is.character),
-    .fns = ~na_if(.x, "")
-  )) %>%
-  # Convert numerics and integers but not id variables to NAs if 0
-  mutate(across(
-    .cols = c(where(is.numeric), -ends_with("_id")), 
-    .fns = ~na_if(.x, 0)
-  )) %>%
-  # Converts TRUE/FALSE to 1/0
-  mutate(across(
-    where(is.logical),
-    ~.x*1L 
-  )) %>%
-  arrange(patient_id) 
 
 # data cleaning
 cat("#### data cleaning ####\n")
 
 ## Format columns (i.e, set factor levels)
-data_processed <- data_extract2 %>%
+data_processed <- data_extract %>%
   mutate(
     # Cinic/demo variables -----
     sex = fct_case_when(
@@ -199,9 +182,6 @@ data_processed <- data_extract2 %>%
       #TRUE ~ "Unknown",
       TRUE ~ NA_character_),
     
-    # STP
-    stp = as.factor(stp),
-    
     # Rural/urban
     rural_urban = fct_case_when(
       rural_urban %in% c(1:2) ~ "Urban - conurbation",
@@ -217,57 +197,96 @@ data_processed <- data_extract2 %>%
     treat_window = covid_test_positive_date + days(4),
     
     # Time-between positive test and day of treatment
-    tb_postest_treat = ifelse(!is.na(date_treated), difftime(date_treated, covid_test_positive_date), NA),
+    tb_postest_treat = ifelse(!is.na(date_treated), 
+                              difftime(date_treated, covid_test_positive_date), 
+                              NA),
     
     # Flag records where treatment date falls in treatment assignment window
-    treat_check = ifelse(date_treated >= covid_test_positive_date & date_treated <= treat_window, 1, 0),
+    treat_check = ifelse(date_treated >= covid_test_positive_date & 
+                           date_treated <= treat_window, 
+                         1, 
+                         0),
     
     # Treatment strategy categories
     treatment_strategy_cat = case_when(
-      date_treated == sotrovimab_covid_therapeutics & treat_check == 1 ~ "Sotrovimab",
-      date_treated == molnupiravir_covid_therapeutics & treat_check == 1 ~ "Molnupiravir",
-      TRUE ~ "Untreated",
-    ),
+      date_treated == sotrovimab_covid_therapeutics & 
+        treat_check == 1 ~ "Sotrovimab",
+      date_treated == molnupiravir_covid_therapeutics & 
+        treat_check == 1 ~ "Molnupiravir",
+      TRUE ~ "Untreated"
+    ) %>% as.factor(),
     
     # Treatment strategy overall
     treatment = case_when(
-      (date_treated == sotrovimab_covid_therapeutics & treat_check == 1) | (date_treated == molnupiravir_covid_therapeutics & treat_check == 1)  ~ "Treated",
-      TRUE ~ "Untreated",
-    ),
+      (date_treated == sotrovimab_covid_therapeutics & 
+         treat_check == 1) | 
+        (date_treated == molnupiravir_covid_therapeutics & 
+           treat_check == 1)  ~ "Treated",
+      TRUE ~ "Untreated"
+    ) %>% as.factor(),
     
     # Treatment date
-    treatment_date = ifelse(treatment == "Treated", date_treated, NA
-    ),
+    treatment_date = ifelse(treatment == "Treated", date_treated, NA_Date_),
     
     # Identify patients treated with sot and mol on same day
-    treated_sot_mol_same_day = ifelse(sotrovimab_covid_therapeutics==molnupiravir_covid_therapeutics, 1,0
-    ),
+    treated_sot_mol_same_day = 
+      ifelse(sotrovimab_covid_therapeutics == molnupiravir_covid_therapeutics, 
+             1,
+             0),
     
     # Time-between symptom onset and treatment in those treatead
-    tb_symponset_treat = as.numeric(pmin(base::as.Date(ifelse(symptomatic_covid_test == "Y", covid_test_positive_date, NA), origin = "1970-01-01"),
-                                          covid_symptoms_snomed, na.rm = T) - treatment_date
-    ),
-    
-    # OUTCOMES ----
-    #earliest of covid_test_positive + 28days
-    #dereg_date
-    #death_date
-    #hospitalisation 
-    #primary -> covid only 
-    #secondary -> all-cause
-    
-    # Ignore day cases and mab procedures in day 0/1
-    ## Primary: COVID-19 Hosp + Death (composite)
-    # Censor at earliest of 
-    
+    tb_symponset_treat = 
+      case_when(is.na(date_treated) ~ NA_real_,
+                symptomatic_covid_test == "Y" ~ min(covid_test_positive_date,
+                                                    covid_symptoms_snomed) %>%
+                                                difftime(., date_treated) %>%
+                                                as.numeric()
+                ),
   ) %>%
+  # because makes logic better readable
+  rename(covid_death_date = died_ons_covid_any_date) %>%
+  # add columns first admission in day 0-6, second admission etc. to be used
+  # to define hospital admissions (hosp admissions for sotro treated are
+  # different from the rest as sometimes their admission is just an admission
+  # to get the sotro infusion)
   summarise_covid_admissions() %>%
-  summarise_allcause_admissions()
+  # adds column covid_hosp_admission_date
+  add_covid_hosp_admission_outcome() %>%
+  # idem as explained above for all cause hospitalisation
+  summarise_allcause_admissions() %>%
+  # adds column allcause_hosp_admission_date
+  add_allcause_hosp_admission_outcome() %>%
+  mutate(
+    # Outcome prep --> outcomes are added in add_*_outcome() functions below
+    study_window = covid_test_positive_date + days(27),
+    # make distinction between noncovid death and covid death, since noncovid
+    # death is a censoring event and covid death is an outcome
+    noncovid_death_date = case_when(
+      !is.na(death_date) & is.na(covid_death_date) ~ death_date,
+      TRUE ~ NA_Date_
+    ),
+    # make distinction between noncovid hosp admission and covid hosp
+    # admission, non covid hosp admission is not used as a censoring event in
+    # our study, but we'd like to report how many pt were admitted to the 
+    # hospital for a noncovid-y reason before one of the other events
+    noncovid_hosp_admission_date = case_when(
+      !is.na(allcause_hosp_admission_date) & 
+        is.na(covid_hosp_admission_date) ~ allcause_hosp_admission_date,
+      TRUE ~ NA_Date_
+    ),
+  ) %>%
+  # adds column status_all and fu_all 
+  add_status_and_fu_all() %>%
+  # adds column status_primary and fu_primary
+  add_status_and_fu_primary() %>%
+  # adds column status_secondary and fu_secondary
+  add_status_and_fu_secondary()
 
 ## Apply additional eligibility and exclusion criteria
 data_processed_eligible <- data_processed %>%
   filter(
-    # Exclude patients treated with both sotrovimab and molnupiravir on the same day 
+    # Exclude patients treated with both sotrovimab and molnupiravir on the same
+    # day 
     treated_sot_mol_same_day  == 0,
   ) 
 
@@ -278,6 +297,9 @@ cat("#### data_processed_eligible ####\n")
 print(dim(data_processed_eligible))
 
 # save data
+# note data_processed_eligible is saved as data_processed (where pt treated with
+# sotro and mol on same day are excluded)
+# and data_processed with all patients is not saved to save memory
 fs::dir_create(here::here("output", "data"))
-write_rds(data_processed, here::here("output", "data", "data_processed.rds"), compress = "gz")
-write_csv(data_processed_eligible, here::here("output", "data", "data_processed.csv"))
+write_rds(data_processed_eligible, 
+          here::here("output", "data", "data_processed.rds"))
