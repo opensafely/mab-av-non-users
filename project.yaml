@@ -17,7 +17,6 @@ actions:
     outputs:
       highly_sensitive:
         data: output/data/data_processed.rds
-        csv: output/data/data_processed.csv
 
   data_properties_process:
     run: r:latest analysis/data_properties.R output/data/data_processed.rds output/data_properties
