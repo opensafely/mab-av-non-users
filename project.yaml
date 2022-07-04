@@ -16,11 +16,23 @@ actions:
     needs: [generate_study_population]
     outputs:
       highly_sensitive:
-        data: output/data/data_processed.rds
+        data1: output/data/data_processed_day0.rds
+        data2: output/data/data_processed_day5.rds
 
-  data_properties_process:
-    run: r:latest analysis/data_properties.R output/data/data_processed.rds output/data_properties
+  data_properties_process_day0:
+    run: r:latest analysis/data_properties.R output/data/data_processed_day0.rds output/data_properties
     needs: [data_process]
     outputs:
       moderately_sensitive:
-        cohort: output/data_properties/data_processed*.txt
+        txt1: output/data_properties/data_processed_day0_skim.txt
+        txt2: output/data_properties/data_processed_day0_coltypes.txt
+        txt3: output/data_properties/data_processed_day0_tabulate.txt
+
+  data_properties_process_day5:
+    run: r:latest analysis/data_properties.R output/data/data_processed_day5.rds output/data_properties
+    needs: [data_process]
+    outputs:
+      moderately_sensitive:
+        txt1: output/data_properties/data_processed_day5_skim.txt
+        txt2: output/data_properties/data_processed_day5_coltypes.txt
+        txt3: output/data_properties/data_processed_day5_tabulate.txt

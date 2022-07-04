@@ -288,7 +288,7 @@ data_processed_eligible <- data_processed %>%
     # Exclude patients treated with both sotrovimab and molnupiravir on the same
     # day 
     treated_sot_mol_same_day  == 0,
-  ) 
+  )
 
 cat("#### data_processed ####\n")
 print(dim(data_processed))
@@ -296,10 +296,26 @@ print(dim(data_processed))
 cat("#### data_processed_eligible ####\n")
 print(dim(data_processed_eligible))
 
+data_processed_eligible_day0 <- data_processed_eligible
+
+# in the initial analysis, all patients with an outcome on day 0, 1, 2, 3, or 4,
+# are excluded. [FYI, secondary outcomes are 'dereg', 'allcause_hosp' or
+# 'allcause_death']
+data_processed_eligible_day5 <- 
+  data_processed_eligible %>%
+  filter(fu_secondary > 4)
+
+cat("#### data_processed ####\n")
+print(dim(data_processed_eligible_day0))
+
+cat("#### data_processed_eligible ####\n")
+print(dim(data_processed_eligible_day5))
+
 # save data
-# note data_processed_eligible is saved as data_processed (where pt treated with
-# sotro and mol on same day are excluded)
+# data_processed_eligible_day0 and data_processed_eligible_day5 are saved
 # and data_processed with all patients is not saved to save memory
 fs::dir_create(here::here("output", "data"))
-write_rds(data_processed_eligible, 
-          here::here("output", "data", "data_processed.rds"))
+write_rds(data_processed_eligible_day0, 
+          here::here("output", "data", "data_processed_day0.rds"))
+write_rds(data_processed_eligible_day5, 
+          here::here("output", "data", "data_processed_day5.rds"))
