@@ -111,9 +111,8 @@ add_covid_hosp_admission_outcome <- function(data){
           (!is.na(days_between_first_covid_admission_and_discharge) & 
              between(days_between_first_covid_admission_and_discharge, 0, 1))) ~ 
           covid_hosp_admission_2nd_date0_27,
-        # EXCEPTION 2. check if first admission was not associated with a mabs 
-        # procedure
-        # if so --> use second hospital admission as the outcome (NA if there
+        # EXCEPTION 2. first admission was associated with a mabs procedure
+        # --> use second hospital admission as the outcome (NA if there
         # isnt any)
         (!is.na(covid_hosp_admission_first_date0_6) & 
           covid_hosp_date_mabs_procedure == covid_hosp_admission_first_date0_6) ~ 
