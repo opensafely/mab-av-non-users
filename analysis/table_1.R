@@ -33,8 +33,6 @@ if (args[[1]]=="day0") {
 rounding_threshold = 1
 redaction_threshold = 10
 
-data_label = "day0"
-
 ## Import data
 if (data_label=="day0") {
   data_cohort <- read_rds(here::here("output", "data", "data_processed_day0.rds"))
