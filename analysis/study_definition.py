@@ -274,7 +274,7 @@ study = StudyDefinition(
   # Prior covid hospitalisation last 90 days
   any_covid_hosp_prev_90_days=patients.admitted_to_hospital(
     with_these_diagnoses=covid_icd10_codes,
-    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
+    with_patient_classification=["1"],  # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
     with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"],  # emergency admissions only to exclude incidental COVID
     between=["covid_test_positive_date - 91 days", "covid_test_positive_date - 1 day"],
@@ -282,6 +282,20 @@ study = StudyDefinition(
     return_expectations={
       "incidence": 0.05
     },
+  ),
+  # Admitted to hospital when tested positive
+  in_hospital_when_tested=patients.satisfying(
+   "discharged_date > covid_test_positive_date",
+   discharged_date=patients.admitted_to_hospital(
+      returning="date_discharged",
+      on_or_before="covid_test_positive_date",
+      with_patient_classification=["1"],  # ordinary admissions only - exclude day cases and regular attenders
+      # see https://github.com/opensafely-core/cohort-extractor/pull/497 for codes
+      # see https://docs.opensafely.org/study-def-variables/#sus for more info
+      with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"],  # emergency admissions only to exclude incidental COVID
+      find_last_match_in_period=True,
+   ),
+   return_expectations={"incidence": 0.05}
   ),
   # Onset of symptoms of COVID-19
   symptomatic_covid_test=patients.with_test_result_in_sgss(
