@@ -15,6 +15,9 @@ library('gtsummary')
 library('plyr')
 library('reshape2')
 
+## Import custom user functions
+source(here::here("lib", "functions", "clean_table_names.R"))
+
 ## Import command-line arguments
 args <- commandArgs(trailingOnly=TRUE)
 
@@ -34,10 +37,10 @@ rounding_threshold = 1
 redaction_threshold = 10
 
 ## Import data
-if (data_label=="day0") {
-  data_cohort <- read_rds(here::here("output", "data", "data_processed_day0.rds"))
-} else {
+if (data_label=="day5") {
   data_cohort <- read_rds(here::here("output", "data", "data_processed_day5.rds"))
+} else {
+  data_cohort <- read_rds(here::here("output", "data", "data_processed_day0.rds"))
 }
 
 ## Format data
@@ -84,37 +87,6 @@ counts <- data_cohort %>%
     region_nhs,
     rural_urban
   ) 
-
-## Function to clean table names
-clean_table_names = function(input_table) {
-  # Relabel variables for plotting
-  #input_table$Variable[input_table$Variable=="diabetes"] = "Diabetes"
-
-  # Relabel groups for plotting
-  input_table$Group[input_table$Group=="ageband"] = "Age"
-  input_table$Group[input_table$Group=="treatment_strategy_cat"] = "Treatment Group"
-  input_table$Group[input_table$Group=="sex"] = "Sex"
-  input_table$Group[input_table$Group=="ethnicity"] = "Ethnicity"
-  input_table$Group[input_table$Group=="bmi_group"] = "BMI categorised"
-  input_table$Group[input_table$Group=="imdQ5"] = "IMD"
-  input_table$Group[input_table$Group=="smoking_status"] = "Smoking Status"
-  input_table$Group[input_table$Group=="diabetes"] = "Diabetes"
-  input_table$Group[input_table$Group=="copd"] = "COPD"
-  input_table$Group[input_table$Group=="dialysis"] = "Dialysis"
-  input_table$Group[input_table$Group=="cancer"] = "Cancer"
-  input_table$Group[input_table$Group=="lung_cancer"] = "Lung Cancer"
-  input_table$Group[input_table$Group=="haem_cancer"] = "Haematological Cancer"
-  input_table$Group[input_table$Group=="high_risk_cohort_covid_therapeutics"] = "High Risk Groups"
-  input_table$Group[input_table$Group=="vaccination_status"] = "Vaccination Status"
-  input_table$Group[input_table$Group=="variant"] = "Variant"
-  input_table$Group[input_table$Group=="sgtf"] = "SGTF"
-  input_table$Group[input_table$Group=="rural_urban"] = "Setting"
-  input_table$Group[input_table$Group=="region_nhs"] = "Region"
-
-  
-  input_table$Group[input_table$Variable=="N"] = "N"
-  return(input_table)
-}
 
 ## Generate full and stratified table
 pop_levels = c("All", "Molnupiravir", "Sotrovimab", "Untreated")
@@ -179,10 +151,10 @@ for (i in 1:length(pop_levels)) {
 fs::dir_create(here::here("output", "tables"))
 
 ## Save as html/rds
-if (data_label=="day0") {
-  gt::gtsave(gt(collated_table), here::here("output","tables", "table1_redacted_day0.html"))
-  write_rds(collated_table, here::here("output", "tables", "table1_redacted_day0.rds"), compress = "gz")
-} else {
+if (data_label=="day5") {
   gt::gtsave(gt(collated_table), here::here("output","tables", "table1_redacted_day5.html"))
   write_rds(collated_table, here::here("output", "tables", "table1_redacted_day5.rds"), compress = "gz")
+} else {
+  gt::gtsave(gt(collated_table), here::here("output","tables", "table1_redacted_day0.html"))
+  write_rds(collated_table, here::here("output", "tables", "table1_redacted_day0.rds"), compress = "gz")
 }
