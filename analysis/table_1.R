@@ -75,6 +75,7 @@ counts <- data_cohort %>%
     
     ## Vaccination
     vaccination_status,
+    tb_postest_vacc_cat,
     
     ## Variant
     variant,

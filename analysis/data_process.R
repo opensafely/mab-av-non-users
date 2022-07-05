@@ -206,6 +206,19 @@ data_processed <- data_extract %>%
       TRUE ~ NA_character_
     ),
     
+    # Time-between positive test and last vaccination
+    tb_postest_vacc = ifelse(!is.na(date_most_recent_cov_vac),
+                             difftime(date_most_recent_cov_vac, covid_test_positive_date), 
+                             NA),
+    
+    tb_postest_vacc_cat = fct_case_when(
+      tb_postest_vacc < 7 ~ "< 7 days",
+      tb_postest_vacc >=7 & tb_postest_vacc <28 ~ "7-27 days",
+      tb_postest_vacc >= 28 & tb_postest_vacc <84 ~ "28-83 days",
+      tb_postest_vacc >= 84 ~ ">= 84 days",
+      is.na(tb_postest_vacc) ~ "Unknown"
+      ),
+    
     # NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
     # Treatment assignment window 'treated within 5 days -> <= 4 days'
     treat_window = covid_test_positive_date + days(4),
