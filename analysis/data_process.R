@@ -136,6 +136,13 @@ cat("#### data cleaning ####\n")
 data_processed <- data_extract %>%
   mutate(
     # Cinic/demo variables -----
+    ageband = cut(
+      age,
+      breaks = c(18, 40, 60, 80, Inf),
+      labels = c("18-39", "40-59", "60-79", "80+"),
+      right = FALSE
+    ),
+    
     sex = fct_case_when(
       sex == "F" ~ "Female",
       sex == "M" ~ "Male",
@@ -152,6 +159,13 @@ data_processed <- data_extract %>%
       #TRUE ~ "Unknown"
       TRUE ~ NA_character_),
     
+    bmi_group = fct_case_when(
+      bmi == "Not obese" ~ "Not obese",
+      bmi == "Obese I (30-34.9)" ~ "Obese I (30-34.9)",
+      bmi == "Obese II (35-39.9)" ~ "Obese II (35-39.9)",
+      bmi == "Obese III (40+)" ~ "Obese III (40+)",
+      TRUE ~ NA_character_),
+
     smoking_status = fct_case_when(
       smoking_status == "S" ~ "Smoker",
       smoking_status == "E" ~ "Ever",
