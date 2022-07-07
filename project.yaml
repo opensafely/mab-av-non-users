@@ -45,4 +45,13 @@ actions:
         data: output/tables/table1_redacted_day5.rds
       moderately_sensitive:
         table: output/tables/table1_redacted_day5.html
+
+  cox_day5:
+    run: r:latest analysis/cox_model.R day5
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5.rds
+      moderately_sensitive:
+        table: output/tables/cox_models_day5.csv
         

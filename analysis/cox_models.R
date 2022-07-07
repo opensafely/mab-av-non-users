@@ -35,6 +35,38 @@ if (data_label=="day5") {
   data_cohort <- read_rds(here::here("output", "data", "data_processed_day0.rds"))
 }
 
+# create data.frame 'out' where output is saved 
+# out has 4 columns with the HR and upper and lower limit of CI
+out <- matrix(nrow = 6, ncol = 5) %>% as.data.frame()
+# give column names
+colnames(out) <- c("comparison", "outcome", "HR", "LowerCI", "UpperCI")
+
+# Specify treated group for comparison (Treated vs Untreated)
+trt_grp <- c("All", "Sotrovimab", "Molnupiravir")
+
+# Loop over analysis for each treatment comparison 
+for(t in trt_grp) {
+  
+  if (t == "All") {
+    print("All Treated versus Untreated Comparison")
+    # Drop patients treated with molnupiravir 
+    data_cohort_sub <- data_cohort 
+  }
+  
+if (t == "Sotrovimab") {
+  print("Sotrovimab versus Untreated Comparison")
+  # Drop patients treated with molnupiravir 
+  data_cohort_sub <- data_cohort %>% 
+    filter(treatment_strategy_cat != "Molnupiravir")
+}
+  
+if (t == "Molnupiravir") {
+  print("Molnupiravir versus Untreated Comparison")
+  # Drop patients treated with sotrovimab
+  data_cohort_sub <- data_cohort %>% 
+    filter(treatment_strategy_cat != "Molnupiravir")
+}
+  
 ## Vector of variables for PS model
 # Note: age modelled with cubic spline with 3 knots
 vars <- c("ns(age, df=4)", "sex", "ethnicity", "imdQ5" , "region_nhs", "rural_urban","huntingtons_disease_nhsd" , 
@@ -59,13 +91,13 @@ print(psModelFunction)
 # Fit PS model
 psModel <- glm(psModelFunction,
                family  = binomial(link = "logit"),
-               data    = data_cohort)
+               data    = data_cohort_sub)
 
 # Append patient-level predicted probability of being assigned to cohort
-data_cohort$pscore <- predict(psModel, type = "response")
+data_cohort_sub$pscore <- predict(psModel, type = "response")
 
 # Overlap plot 
-overlapPlot <- data_cohort %>% 
+overlapPlot <- data_cohort_sub %>% 
   mutate(trtlabel = ifelse(treatment == "Treated",
                            yes = 'Treated',
                            no = 'Untreated')) %>%
@@ -89,20 +121,45 @@ overlapPlot <- data_cohort %>%
         panel.grid.minor = element_blank())
 
 ggsave(overlapPlot, 
-       filename = here::here("output", "figs", "overlap_plot.png"),
+       filename = here::here("output", "figs", "overlap_plot_day5.png"),
        width=20, height=14, units="cm")
 
 ## Dervie inverse probability of treatment weights (IPTW)
-data_cohort$weights<-ifelse(data_cohort$treatment=="Treated",1/data_cohort$pscore,1/(1-data_cohort$pscore))
+data_cohort_sub$weights<-ifelse(data_cohort_sub$treatment=="Treated",1/data_cohort_sub$pscore,1/(1-data_cohort_sub$pscore))
 
 
 # Check extremes
-quantile(data_cohort$weights[data_cohort$treatment=="Treated"],c(0,0.01,0.05,0.95,0.99,1))
-quantile(data_cohort$weights[data_cohort$treatment=="Untreated"],c(0,0.01,0.05,0.95,0.99,1))
+quantile(data_cohort_sub$weights[data_cohort_sub$treatment=="Treated"],c(0,0.01,0.05,0.95,0.99,1))
+quantile(data_cohort_sub$weights[data_cohort_sub$treatment=="Untreated"],c(0,0.01,0.05,0.95,0.99,1))
 
 
-## Estimate treatment effect
-iptw <- svydesign(ids = ~ 1, data = data_cohort, weights = ~ weights)
+## Define svy design for IPTW 
+iptw <- svydesign(ids = ~ 1, data = data_cohort_sub, weights = ~ weights)
 
-model_PSw <- svycoxph(Surv(fu_primary,status_primary=="covid_hosp_death")~treatment, design = iptw, data=data_cohort)
+## Estimate treatment effect for covid_hosp_outcome
+outcome_event <- "covid"
+model_PSw <- svycoxph(Surv(fu_primary,status_primary=="covid_hosp_death")~treatment, design = iptw, data=data_cohort_sub)
 summary(model_PSw)
+
+## Estimate treatment effect for covid_hosp_outcome
+outcome_event <- "allcause"
+model_PSw <- svycoxph(Surv(fu_secondary,status_secondary=="allcause_hosp_death")~treatment, design = iptw, data=data_cohort_sub)
+summary(model_PSw)
+
+# save variable for reference
+# select main effects from 'model'
+selection <- model$coefficients %>% names %>% startsWith("treatment")
+# save output ---
+# save coefficients of model and CIs in out
+out[, 1] <- t
+out[, 2] <- outcome_event
+out[, 3] <- model$coefficients[selection] %>% exp()
+out[, 4] <- (model$coefficients[selection] - 1.96*sqrt(model$var[1,1])) %>% exp()
+out[, 5] <- (model$coefficients[selection] + 1.96*sqrt(model$var[1,1])) %>% exp()
+
+}
+
+write_csv(data.frame(out),
+          here::here("output", "tables", "cox_models_day5.csv"))
+write_rds(data.frame(out), 
+          here::here("output", "tables", "cox_models_day5.rds"))
