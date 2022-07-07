@@ -1,7 +1,7 @@
 version: '3.0'
 
 expectations:
-  population_size: 10000
+  population_size: 100000
 
 actions:
 
@@ -36,3 +36,13 @@ actions:
         txt1: output/data_properties/data_processed_day5_skim.txt
         txt2: output/data_properties/data_processed_day5_coltypes.txt
         txt3: output/data_properties/data_processed_day5_tabulate.txt
+
+  table_1_day5:
+    run: r:latest analysis/table_1.R day5
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/tables/table1_redacted_day5.rds
+      moderately_sensitive:
+        table: output/tables/table1_redacted_day5.html
+        

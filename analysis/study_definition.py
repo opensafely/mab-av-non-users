@@ -140,7 +140,7 @@ study = StudyDefinition(
     date_format="YYYY-MM-DD",
     return_expectations={
       "date": {"earliest": "2021-12-16"},
-      "incidence": 0.2
+      "incidence": 0.5
     },
   ),
   # Remdesivir
@@ -166,7 +166,7 @@ study = StudyDefinition(
     date_format="YYYY-MM-DD",
     return_expectations={
       "date": {"earliest": "2021-12-16"},
-      "incidence": 0.2
+      "incidence": 0.5
     },
   ),
   # Casirivimab and imdevimab
@@ -240,7 +240,7 @@ study = StudyDefinition(
     on_or_before="covid_test_positive_date - 1 day",
     returning="binary_flag",
     return_expectations={
-      "incidence": 0.05
+      "incidence": 0.01
     },
   ),
   # previously treated
@@ -253,7 +253,7 @@ study = StudyDefinition(
     casirivimab_covid_prev
     """,
     return_expectations={
-      "incidence": 0.4,
+      "incidence": 0.01,
     },
   ),
 

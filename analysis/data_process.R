@@ -136,6 +136,13 @@ cat("#### data cleaning ####\n")
 data_processed <- data_extract %>%
   mutate(
     # Cinic/demo variables -----
+    ageband = cut(
+      age,
+      breaks = c(18, 40, 60, 80, Inf),
+      labels = c("18-39", "40-59", "60-79", "80+"),
+      right = FALSE
+    ),
+    
     sex = fct_case_when(
       sex == "F" ~ "Female",
       sex == "M" ~ "Male",
@@ -152,6 +159,13 @@ data_processed <- data_extract %>%
       #TRUE ~ "Unknown"
       TRUE ~ NA_character_),
     
+    bmi_group = fct_case_when(
+      bmi == "Not obese" ~ "Not obese",
+      bmi == "Obese I (30-34.9)" ~ "Obese I (30-34.9)",
+      bmi == "Obese II (35-39.9)" ~ "Obese II (35-39.9)",
+      bmi == "Obese III (40+)" ~ "Obese III (40+)",
+      TRUE ~ NA_character_),
+
     smoking_status = fct_case_when(
       smoking_status == "S" ~ "Smoker",
       smoking_status == "E" ~ "Ever",
@@ -192,14 +206,27 @@ data_processed <- data_extract %>%
       TRUE ~ NA_character_
     ),
     
+    # Time-between positive test and last vaccination
+    tb_postest_vacc = ifelse(!is.na(date_most_recent_cov_vac),
+                             difftime(date_most_recent_cov_vac, covid_test_positive_date) %>% as.numeric(), 
+                             NA_integer_),
+    
+    tb_postest_vacc_cat = fct_case_when(
+      is.na(tb_postest_vacc) ~ "Unknown",
+      tb_postest_vacc < 7 ~ "< 7 days",
+      tb_postest_vacc >=7 & tb_postest_vacc <28 ~ "7-27 days",
+      tb_postest_vacc >= 28 & tb_postest_vacc <84 ~ "28-83 days",
+      tb_postest_vacc >= 84 ~ ">= 84 days"
+      ),
+    
     # NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
     # Treatment assignment window 'treated within 5 days -> <= 4 days'
     treat_window = covid_test_positive_date + days(4),
     
     # Time-between positive test and day of treatment
     tb_postest_treat = ifelse(!is.na(date_treated), 
-                              difftime(date_treated, covid_test_positive_date), 
-                              NA),
+                              difftime(date_treated, covid_test_positive_date) %>% as.numeric(), 
+                              NA_integer_),
     
     # Flag records where treatment date falls in treatment assignment window
     treat_check = ifelse(date_treated >= covid_test_positive_date & 
@@ -303,7 +330,9 @@ data_processed_eligible_day0 <- data_processed_eligible
 # 'allcause_death']
 data_processed_eligible_day5 <- 
   data_processed_eligible %>%
-  filter(fu_secondary > 4)
+  filter(fu_secondary > 4) %>% 
+  mutate(fu_primary = fu_primary - 5, 
+         fu_secondary = fu_secondary - 5) # Because starting at day 5
 
 cat("#### data_processed ####\n")
 print(dim(data_processed_eligible_day0))
