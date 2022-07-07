@@ -7,13 +7,14 @@
 ######################################
 
 ## Import libraries
+library('plyr')
 library('tidyverse')
 library('here')
 library('glue')
 library('gt')
 library('gtsummary')
-library('plyr')
 library('reshape2')
+library('fs')
 
 ## Import custom user functions
 source(here::here("lib", "functions", "clean_table_names.R"))
@@ -22,15 +23,16 @@ source(here::here("lib", "functions", "clean_table_names.R"))
 args <- commandArgs(trailingOnly=TRUE)
 
 ## Set input and output pathways for matched/unmatched data - default is unmatched
-if (args[[1]]=="day0") {
-    data_label = "day0"
-  } else if (args[[1]]=="day5") {
-    data_label = "day5"
-  } else {
-    # Print error if no argument specified
-    stop("No outcome specified")
-  }
-
+if (length(args) == 0){
+  data_label = "day5"
+} else if (args[[1]]=="day0") {
+  data_label = "day0"
+} else if (args[[1]]=="day5") {
+  data_label = "day5"
+} else {
+  # Print error if no argument specified
+  stop("No outcome specified")
+}
 
 ## Set rounding and redaction thresholds
 rounding_threshold = 1
@@ -39,7 +41,7 @@ redaction_threshold = 10
 ## Import data
 if (data_label=="day5") {
   data_cohort <- read_rds(here::here("output", "data", "data_processed_day5.rds"))
-} else {
+} else if (data_label == "day0") {
   data_cohort <- read_rds(here::here("output", "data", "data_processed_day0.rds"))
 }
 
@@ -99,24 +101,24 @@ for (i in 1:length(pop_levels)) {
     data_subset = counts
     counts_summary = data_subset %>% 
       select(-treatment_strategy_cat) %>% 
-      tbl_summary(by = allpop) 
+      tbl_summary(by = allpop,
+                  statistic = everything() ~ "{n}")
     counts_summary$inputs$data <- NULL
   } else { 
     data_subset = subset(counts, treatment_strategy_cat==pop_levels[i]) 
     counts_summary = data_subset %>% 
       select(-treatment_strategy_cat) %>% 
-      tbl_summary(by = allpop)
+      tbl_summary(by = allpop,
+                  statistic = everything() ~ "{n}")
     counts_summary$inputs$data <- NULL
   }
   
   table1 <- counts_summary$table_body %>%
     select(group = variable, variable = label, count = stat_1) %>%
-    separate(count, c("count","perc"), sep = "([(])") %>%
-    mutate(count = gsub(" ", "", count)) %>%
-    mutate(count = as.numeric(gsub(",", "", count))) %>%
-    filter(!(is.na(count))) %>%
-    select(-perc)
-  table1$percent = round(table1$count/nrow(data_cohort)*100,1)
+    filter(group != variable) %>%
+    mutate(count = case_when(!is.na(count) ~ as.numeric(gsub(",", "", count)),
+                             TRUE ~ NA_real_)) %>%
+    mutate(percent = round(count/nrow(data_subset)*100, 1))
   colnames(table1) = c("Group", "Variable", "Count", "Percent")
   
   ## Clean names
@@ -127,9 +129,9 @@ for (i in 1:length(pop_levels)) {
   
   ## Round individual values to rounding threshold
   table1_redacted <- table1_clean %>%
-    mutate(Count = plyr::round_any(Count, rounding_threshold))
-  table1_redacted$Percent = round(table1_redacted$Count/rounded_n*100,1)
-  table1_redacted$Non_Count = rounded_n - table1_redacted$Count
+    mutate(Count = plyr::round_any(Count, rounding_threshold),
+           Percent = round(Count/rounded_n*100,1),
+           Non_Count = rounded_n - Count)
   
   ## Redact any rows with rounded cell counts or non-counts <= redaction threshold 
   table1_redacted$Summary = paste0(prettyNum(table1_redacted$Count, big.mark=",")," (",format(table1_redacted$Percent,nsmall=1),"%)")
@@ -143,19 +145,22 @@ for (i in 1:length(pop_levels)) {
   if (i==1) { 
     collated_table = table1_redacted 
   } else { 
-    collated_table = collated_table %>% left_join(table1_redacted[,2:3], by ="Variable") 
+    collated_table = collated_table %>% 
+      left_join(table1_redacted, 
+                by = c("Group" = "Group", "Variable" = "Variable")) 
     collated_table[,i+2][is.na(collated_table[,i+2])] = "--"
   }
 }
 
 ## Create output directory
-fs::dir_create(here::here("output", "tables"))
+fs::dir_create(here("output", "tables"))
 
 ## Save as html/rds
-if (data_label=="day5") {
-  gt::gtsave(gt(collated_table), here::here("output","tables", "table1_redacted_day5.html"))
-  write_rds(collated_table, here::here("output", "tables", "table1_redacted_day5.rds"), compress = "gz")
-} else {
-  gt::gtsave(gt(collated_table), here::here("output","tables", "table1_redacted_day0.html"))
-  write_rds(collated_table, here::here("output", "tables", "table1_redacted_day0.rds"), compress = "gz")
-}
+file_name <- paste0("table1_redacted_", data_label)
+
+
+gtsave(gt(collated_table), 
+       filename = here("output", "tables", paste0(file_name, ".html")))
+write_rds(collated_table,
+          compress = "gz",
+          path("output", "tables", paste0(file_name, ".rds")))
