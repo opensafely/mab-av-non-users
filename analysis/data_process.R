@@ -330,7 +330,9 @@ data_processed_eligible_day0 <- data_processed_eligible
 # 'allcause_death']
 data_processed_eligible_day5 <- 
   data_processed_eligible %>%
-  filter(fu_secondary > 4)
+  filter(fu_secondary > 4) %>% 
+  mutate(fu_primary = fu_primary - 5, 
+         fu_secondary = fu_secondary - 5) # Because starting at day 5
 
 cat("#### data_processed ####\n")
 print(dim(data_processed_eligible_day0))
