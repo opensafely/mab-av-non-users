@@ -104,5 +104,5 @@ quantile(data_cohort$weights[data_cohort$treatment=="Untreated"],c(0,0.01,0.05,0
 ## Estimate treatment effect
 iptw <- svydesign(ids = ~ 1, data = data_cohort, weights = ~ weights)
 
-model_PSw <- svycoxph(Surv(fu_primary,status_primary)~treatment, design = iptw, data=data_cohort)
-
+model_PSw <- svycoxph(Surv(fu_primary,status_primary=="covid_hosp_death")~treatment, design = iptw, data=data_cohort)
+summary(model_PSw)
