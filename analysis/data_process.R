@@ -305,10 +305,10 @@ data_processed_eligible_day5 <-
   data_processed_eligible %>%
   filter(fu_secondary > 4)
 
-cat("#### data_processed ####\n")
+cat("#### data_processed_eligible day 0 ####\n")
 print(dim(data_processed_eligible_day0))
 
-cat("#### data_processed_eligible ####\n")
+cat("#### data_processed_eligible day 5 ####\n")
 print(dim(data_processed_eligible_day5))
 
 # save data
