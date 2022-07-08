@@ -208,15 +208,15 @@ data_processed <- data_extract %>%
     
     # Time-between positive test and last vaccination
     tb_postest_vacc = ifelse(!is.na(date_most_recent_cov_vac),
-                             difftime(date_most_recent_cov_vac, covid_test_positive_date), 
-                             NA),
+                             difftime(date_most_recent_cov_vac, covid_test_positive_date) %>% as.numeric(), 
+                             NA_integer_),
     
     tb_postest_vacc_cat = fct_case_when(
+      is.na(tb_postest_vacc) ~ "Unknown",
       tb_postest_vacc < 7 ~ "< 7 days",
       tb_postest_vacc >=7 & tb_postest_vacc <28 ~ "7-27 days",
       tb_postest_vacc >= 28 & tb_postest_vacc <84 ~ "28-83 days",
-      tb_postest_vacc >= 84 ~ ">= 84 days",
-      is.na(tb_postest_vacc) ~ "Unknown"
+      tb_postest_vacc >= 84 ~ ">= 84 days"
       ),
     
     # NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
@@ -225,8 +225,8 @@ data_processed <- data_extract %>%
     
     # Time-between positive test and day of treatment
     tb_postest_treat = ifelse(!is.na(date_treated), 
-                              difftime(date_treated, covid_test_positive_date), 
-                              NA),
+                              difftime(date_treated, covid_test_positive_date) %>% as.numeric(), 
+                              NA_integer_),
     
     # Flag records where treatment date falls in treatment assignment window
     treat_check = ifelse(date_treated >= covid_test_positive_date & 
@@ -257,9 +257,11 @@ data_processed <- data_extract %>%
     
     # Identify patients treated with sot and mol on same day
     treated_sot_mol_same_day = 
-      ifelse(sotrovimab_covid_therapeutics == molnupiravir_covid_therapeutics, 
-             1,
-             0),
+      case_when(is.na(sotrovimab_covid_therapeutics) ~ 0,
+                is.na(molnupiravir_covid_therapeutics) ~ 0,
+                sotrovimab_covid_therapeutics == 
+                  molnupiravir_covid_therapeutics ~ 1,
+                TRUE ~ 0),
     
     # Time-between symptom onset and treatment in those treatead
     tb_symponset_treat = 
@@ -330,12 +332,14 @@ data_processed_eligible_day0 <- data_processed_eligible
 # 'allcause_death']
 data_processed_eligible_day5 <- 
   data_processed_eligible %>%
-  filter(fu_secondary > 4)
+  filter(fu_secondary > 4) %>% 
+  mutate(fu_primary = fu_primary - 5, 
+         fu_secondary = fu_secondary - 5) # Because starting at day 5
 
-cat("#### data_processed ####\n")
+cat("#### data_processed_eligible day 0 ####\n")
 print(dim(data_processed_eligible_day0))
 
-cat("#### data_processed_eligible ####\n")
+cat("#### data_processed_eligible day 5 ####\n")
 print(dim(data_processed_eligible_day5))
 
 # save data
