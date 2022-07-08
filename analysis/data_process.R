@@ -66,6 +66,7 @@ data_extract <- read_csv(
     
     # HIGH RISK GROUPS ----
     high_risk_cohort_covid_therapeutics = col_factor(),
+    high_risk_group = col_factor(),
     huntingtons_disease_nhsd = col_logical() , 
     myasthenia_gravis_nhsd = col_logical() , 
     motor_neurone_disease_nhsd = col_logical() , 

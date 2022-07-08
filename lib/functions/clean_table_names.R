@@ -20,15 +20,26 @@ clean_table_names = function(input_table) {
   input_table$Group[input_table$Group=="lung_cancer"] = "Lung cancer"
   input_table$Group[input_table$Group=="haem_cancer"] = "Haematological cancer"
   input_table$Group[input_table$Group=="high_risk_cohort_covid_therapeutics"] = "High risk groups"
+  input_table$Group[input_table$Group=="high_risk_group"] = "Member of high risk group"
   input_table$Group[input_table$Group=="vaccination_status"] = "Vaccination status"
   input_table$Group[input_table$Group=="variant"] = "Variant"
   input_table$Group[input_table$Group=="sgtf"] = "SGTF"
   input_table$Group[input_table$Group=="rural_urban"] = "Setting"
   input_table$Group[input_table$Group=="region_nhs"] = "Region"
   input_table$Group[input_table$Group=="tb_postest_vacc_cat"] = "Time-between test since last vaccination"
-  
-  
-  
+  input_table$Group[input_table$Group=="huntingtons_disease_nhsd"] = "Huntington’s disease"
+  input_table$Group[input_table$Group=="myasthenia_gravis_nhs"] = "Myasthenia gravis"
+  input_table$Group[input_table$Group=="motor_neurone_disease_nhsd"] = "Motor neurone disease"
+  input_table$Group[input_table$Group=="multiple_sclerosis_nhsd"] = "Multiple sclerosis"
+  input_table$Group[input_table$Group=="solid_organ_transplant_nhsd"] = "Solid organ transplant"
+  input_table$Group[input_table$Group=="hiv_aids_nhsd"] = "HIV/AIDs"
+  input_table$Group[input_table$Group=="immunosupression_nhsd"] = "Primary immune deficiencies"
+  input_table$Group[input_table$Group=="imid_nhsd"] = "Immune-mediated inflammatory disorders (IMID)"
+  input_table$Group[input_table$Group=="liver_disease_nhsd"] = "Liver disease"
+  input_table$Group[input_table$Group=="ckd_stage_5_nhsd"] = "Renal disease"
+  input_table$Group[input_table$Group=="haematological_disease_nhsd"] = "Haematological diseases"
+  input_table$Group[input_table$Group=="cancer_opensafely_snomed"] = "Solid cancer"
+  input_table$Group[input_table$Group=="downs_syndrome_nhsd"] = "Down's syndrome"
   input_table$Group[input_table$Variable=="N"] = "N"
   return(input_table)
 }
