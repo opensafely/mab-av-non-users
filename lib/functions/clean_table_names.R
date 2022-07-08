@@ -6,6 +6,7 @@ clean_table_names = function(input_table) {
   
   # Relabel groups for plotting
   input_table$Group[input_table$Group=="ageband"] = "Age"
+  input_table$Group[input_table$Group=="tb_postest_treat"] = "Time-between test and treatment"
   input_table$Group[input_table$Group=="treatment_strategy_cat"] = "Treatment group"
   input_table$Group[input_table$Group=="sex"] = "Sex"
   input_table$Group[input_table$Group=="ethnicity"] = "Ethnicity"
@@ -24,7 +25,7 @@ clean_table_names = function(input_table) {
   input_table$Group[input_table$Group=="sgtf"] = "SGTF"
   input_table$Group[input_table$Group=="rural_urban"] = "Setting"
   input_table$Group[input_table$Group=="region_nhs"] = "Region"
-  input_table$Group[input_table$Group=="tb_postest_vacc_cat"] = "Time since last vaccination"
+  input_table$Group[input_table$Group=="tb_postest_vacc_cat"] = "Time-between test since last vaccination"
   
   
   

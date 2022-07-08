@@ -58,6 +58,7 @@ counts <- data_cohort %>%
     N,
     allpop,
     treatment_strategy_cat,
+    tb_postest_treat,
     
     ## Demographics
     ageband,
@@ -84,7 +85,7 @@ counts <- data_cohort %>%
     sgtf,
     
     ## High risk groups
-    high_risk_cohort_covid_therapeutics,
+    high_risk_group,
     
     ## Geography
     region_nhs,

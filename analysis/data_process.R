@@ -206,9 +206,19 @@ data_processed <- data_extract %>%
       TRUE ~ NA_character_
     ),
     
+    # SGTF
+   sgtf = fct_case_when(
+     is.na(sgtf) | sgtf == "" ~ "Unknown",
+      sgtf == 1  ~ "Isolate with confirmed SGTF",
+      sgtf == 0  ~ "S gene detected",
+      sgtf == 9 ~ "Cannot be classified",
+      #TRUE ~ "Unknown",
+      TRUE ~ NA_character_
+    ),
+    
     # Time-between positive test and last vaccination
     tb_postest_vacc = ifelse(!is.na(date_most_recent_cov_vac),
-                             difftime(date_most_recent_cov_vac, covid_test_positive_date) %>% as.numeric(), 
+                             difftime(date_most_recent_cov_vac, covid_test_positive_date) %>% as.numeric() %>% abs(), 
                              NA_integer_),
     
     tb_postest_vacc_cat = fct_case_when(
@@ -225,7 +235,7 @@ data_processed <- data_extract %>%
     
     # Time-between positive test and day of treatment
     tb_postest_treat = ifelse(!is.na(date_treated), 
-                              difftime(date_treated, covid_test_positive_date) %>% as.numeric(), 
+                              difftime(date_treated, covid_test_positive_date) %>% as.numeric() %>% abs(), 
                               NA_integer_),
     
     # Flag records where treatment date falls in treatment assignment window
