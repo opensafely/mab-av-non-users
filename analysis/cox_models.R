@@ -12,6 +12,9 @@ library(gridExtra)
 library(splines)
 library(survey)
 
+## Load functions
+source(here("lib", "functions", "safely_n_quietly.R"))
+
 ## Create figures directory
 fs::dir_create(here::here("output", "figs"))
 
@@ -19,9 +22,11 @@ fs::dir_create(here::here("output", "figs"))
 args <- commandArgs(trailingOnly=TRUE)
 
 ## Set input and output pathways for matched/unmatched data - default is unmatched
-if (args[[1]]=="day0") {
+if (length(args) == 0){
+  data_label = "day5"
+} else if (args[[1]] == "day0") {
   data_label = "day0"
-} else if (args[[1]]=="day5") {
+} else if (args[[1]] == "day5") {
   data_label = "day5"
 } else {
   # Print error if no argument specified
@@ -29,17 +34,23 @@ if (args[[1]]=="day0") {
 }
 
 ## Import data
-if (data_label=="day5") {
+if (data_label == "day5") {
   data_cohort <- read_rds(here::here("output", "data", "data_processed_day5.rds"))
-} else {
+} else if (data_label == "day0") {
   data_cohort <- read_rds(here::here("output", "data", "data_processed_day0.rds"))
 }
 
-# create data.frame 'out' where output is saved 
-# out has 4 columns with the HR and upper and lower limit of CI
-out <- matrix(nrow = 6, ncol = 5) %>% as.data.frame()
+# create data.frame 'estimates' where output is saved 
+# 'estimates' has 4 columns with the HR and upper and lower limit of CI
+estimates <- matrix(nrow = 6, ncol = 5) %>% as.data.frame()
 # give column names
-colnames(out) <- c("comparison", "outcome", "HR", "LowerCI", "UpperCI")
+colnames(estimates) <- c("comparison", "outcome", "HR", "LowerCI", "UpperCI")
+# create data.frame 'log' where errors and warnings are saved
+# 'log' has 3 columns: comparison, 
+estimates <- matrix(nrow = 6, ncol = 5) %>% as.data.frame()
+# give column names
+colnames(estimates) <- c("comparison", "outcome", "HR", "LowerCI", "UpperCI")
+
 
 # Specify treated group for comparison (Treated vs Untreated)
 trt_grp <- c("All", "Sotrovimab", "Molnupiravir")
@@ -69,12 +80,40 @@ if (t == "Molnupiravir") {
   
 ## Vector of variables for PS model
 # Note: age modelled with cubic spline with 3 knots
-vars <- c("ns(age, df=4)", "sex", "ethnicity", "imdQ5" , "region_nhs", "rural_urban","huntingtons_disease_nhsd" , 
-                "myasthenia_gravis_nhsd" , "motor_neurone_disease_nhsd" , "multiple_sclerosis_nhsd"  , "solid_organ_transplant_nhsd", 
-                "hiv_aids_nhsd" , "immunosupression_nhsd" , "imid_nhsd" , "liver_disease_nhsd", "ckd_stage_5_nhsd", "haematological_disease_nhsd" , 
-                "cancer_opensafely_snomed" , "downs_syndrome_nhsd", "diabetes", "bmi_group", "smoking_status", "copd", "dialysis", "cancer", 
-                "lung_cancer", "haem_cancer", "vaccination_status", "pfizer_most_recent_cov_vac","az_most_recent_cov_vac", "moderna_most_recent_cov_vac"
-)
+vars <-
+  c(
+    "ns(age, df=4)",
+    "sex",
+    "ethnicity",
+    "imdQ5" ,
+    "region_nhs",
+    "rural_urban",
+    "huntingtons_disease_nhsd" ,
+    "myasthenia_gravis_nhsd" ,
+    "motor_neurone_disease_nhsd" ,
+    "multiple_sclerosis_nhsd"  ,
+    "solid_organ_transplant_nhsd",
+    "hiv_aids_nhsd" ,
+    "immunosupression_nhsd" ,
+    "imid_nhsd" ,
+    "liver_disease_nhsd",
+    "ckd_stage_5_nhsd",
+    "haematological_disease_nhsd" ,
+    "cancer_opensafely_snomed" ,
+    "downs_syndrome_nhsd",
+    "diabetes",
+    "bmi_group",
+    "smoking_status",
+    "copd",
+    "dialysis",
+    "cancer",
+    "lung_cancer",
+    "haem_cancer",
+    "vaccination_status",
+    "pfizer_most_recent_cov_vac",
+    "az_most_recent_cov_vac",
+    "moderna_most_recent_cov_vac"
+  )
 
 ## Fit propensity score model 
 # Specify model
@@ -90,8 +129,8 @@ print(psModelFunction)
 
 # Fit PS model
 psModel <- glm(psModelFunction,
-               family  = binomial(link = "logit"),
-               data    = data_cohort_sub)
+               family = binomial(link = "logit"),
+               data = data_cohort_sub)
 
 # Append patient-level predicted probability of being assigned to cohort
 data_cohort_sub$pscore <- predict(psModel, type = "response")
@@ -124,13 +163,17 @@ ggsave(overlapPlot,
        filename = here::here("output", "figs", "overlap_plot_day5.png"),
        width=20, height=14, units="cm")
 
-## Dervie inverse probability of treatment weights (IPTW)
-data_cohort_sub$weights<-ifelse(data_cohort_sub$treatment=="Treated",1/data_cohort_sub$pscore,1/(1-data_cohort_sub$pscore))
-
+## Derive inverse probability of treatment weights (IPTW)
+data_cohort_sub$weights <-
+  ifelse(data_cohort_sub$treatment == "Treated",
+         1 / data_cohort_sub$pscore,
+         1 / (1 - data_cohort_sub$pscore))
 
 # Check extremes
-quantile(data_cohort_sub$weights[data_cohort_sub$treatment=="Treated"],c(0,0.01,0.05,0.95,0.99,1))
-quantile(data_cohort_sub$weights[data_cohort_sub$treatment=="Untreated"],c(0,0.01,0.05,0.95,0.99,1))
+quantile(data_cohort_sub$weights[data_cohort_sub$treatment=="Treated"],
+         c(0,0.01,0.05,0.95,0.99,1))
+quantile(data_cohort_sub$weights[data_cohort_sub$treatment=="Untreated"],
+         c(0,0.01,0.05,0.95,0.99,1))
 
 
 ## Define svy design for IPTW 
@@ -138,12 +181,30 @@ iptw <- svydesign(ids = ~ 1, data = data_cohort_sub, weights = ~ weights)
 
 ## Estimate treatment effect for covid_hosp_outcome
 outcome_event <- "covid"
-model_PSw <- svycoxph(Surv(fu_primary,status_primary=="covid_hosp_death")~treatment, design = iptw, data=data_cohort_sub)
+# Cox regression
+# returns function model_PSw() with components result, output, messages, 
+# warnings and error
+model_PSw <- 
+  safely_n_quietly(.f = ~
+    svycoxph(Surv(fu_primary, status_primary == "covid_hosp_death") ~ treatment, 
+             design = iptw, 
+             data = data_cohort_sub)
+  )
+
+if (is.null(model_PSw()$error)){
+  # no error
+  log_file
+}
+
 summary(model_PSw)
 
 ## Estimate treatment effect for covid_hosp_outcome
 outcome_event <- "allcause"
-model_PSw <- svycoxph(Surv(fu_secondary,status_secondary=="allcause_hosp_death")~treatment, design = iptw, data=data_cohort_sub)
+model_PSw <- 
+  svycoxph(Surv(fu_secondary, status_secondary == "allcause_hosp_death") ~ 
+             treatment, 
+           design = iptw, 
+           data=data_cohort_sub)
 summary(model_PSw)
 
 # save variable for reference
