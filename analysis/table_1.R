@@ -58,7 +58,6 @@ counts <- data_cohort %>%
     N,
     allpop,
     treatment_strategy_cat,
-    tb_postest_treat,
     
     ## Demographics
     ageband,
@@ -86,6 +85,19 @@ counts <- data_cohort %>%
     
     ## High risk groups
     high_risk_group,
+    huntingtons_disease_nhsd,
+    myasthenia_gravis_nhsd,
+    motor_neurone_disease_nhsd,
+    multiple_sclerosis_nhsd,
+    solid_organ_transplant_nhsd,
+    hiv_aids_nhsd,
+    immunosupression_nhsd,
+    imid_nhsd,
+    liver_disease_nhsd,
+    ckd_stage_5_nhsd,
+    haematological_disease_nhsd,
+    cancer_opensafely_snomed,
+    downs_syndrome_nhsd,  
     
     ## Geography
     region_nhs,
