@@ -11,6 +11,7 @@ library(survminer)
 library(gridExtra)
 library(splines)
 library(survey)
+library(here)
 
 ## Load functions
 source(here("lib", "functions", "safely_n_quietly.R"))
@@ -35,9 +36,11 @@ if (length(args) == 0){
 
 ## Import data
 if (data_label == "day5") {
-  data_cohort <- read_rds(here::here("output", "data", "data_processed_day5.rds"))
+  data_cohort <- 
+    read_rds(here::here("output", "data", "data_processed_day5.rds"))
 } else if (data_label == "day0") {
-  data_cohort <- read_rds(here::here("output", "data", "data_processed_day0.rds"))
+  data_cohort <-
+    read_rds(here::here("output", "data", "data_processed_day0.rds"))
 }
 
 # create data.frame 'estimates' where output is saved 
@@ -65,7 +68,7 @@ trt_grp <- c("All", "Sotrovimab", "Molnupiravir")
 # uesd to loop through different analyses
 outcomes <- c("primary", "secondary")
 
-# Loop over analysis for each treatment comparison 
+## Loop over analysis for each treatment comparison 
 for(i in seq_along(trt_grp)) {
   # used later in 'esimates' data.frame to save which analysis is done
   t <- trt_grp[i]
@@ -229,7 +232,16 @@ for(i in seq_along(trt_grp)) {
   }
 }
 
-write_csv(data.frame(estimates),
-          here::here("output", "tables", "cox_models_day5.csv"))
-write_csv(data.frame(log),
-          here::here("output", "tables", "log_cox_models_day5.csv"))
+## Save output
+write_csv(estimates,
+          here("output", 
+               "tables", 
+               paste0("cox_models_", data_label, ".csv")))
+write_rds(estimates, 
+          here("output", 
+               "tables", 
+               paste0("cox_models_", data_label, ".rds")))
+write_csv(log,
+          here("output", 
+               "tables", 
+               paste0("log_cox_models_", data_label, ".csv")))
