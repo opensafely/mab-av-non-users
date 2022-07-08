@@ -257,9 +257,11 @@ data_processed <- data_extract %>%
     
     # Identify patients treated with sot and mol on same day
     treated_sot_mol_same_day = 
-      ifelse(sotrovimab_covid_therapeutics == molnupiravir_covid_therapeutics, 
-             1,
-             0),
+      case_when(is.na(sotrovimab_covid_therapeutics) ~ 0,
+                is.na(molnupiravir_covid_therapeutics) ~ 0,
+                sotrovimab_covid_therapeutics == 
+                  molnupiravir_covid_therapeutics ~ 1,
+                TRUE ~ 0),
     
     # Time-between symptom onset and treatment in those treatead
     tb_symponset_treat = 
