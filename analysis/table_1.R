@@ -127,8 +127,10 @@ for (i in 1:length(pop_levels)) {
   }
   
   table1 <- counts_summary$table_body %>%
+    filter(!is.na(stat_1)) %>%
+    mutate(label = case_when(var_type == "dichotomous" ~ "",
+                                TRUE ~ label)) %>%
     select(group = variable, variable = label, count = stat_1) %>%
-    filter(group != variable) %>%
     mutate(count = case_when(!is.na(count) ~ as.numeric(gsub(",", "", count)),
                              TRUE ~ NA_real_)) %>%
     mutate(percent = round(count/nrow(data_subset)*100, 1))

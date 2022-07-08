@@ -28,7 +28,7 @@ clean_table_names = function(input_table) {
   input_table$Group[input_table$Group=="region_nhs"] = "Region"
   input_table$Group[input_table$Group=="tb_postest_vacc_cat"] = "Time-between test since last vaccination"
   input_table$Group[input_table$Group=="huntingtons_disease_nhsd"] = "Huntington’s disease"
-  input_table$Group[input_table$Group=="myasthenia_gravis_nhs"] = "Myasthenia gravis"
+  input_table$Group[input_table$Group=="myasthenia_gravis_nhsd"] = "Myasthenia gravis"
   input_table$Group[input_table$Group=="motor_neurone_disease_nhsd"] = "Motor neurone disease"
   input_table$Group[input_table$Group=="multiple_sclerosis_nhsd"] = "Multiple sclerosis"
   input_table$Group[input_table$Group=="solid_organ_transplant_nhsd"] = "Solid organ transplant"
