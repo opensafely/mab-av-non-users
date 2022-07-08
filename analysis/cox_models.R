@@ -18,6 +18,8 @@ source(here("lib", "functions", "safely_n_quietly.R"))
 
 ## Create figures directory
 fs::dir_create(here::here("output", "figs"))
+## Create tables directory
+fs::dir_create(here::here("output", "tables"))
 
 ## Import command-line arguments
 args <- commandArgs(trailingOnly=TRUE)
