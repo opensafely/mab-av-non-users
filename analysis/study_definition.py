@@ -68,7 +68,7 @@ study = StudyDefinition(
     AND NOT has_died
     AND (sex = "M" OR sex = "F")
     AND NOT stp = ""
-    AND imd >= 0
+    AND (imd >= 0 AND has_msoa)
     AND (
      registered_eligible
       AND
@@ -986,6 +986,14 @@ study = StudyDefinition(
     },
   ),
   # Index of multiple deprivation
+  has_msoa=patients.satisfying(
+    "NOT (msoa = '')",
+    msoa=patients.address_as_of(
+      "index_date",
+      returning="msoa",
+    ),
+    return_expectations={"incidence": 0.2}
+  ),
   # https://docs.opensafely.org/study-def-tricks/#grouping-imd-by-quintile
   imd=patients.address_as_of(
     "covid_test_positive_date",
