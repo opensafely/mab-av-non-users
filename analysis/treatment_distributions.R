@@ -6,6 +6,7 @@
 ## Import libraries
 library(tidyverse)
 library(lubridate)
+library(here)
 
 ## Create figures directory
 fs::dir_create(here::here("output", "figs"))
