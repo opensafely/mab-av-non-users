@@ -56,4 +56,12 @@ actions:
         figure: output/figs/*_overlap_plot_day5.png
         table1: output/tables/cox_models_day5.csv
         table2: output/tables/log_cox_models_day5.csv
+
+  trt_pat_day5:
+    run: r:latest analysis/treatment_distributions.R day5
+    needs: [data_process]
+    outputs:
+      moderately_sensitive:
+        figure: output/figs/day5_treatment_pattern.png
+
         
