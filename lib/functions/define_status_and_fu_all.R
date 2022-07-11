@@ -27,38 +27,19 @@ add_status_and_fu_all <- function(data){
       # "noncovid_hosp": non-covid hospitalisation
       # "covid_death": covid death
       # "noncovid_death": non-covid death
+      min_date_all = pmin(dereg_date,
+                          death_date,
+                          allcause_hosp_admission_date,
+                          study_window,
+                          na.rm = TRUE),
       status_all = case_when(
-        min(dereg_date,
-            death_date,
-            allcause_hosp_admission_date,
-            study_window,
-            na.rm = TRUE) == dereg_date ~ "dereg",
-        min(dereg_date,
-            death_date,
-            noncovid_hosp_admission_date,
-            covid_hosp_admission_date,
-            study_window,
-            na.rm = TRUE) == covid_hosp_admission_date ~ "covid_hosp",
-        min(dereg_date,
-            death_date,
-            noncovid_hosp_admission_date,
-            covid_hosp_admission_date,
-            study_window,
-            na.rm = TRUE) == noncovid_hosp_admission_date ~ "noncovid_hosp",
+        min_date_all == dereg_date ~ "dereg",
+        min_date_all == covid_hosp_admission_date ~ "covid_hosp",
+        min_date_all == noncovid_hosp_admission_date ~ "noncovid_hosp",
         # pt should not have both noncovid and covid death, coded here to 
         # circumvent database errors
-        min(dereg_date,
-            noncovid_death_date,
-            covid_death_date,
-            allcause_hosp_admission_date,
-            study_window,
-            na.rm = TRUE) == covid_death_date ~ "covid_death",
-        min(dereg_date,
-            noncovid_death_date,
-            covid_death_date,
-            allcause_hosp_admission_date,
-            study_window,
-            na.rm = TRUE) == noncovid_death_date ~ "noncovid_death",
+        min_date_all == covid_death_date ~ "covid_death",
+        min_date_all == noncovid_death_date ~ "noncovid_death",
         TRUE ~ "none"
       ) %>% as.factor(),
       # FOLLOW UP STATUS 'ALL" ----
