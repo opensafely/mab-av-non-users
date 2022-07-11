@@ -26,22 +26,15 @@ add_status_and_fu_secondary <- function(data){
       # "dereg": lost to follow up (deregistered)
       # "allcause_hosp": covid hospitalisation
       # "allcause_death": covid death
+      min_date_secondary = pmin(dereg_date,
+                                death_date,
+                                allcause_hosp_admission_date,
+                                study_window,
+                                na.rm = TRUE),
       status_secondary = case_when(
-        min(dereg_date,
-            death_date,
-            covid_hosp_admission_date,
-            study_window,
-            na.rm = TRUE) == dereg_date ~ "dereg",
-        min(dereg_date,
-            death_date,
-            allcause_hosp_admission_date,
-            study_window,
-            na.rm = TRUE) == allcause_hosp_admission_date ~ "allcause_hosp",
-        min(dereg_date,
-            death_date,
-            allcause_hosp_admission_date,
-            study_window,
-            na.rm = TRUE) == death_date ~ "allcause_death",
+        min_date_secondary == dereg_date ~ "dereg",
+        min_date_secondary == allcause_hosp_admission_date ~ "allcause_hosp",
+        min_date_secondary == death_date ~ "allcause_death",
         TRUE ~ "none"
       ),
       # FOLLOW UP STATUS 'SECONDARY' ----

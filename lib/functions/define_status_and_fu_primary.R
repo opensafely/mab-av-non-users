@@ -24,31 +24,18 @@ add_status_and_fu_primary <- function(data){
       # "covid_hosp": covid hospitalisation
       # "covid_death": covid death
       # "noncovid_death": non-covid death
+      min_date_primary = pmin(dereg_date,
+                              death_date,
+                              covid_hosp_admission_date,
+                              study_window,
+                              na.rm = TRUE),
       status_primary = case_when(
-        min(dereg_date,
-            death_date,
-            covid_hosp_admission_date,
-            study_window,
-            na.rm = TRUE) == dereg_date ~ "dereg",
-        min(dereg_date,
-            death_date,
-            covid_hosp_admission_date,
-            study_window,
-            na.rm = TRUE) == covid_hosp_admission_date ~ "covid_hosp",
+        min_date_primary == dereg_date ~ "dereg",
+        min_date_primary == covid_hosp_admission_date ~ "covid_hosp",
         # pt should not have both noncovid and covid death, coded here to 
         # circumvent mistakes if database errors exist
-        min(dereg_date,
-            noncovid_death_date,
-            covid_death_date,
-            covid_hosp_admission_date,
-            study_window,
-            na.rm = TRUE) == covid_death_date ~ "covid_death",
-        min(dereg_date,
-            noncovid_death_date,
-            covid_death_date,
-            covid_hosp_admission_date,
-            study_window,
-            na.rm = TRUE) == noncovid_death_date ~ "noncovid_death",
+        min_date_primary == covid_death_date ~ "covid_death",
+        min_date_primary == noncovid_death_date ~ "noncovid_death",
         TRUE ~ "none"
       ),
       # FOLLOW UP STATUS 'PRIMARY' ----
