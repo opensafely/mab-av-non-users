@@ -230,6 +230,44 @@ for(i in seq_along(trt_grp)) {
       estimates[k, "HR"] <- model_PSw()$result$coefficients[selection] %>% exp()
       estimates[k, c("LowerCI", "UpperCI")] <- 
         confint(model_PSw()$result)[selection,] %>% exp()
+      
+      # Survival curves
+      # Untreated
+      survdata0 <- survfit(model_PSw()$result,
+                           newdata=mutate(data_cohort_sub, treatment="Untreated"))
+    
+      estimates0 <- data.frame(time = survdata0$time, 
+                               estimate = 1 - rowMeans(survdata0$surv),
+                               Treatment = "Untreated")
+      
+      # Treated
+      survdata1 <- survfit(model_PSw()$result, 
+                           newdata=mutate(data_cohort_sub, treatment="Treated"))
+      
+      estimates1 <- data.frame(time = survdata1$time, 
+                               estimate = 1 - rowMeans(survdata1$surv),
+                               Treatment = "Treated")
+      
+      # Combine estimates in 1 dataframe
+      tidy <- data.frame(rbind(estimates0, estimates1)) 
+      
+      # Plot cumulative incidence percentage
+      plot <- ggplot(tidy, aes(x=time, y=100*estimate, fill=Treatment, color=Treatment)) +
+        geom_line(size = 1) + 
+        xlab("Time (Days)") +
+        ylab("Cumulative Incidence (%)") +
+        theme_classic() + 
+        scale_x_continuous(breaks=c(0, 5, 10, 15, 20), 
+                       labels=c("5", "10", "15", "20", "25"))
+      
+      # Save plot
+      ggsave(plot, 
+             filename = 
+               here("output", "figs", 
+                    paste0(trt_grp[i], "_", outcomes[j], "_cumInc_day5.png")),
+             width=20, height=14, units="cm")
+
+
     } else log[k, "error"] <- model_PSw()$messages
   }
 }
@@ -247,3 +285,4 @@ write_csv(log,
           here("output", 
                "tables", 
                paste0("log_cox_models_", data_label, ".csv")))
+
