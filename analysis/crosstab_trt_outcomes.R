@@ -15,7 +15,7 @@ data_cohort_day5 <-
 data_cohort_day0 <-
   read_rds(here("output", "data", "data_processed_day0.rds"))
 # create output folder
-dir_create(here("output", "data", "data_properties"))
+dir_create(here("output", "data_properties"))
 
 # function used to summarise outcomes
 summarise_outcomes <- function(data, 
