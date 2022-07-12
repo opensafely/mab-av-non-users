@@ -219,7 +219,7 @@ data_processed <- data_extract %>%
     
     # Time-between positive test and last vaccination
     tb_postest_vacc = ifelse(!is.na(date_most_recent_cov_vac),
-                             difftime(date_most_recent_cov_vac, covid_test_positive_date) %>% as.numeric() %>% abs(), 
+                             difftime(date_most_recent_cov_vac, covid_test_positive_date, units = "days") %>% as.numeric(), 
                              NA_integer_),
     
     tb_postest_vacc_cat = fct_case_when(
@@ -236,7 +236,7 @@ data_processed <- data_extract %>%
     
     # Time-between positive test and day of treatment
     tb_postest_treat = ifelse(!is.na(date_treated), 
-                              difftime(date_treated, covid_test_positive_date) %>% as.numeric() %>% abs(), 
+                              difftime(date_treated, covid_test_positive_date, units = "days") %>% as.numeric(), 
                               NA_integer_),
     
     # Flag records where treatment date falls in treatment assignment window
@@ -279,7 +279,7 @@ data_processed <- data_extract %>%
       case_when(is.na(date_treated) ~ NA_real_,
                 symptomatic_covid_test == "Y" ~ min(covid_test_positive_date,
                                                     covid_symptoms_snomed) %>%
-                                                difftime(., date_treated) %>%
+                                                difftime(., date_treated, units = "days") %>%
                                                 as.numeric()
                 ),
   ) %>%
