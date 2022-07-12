@@ -7,12 +7,15 @@
 library(readr)
 library(dplyr)
 library(fs)
+library(here)
 
 # load data
 data_cohort_day5 <- 
-  read_rds(here::here("output", "data", "data_processed_day5.rds"))
+  read_rds(here("output", "data", "data_processed_day5.rds"))
 data_cohort_day0 <-
-  read_rds(here::here("output", "data", "data_processed_day0.rds"))
+  read_rds(here("output", "data", "data_processed_day0.rds"))
+# create output folder
+dir_create(here("output", "data", "data_properties"))
 
 # function used to summarise outcomes
 summarise_outcomes <- function(data, 
@@ -30,7 +33,7 @@ summarise_outcomes <- function(data,
               fu_q3 = quantile(!!fu, p = 0.75, na.rm = TRUE),
               .groups = "keep") %>%
     write_csv(., 
-              path("output", "data_properties", filename))
+              path(here("output", "data_properties"), filename))
 }
 
 # print crosstabulation
