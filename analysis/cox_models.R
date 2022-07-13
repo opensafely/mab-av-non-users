@@ -84,7 +84,7 @@ for(i in seq_along(trt_grp)) {
     estimates[c(1, 4), "n"] <- (nrow(data_cohort_sub))
   } else {
     print(paste0(trt_grp[i], " versus Untreated Comparison"))
-    # Drop patients treated with molnupiravir 
+    # Drop patients treated with molnupiravir or sotrovimab
     data_cohort_sub <- 
       data_cohort %>% 
       filter(treatment_strategy_cat != trt_grp[i])
