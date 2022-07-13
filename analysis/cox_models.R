@@ -175,11 +175,27 @@ for(i in seq_along(trt_grp)) {
     ifelse(data_cohort_sub$treatment == "Treated",
            1 / data_cohort_sub$pscore,
            1 / (1 - data_cohort_sub$pscore))
-  # Check extremes
-  quantile(data_cohort_sub$weights[data_cohort_sub$treatment=="Treated"],
-           c(0,0.01,0.05,0.95,0.99,1))
-  quantile(data_cohort_sub$weights[data_cohort_sub$treatment=="Untreated"],
-           c(0,0.01,0.05,0.95,0.99,1))
+  # Check overlap
+  # Identify lowest and highest propensity score in each group
+  
+  ps_trim <- data_cohort_sub %>% 
+    select(treatment, pscore) %>% 
+    group_by(treatment) %>% 
+    summarise(min = min(pscore), max= max(pscore)) %>% 
+    ungroup() %>% 
+    summarise(min = max(min), max = min(max)) # see below for why max of min and min of max is taken
+  
+  # Restricted to observations within a PS range common to both treated and untreated persons—
+  # (i.e. exclude all patients in the nonoverlapping parts of the PS distribution)
+  
+  cat("#### Patients before restriction ####\n")
+  print(dim(data_cohort_sub))  
+  
+  data_cohort_sub <- data_cohort_sub %>% 
+    filter(pscore >= ps_trim$min[1] & pscore <= ps_trim$max[1])
+  
+  cat("#### Patients after restriction ####\n")
+  print(dim(data_cohort_sub))  
   
   # Fit outcome model ---
   ## Define svy design for IPTW 
