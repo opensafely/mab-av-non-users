@@ -219,7 +219,7 @@ data_processed <- data_extract %>%
     
     # Time-between positive test and last vaccination
     tb_postest_vacc = ifelse(!is.na(date_most_recent_cov_vac),
-                             difftime(date_most_recent_cov_vac, covid_test_positive_date, units = "days") %>% as.numeric(), 
+                             difftime(covid_test_positive_date, date_most_recent_cov_vac, units = "days") %>% as.numeric(), 
                              NA_integer_),
     
     tb_postest_vacc_cat = fct_case_when(
