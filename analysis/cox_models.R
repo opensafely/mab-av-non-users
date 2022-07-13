@@ -168,18 +168,64 @@ for(i in seq_along(trt_grp)) {
   ggsave(overlapPlot, 
          filename = 
            here("output", "figs", 
-                paste0(trt_grp[i], "_overlap_plot_day5.png")),
+                paste0(trt_grp[i], "_overlap_plot_day5_before_restriction.png")),
          width=20, height=14, units="cm")
   # Derive inverse probability of treatment weights (IPTW)
   data_cohort_sub$weights <-
     ifelse(data_cohort_sub$treatment == "Treated",
            1 / data_cohort_sub$pscore,
            1 / (1 - data_cohort_sub$pscore))
-  # Check extremes
-  quantile(data_cohort_sub$weights[data_cohort_sub$treatment=="Treated"],
-           c(0,0.01,0.05,0.95,0.99,1))
-  quantile(data_cohort_sub$weights[data_cohort_sub$treatment=="Untreated"],
-           c(0,0.01,0.05,0.95,0.99,1))
+  # Check overlap
+  # Identify lowest and highest propensity score in each group
+  
+  ps_trim <- data_cohort_sub %>% 
+    select(treatment, pscore) %>% 
+    group_by(treatment) %>% 
+    summarise(min = min(pscore), max= max(pscore)) %>% 
+    ungroup() %>% 
+    summarise(min = max(min), max = min(max)) # see below for why max of min and min of max is taken
+  
+  # Restricted to observations within a PS range common to both treated and untreated persons—
+  # (i.e. exclude all patients in the nonoverlapping parts of the PS distribution)
+  
+  cat("#### Patients before restriction ####\n")
+  print(dim(data_cohort_sub))  
+  
+  data_cohort_sub <- data_cohort_sub %>% 
+    filter(pscore >= ps_trim$min[1] & pscore <= ps_trim$max[1])
+  
+  cat("#### Patients after restriction ####\n")
+  print(dim(data_cohort_sub))  
+  
+  # Overlap plot 
+  overlapPlot2 <- data_cohort_sub %>% 
+    mutate(trtlabel = ifelse(treatment == "Treated",
+                             yes = 'Treated',
+                             no = 'Untreated')) %>%
+    ggplot(aes(x = pscore, linetype = trtlabel)) +
+    scale_linetype_manual(values=c("solid", "dotted")) +
+    geom_density(alpha = 0.5) +
+    xlab('Probability of receiving treatment') +
+    ylab('Density') +
+    scale_fill_discrete('') +
+    scale_color_discrete('') +
+    scale_x_continuous(breaks=seq(0, 1, 0.1)) +
+    theme(strip.text = element_text(colour ='black')) +
+    theme_bw() +
+    theme(legend.title = element_blank()) +
+    theme(legend.position = c(0.82,.8),
+          legend.direction = 'vertical', 
+          panel.background = element_rect(fill = "white", colour = "white"),
+          axis.line = element_line(colour = "black"),
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+  # Save plot
+  ggsave(overlapPlot2, 
+         filename = 
+           here("output", "figs", 
+                paste0(trt_grp[i], "_overlap_plot_day5_after_restriction.png")),
+         width=20, height=14, units="cm")
   
   # Fit outcome model ---
   ## Define svy design for IPTW 
@@ -232,6 +278,44 @@ for(i in seq_along(trt_grp)) {
       estimates[k, "HR"] <- model_PSw()$result$coefficients[selection] %>% exp()
       estimates[k, c("LowerCI", "UpperCI")] <- 
         confint(model_PSw()$result)[selection,] %>% exp()
+      
+      # Survival curves
+      # Untreated
+      survdata0 <- survfit(model_PSw()$result,
+                           newdata=mutate(data_cohort_sub, treatment="Untreated"))
+    
+      estimates0 <- data.frame(time = survdata0$time, 
+                               estimate = 1 - rowMeans(survdata0$surv),
+                               Treatment = "Untreated")
+      
+      # Treated
+      survdata1 <- survfit(model_PSw()$result, 
+                           newdata=mutate(data_cohort_sub, treatment="Treated"))
+      
+      estimates1 <- data.frame(time = survdata1$time, 
+                               estimate = 1 - rowMeans(survdata1$surv),
+                               Treatment = "Treated")
+      
+      # Combine estimates in 1 dataframe
+      tidy <- data.frame(rbind(estimates0, estimates1)) 
+      
+      # Plot cumulative incidence percentage
+      plot <- ggplot(tidy, aes(x=time, y=100*estimate, fill=Treatment, color=Treatment)) +
+        geom_line(size = 1) + 
+        xlab("Time (Days)") +
+        ylab("Cumulative Incidence (%)") +
+        theme_classic() + 
+        scale_x_continuous(breaks=c(0, 5, 10, 15, 20), 
+                       labels=c("5", "10", "15", "20", "25"))
+      
+      # Save plot
+      ggsave(plot, 
+             filename = 
+               here("output", "figs", 
+                    paste0(trt_grp[i], "_", outcomes[j], "_cumInc_day5.png")),
+             width=20, height=14, units="cm")
+
+
     } else log[k, "error"] <- model_PSw()$messages
   }
 }
@@ -249,3 +333,4 @@ write_csv(log,
           here("output", 
                "tables", 
                paste0("log_cox_models_", data_label, ".csv")))
+
