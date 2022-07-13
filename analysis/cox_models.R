@@ -58,10 +58,10 @@ colnames(estimates) <-
 # create data.frame 'log' where errors and warnings are saved
 # 'log' has 3 columns: comparison, warning and error
 # 'log' has 6 rows like 'estimates'
-log <- matrix(nrow = 6, ncol = 3) %>% as.data.frame()
+log <- matrix(nrow = 6, ncol = 4) %>% as.data.frame()
 # give column names
 colnames(log) <- 
-  c("comparison", "warning", "error")
+  c("comparison", "outcome", "warning", "error")
 
 # Specify treated group for comparison (Treated vs Untreated)
 # used to loop trough different analyses
@@ -192,6 +192,8 @@ for(i in seq_along(trt_grp)) {
     k <- i + ((j - 1) * 3)
     estimates[k, "comparison"] <- t
     estimates[k, "outcome"] <- outcome_event
+    log[k, "comparison"] <- t
+    log[k, "outcome"] <- outcome_event
     # create formula for primary and secondary analysis
     if (outcome_event == "primary"){
       formula <- 

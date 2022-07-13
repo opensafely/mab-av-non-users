@@ -854,15 +854,15 @@ study = StudyDefinition(
     solid_organ_transplant_nhsd OR
     hiv_aids_nhsd OR
     immunosupression_nhsd OR
-    imid_nhsd OR 
+    imid_nhsd OR
     liver_disease_nhsd OR
     ckd_stage_5_nhsd OR
     haematological_disease_nhsd OR
     cancer_opensafely_snomed OR
-    downs_syndrome_nhsd  
+    downs_syndrome_nhsd
     """,
     return_expectations={
-      "incidence": 0.4
+      "incidence": 1.0
     },
   ),
 

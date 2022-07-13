@@ -37,6 +37,14 @@ actions:
         txt2: output/data_properties/data_processed_day5_coltypes.txt
         txt3: output/data_properties/data_processed_day5_tabulate.txt
 
+  crosstab_trt_outcomes:
+    run: r:latest analysis/crosstab_trt_outcomes.R
+    needs: [data_process]
+    outputs:
+      moderately_sensitive:
+        csvsday5: output/data_properties/day5_*.csv 
+        csvsday0: output/data_properties/day0_*.csv
+
   table_1_day5:
     run: r:latest analysis/table_1.R day5
     needs: [data_process]
