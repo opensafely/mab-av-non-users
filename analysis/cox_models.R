@@ -168,7 +168,7 @@ for(i in seq_along(trt_grp)) {
   ggsave(overlapPlot, 
          filename = 
            here("output", "figs", 
-                paste0(trt_grp[i], "_overlap_plot_day5.png")),
+                paste0(trt_grp[i], "_overlap_plot_day5_before_restriction.png")),
          width=20, height=14, units="cm")
   # Derive inverse probability of treatment weights (IPTW)
   data_cohort_sub$weights <-
@@ -196,6 +196,36 @@ for(i in seq_along(trt_grp)) {
   
   cat("#### Patients after restriction ####\n")
   print(dim(data_cohort_sub))  
+  
+  # Overlap plot 
+  overlapPlot2 <- data_cohort_sub %>% 
+    mutate(trtlabel = ifelse(treatment == "Treated",
+                             yes = 'Treated',
+                             no = 'Untreated')) %>%
+    ggplot(aes(x = pscore, linetype = trtlabel)) +
+    scale_linetype_manual(values=c("solid", "dotted")) +
+    geom_density(alpha = 0.5) +
+    xlab('Probability of receiving treatment') +
+    ylab('Density') +
+    scale_fill_discrete('') +
+    scale_color_discrete('') +
+    scale_x_continuous(breaks=seq(0, 1, 0.1)) +
+    theme(strip.text = element_text(colour ='black')) +
+    theme_bw() +
+    theme(legend.title = element_blank()) +
+    theme(legend.position = c(0.82,.8),
+          legend.direction = 'vertical', 
+          panel.background = element_rect(fill = "white", colour = "white"),
+          axis.line = element_line(colour = "black"),
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+  # Save plot
+  ggsave(overlapPlot2, 
+         filename = 
+           here("output", "figs", 
+                paste0(trt_grp[i], "_overlap_plot_day5_after_restriction.png")),
+         width=20, height=14, units="cm")
   
   # Fit outcome model ---
   ## Define svy design for IPTW 
