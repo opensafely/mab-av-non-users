@@ -252,7 +252,7 @@ data_processed <- data_extract %>%
       date_treated == molnupiravir_covid_therapeutics & 
         treat_check == 1 ~ "Molnupiravir",
       TRUE ~ "Untreated"
-    ) %>% as.factor(),
+    ) %>% factor(levels = c("Untreated", "Sotrovimab", "Molnupiravir")),
     
     # Treatment strategy overall
     treatment = case_when(
@@ -261,7 +261,7 @@ data_processed <- data_extract %>%
         (date_treated == molnupiravir_covid_therapeutics & 
            treat_check == 1)  ~ "Treated",
       TRUE ~ "Untreated"
-    ) %>% as.factor(),
+    ) %>% factor(levels = c("Untreated", "Treated")),
     
     # Treatment date
     treatment_date = ifelse(treatment == "Treated", date_treated, NA_Date_),
