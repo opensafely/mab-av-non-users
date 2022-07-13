@@ -53,7 +53,7 @@ ggplot(
                  position = 'identity', 
                  binwidth = 1) +
   scale_fill_manual(values=c("#E69F00", "#0072B2")) +
-  scale_x_continuous(limits = c(0, 4)) + 
+  scale_x_continuous(limits = c(0, 5)) + 
   labs(fill="Treatment") +
   xlab("Time-between positive test and treatment (days)") +
   ylab("Density") +
