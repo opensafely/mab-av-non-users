@@ -5,7 +5,6 @@
 
 # libraries
 library(readr)
-library(plyr)
 library(dplyr)
 library(fs)
 library(here)
@@ -106,7 +105,7 @@ flowchart <-
 # redact (simple redaction, round all to nearest 5)
 flowchart_redacted <- 
   flowchart %>%
-    mutate(across(where(is.integer), ~ round_any(.x, 5)))
+    mutate(across(where(is.integer), ~ plyr::round_any(.x, 5)))
 # Save flowcharts
 write_csv(flowchart, path(here("output", "data_properties", "flowchart.csv")))
-write_csv(flowchart, path(here("output", "tables", "flowchart_redacted.csv")))
+write_csv(flowchart_redacted, path(here("output", "tables", "flowchart_redacted.csv")))
