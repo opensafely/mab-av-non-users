@@ -5,6 +5,7 @@
 
 # libraries
 library(readr)
+library(plyr)
 library(dplyr)
 library(fs)
 library(here)
@@ -14,8 +15,9 @@ data_cohort_day5 <-
   read_rds(here("output", "data", "data_processed_day5.rds"))
 data_cohort_day0 <-
   read_rds(here("output", "data", "data_processed_day0.rds"))
-# create output folder
+# create output folders
 dir_create(here("output", "data_properties"))
+dir_create(here("output", "tables"))
 
 # function used to summarise outcomes
 summarise_outcomes <- function(data, 
@@ -36,7 +38,7 @@ summarise_outcomes <- function(data,
               path(here("output", "data_properties"), filename))
 }
 
-# print crosstabulation
+# crosstabulation trt x outcomes
 cat("#### cohort day 5, primary outcome ####\n")
 summarise_outcomes(data_cohort_day5, 
                    fu_primary, 
@@ -67,4 +69,44 @@ summarise_outcomes(data_cohort_day0,
                    fu_all, 
                    status_all,
                    "day0_all.csv")
-     
+
+# flowchart
+n_total <- data_cohort_day0 %>% nrow()
+n_treated <- data_cohort_day0 %>%
+  filter(treatment == "Treated") %>%
+  nrow()
+n_untreated <- data_cohort_day0 %>%
+  filter(treatment == "Untreated") %>%
+  nrow()
+n_hosp_death_treated <- data_cohort_day0 %>%
+  filter(treatment == "Treated" & fu_secondary <= 4) %>%
+  nrow()
+n_hosp_death_untreated <- data_cohort_day0 %>%
+  filter(treatment == "Untreated" & fu_secondary <= 4) %>%
+  nrow
+cat("#####check for any na's in fu_secondary (should be FALSE)#####\n")
+print(any(is.na(data_cohort_day0$fu_secondary)))
+n_treated_day5 <- data_cohort_day5 %>%
+  filter(treatment == "Treated") %>%
+  nrow()
+n_untreated_day5 <- data_cohort_day5 %>%
+  filter(treatment == "Untreated") %>%
+  nrow()
+# combine in one table
+flowchart <-
+  tibble(
+    total = n_total,
+    treated = n_treated,
+    untreated = n_untreated,
+    hosp_death_treated = n_hosp_death_treated,
+    hosp_death_untreated = n_hosp_death_untreated,
+    treated_day5 = n_treated_day5,
+    untreated_day5 = n_untreated_day5
+  )
+# redact (simple redaction, round all to nearest 5)
+flowchart_redacted <- 
+  flowchart %>%
+    mutate(across(where(is.integer), ~ round_any(.x, 5)))
+# Save flowcharts
+write_csv(flowchart, path(here("output", "data_properties", "flowchart.csv")))
+write_csv(flowchart, path(here("output", "tables", "flowchart_redacted.csv")))
