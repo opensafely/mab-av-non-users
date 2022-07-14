@@ -44,6 +44,8 @@ actions:
       moderately_sensitive:
         csvsday5: output/data_properties/day5_*.csv 
         csvsday0: output/data_properties/day0_*.csv
+        csvflowchart: output/data_properties/flowchart.csv
+        csvflowchartrdctd: output/tables/flowchart_redacted.csv
 
   table_1_day5:
     run: r:latest analysis/table_1.R day5
