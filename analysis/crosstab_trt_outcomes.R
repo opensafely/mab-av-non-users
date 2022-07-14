@@ -74,11 +74,23 @@ n_total <- data_cohort_day0 %>% nrow()
 n_treated <- data_cohort_day0 %>%
   filter(treatment == "Treated") %>%
   nrow()
+n_treated_sot <- data_cohort_day0 %>%
+  filter(treatment == "Treated" & treatment_strategy_cat == "Sotrovimab") %>%
+  nrow()
+n_treated_mol <- data_cohort_day0 %>%
+  filter(treatment == "Treated" & treatment_strategy_cat == "Molnupiravir") %>%
+  nrow()
 n_untreated <- data_cohort_day0 %>%
   filter(treatment == "Untreated") %>%
   nrow()
 n_hosp_death_treated <- data_cohort_day0 %>%
   filter(treatment == "Treated" & fu_secondary <= 4) %>%
+  nrow()
+n_hosp_death_treated_sot <- data_cohort_day0 %>%
+  filter(treatment == "Treated" & fu_secondary <= 4 & treatment_strategy_cat == "Sotrovimab") %>%
+  nrow()
+n_hosp_death_treated_mol <- data_cohort_day0 %>%
+  filter(treatment == "Treated" & fu_secondary <= 4 & treatment_strategy_cat == "Molnupiravir") %>%
   nrow()
 n_hosp_death_untreated <- data_cohort_day0 %>%
   filter(treatment == "Untreated" & fu_secondary <= 4) %>%
@@ -88,6 +100,12 @@ print(any(is.na(data_cohort_day0$fu_secondary)))
 n_treated_day5 <- data_cohort_day5 %>%
   filter(treatment == "Treated") %>%
   nrow()
+n_treated_day5_sot <- data_cohort_day5 %>%
+  filter(treatment == "Treated" & treatment_strategy_cat == "Sotrovimab") %>%
+  nrow()
+n_treated_day5_mol <- data_cohort_day5 %>%
+  filter(treatment == "Treated" & treatment_strategy_cat == "Molnupiravir") %>%
+  nrow()
 n_untreated_day5 <- data_cohort_day5 %>%
   filter(treatment == "Untreated") %>%
   nrow()
@@ -96,10 +114,16 @@ flowchart <-
   tibble(
     total = n_total,
     treated = n_treated,
+    treated_sot = n_treated_sot,
+    treated_mol = n_treated_mol,
     untreated = n_untreated,
     hosp_death_treated = n_hosp_death_treated,
+    hosp_death_treated_sot = n_hosp_death_treated_sot,
+    hosp_death_treated_mol = n_hosp_death_treated_mol,
     hosp_death_untreated = n_hosp_death_untreated,
     treated_day5 = n_treated_day5,
+    treated_day5_sot = n_treated_day5_sot,
+    treated_day5_mol = n_treated_day5_mol,
     untreated_day5 = n_untreated_day5
   )
 # redact (simple redaction, round all to nearest 5)
