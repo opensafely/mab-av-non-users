@@ -20,6 +20,8 @@ source(here("lib", "functions", "safely_n_quietly.R"))
 fs::dir_create(here::here("output", "figs"))
 ## Create tables directory
 fs::dir_create(here::here("output", "tables"))
+## Create data_models directory (where ps models are saved)
+fs::dir_create(here::here("output", "data_models"))
 
 ## Import command-line arguments
 args <- commandArgs(trailingOnly=TRUE)
@@ -141,7 +143,9 @@ for(i in seq_along(trt_grp)) {
                  family = binomial(link = "logit"),
                  data = data_cohort_sub)
   
-  summary(psModel)
+  summary(psModel) %>% coefficients()
+  saveRDS(psModel, here("output", "data_models",
+                        paste0(trt_grp[i], "_psModelFit.rds")))
   # Append patient-level predicted probability of being assigned to cohort
   data_cohort_sub$pscore <- predict(psModel, type = "response")
   # Overlap plot 
