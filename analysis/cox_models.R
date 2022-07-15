@@ -96,11 +96,12 @@ for(i in seq_along(trt_grp)) {
   # Note: age modelled with cubic spline with 3 knots
   vars <-
     c(
-      "ns(age, df=4)",
+      "ns(age, df=3)",
+      "ns(study_week, df=3)",
       "sex",
       "ethnicity",
       "imdQ5" ,
-      "region_nhs",
+      "stp",
       "rural_urban",
       "huntingtons_disease_nhsd" ,
       "myasthenia_gravis_nhsd" ,
@@ -139,6 +140,8 @@ for(i in seq_along(trt_grp)) {
   psModel <- glm(psModelFunction,
                  family = binomial(link = "logit"),
                  data = data_cohort_sub)
+  
+  summary(psModel)
   # Append patient-level predicted probability of being assigned to cohort
   data_cohort_sub$pscore <- predict(psModel, type = "response")
   # Overlap plot 

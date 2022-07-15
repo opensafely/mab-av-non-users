@@ -20,6 +20,11 @@ source(here::here("lib", "functions", "define_status_and_fu_all.R"))
 source(here::here("lib", "functions", "define_status_and_fu_primary.R"))
 source(here::here("lib", "functions", "define_status_and_fu_secondary.R"))
 
+# import globally defined study dates and convert to "Date"
+study_dates <-
+  jsonlite::read_json(path=here("lib", "design", "study-dates.json")) %>%
+  map(as.Date)
+
 ## Print session info to metadata log file
 sessionInfo()
 
@@ -39,7 +44,7 @@ data_extract <- read_csv(
     ethnicity = col_character(),
     imdQ5 = col_character(),
     region_nhs = col_character(),
-    stp = col_factor(),
+    stp = col_character(),
     rural_urban = col_character(),
     
     # MAIN ELIGIBILITY - FIRST POSITIVE SARS-CoV-2 TEST IN PERIOD ----
@@ -207,6 +212,12 @@ data_processed <- data_extract %>%
       TRUE ~ NA_character_
     ),
     
+    # Calendar Time
+    study_week = difftime(covid_test_positive_date, study_dates$start_date,units="weeks") %>% as.numeric(),
+    
+    # STP
+    stp = as.factor(stp), 
+    
     # SGTF
    sgtf = fct_case_when(
      is.na(sgtf) | sgtf == "" ~ "Unknown",
@@ -216,7 +227,7 @@ data_processed <- data_extract %>%
       #TRUE ~ "Unknown",
       TRUE ~ NA_character_
     ),
-    
+  
     # Time-between positive test and last vaccination
     tb_postest_vacc = ifelse(!is.na(date_most_recent_cov_vac),
                              difftime(covid_test_positive_date, date_most_recent_cov_vac, units = "days") %>% as.numeric(), 
