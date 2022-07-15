@@ -104,8 +104,8 @@ study = StudyDefinition(
     date_format="YYYY-MM-DD",
     between=["index_date", end_date],
     return_expectations={
-      "date": {"earliest": "2021-12-16"},
-      "incidence": 1.0
+      "incidence": 1.0,
+      "date": {"earliest": "2021-12-16", "latest": "2022-02-01"},
     },
   ),
   # Was patients registered at the time of a positive test?

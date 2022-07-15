@@ -20,6 +20,8 @@ source(here("lib", "functions", "safely_n_quietly.R"))
 fs::dir_create(here::here("output", "figs"))
 ## Create tables directory
 fs::dir_create(here::here("output", "tables"))
+## Create data_models directory (where ps models are saved)
+fs::dir_create(here::here("output", "data_models"))
 
 ## Import command-line arguments
 args <- commandArgs(trailingOnly=TRUE)
@@ -96,11 +98,12 @@ for(i in seq_along(trt_grp)) {
   # Note: age modelled with cubic spline with 3 knots
   vars <-
     c(
-      "ns(age, df=4)",
+      "ns(age, df=3)",
+      "ns(study_week, df=3)",
       "sex",
       "ethnicity",
       "imdQ5" ,
-      "region_nhs",
+      "stp",
       "rural_urban",
       "huntingtons_disease_nhsd" ,
       "myasthenia_gravis_nhsd" ,
@@ -139,6 +142,10 @@ for(i in seq_along(trt_grp)) {
   psModel <- glm(psModelFunction,
                  family = binomial(link = "logit"),
                  data = data_cohort_sub)
+  
+  summary(psModel) %>% coefficients()
+  saveRDS(psModel, here("output", "data_models",
+                        paste0(trt_grp[i], "_psModelFit.rds")))
   # Append patient-level predicted probability of being assigned to cohort
   data_cohort_sub$pscore <- predict(psModel, type = "response")
   # Overlap plot 

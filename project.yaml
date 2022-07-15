@@ -68,6 +68,7 @@ actions:
         figure3: output/figs/*_cumInc_day5.png
         table1: output/tables/cox_models_day5.csv
         table2: output/tables/log_cox_models_day5.csv
+        model1: output/data_models/*_psModelFit.rds
 
   trt_pat_day5:
     run: r:latest analysis/treatment_distributions.R day5
