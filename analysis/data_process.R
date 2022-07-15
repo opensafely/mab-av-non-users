@@ -213,7 +213,10 @@ data_processed <- data_extract %>%
     ),
     
     # Calendar Time
-    study_week = difftime(covid_test_positive_date, study_dates$start_date,units="weeks") %>% as.numeric(),
+    study_week = difftime(covid_test_positive_date, 
+                          study_dates$start_date,units="weeks") %>% 
+      as.numeric() %>%
+      floor(),
     
     # STP
     stp = as.factor(stp), 
