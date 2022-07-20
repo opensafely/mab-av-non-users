@@ -122,18 +122,6 @@ add_covid_hosp_admission_outcome <- function(data){
         TRUE ~ covid_hosp_admission_first_date0_6)
       ) %>%
     # deselect all columns not needed
-    select(-c(covid_hosp_admission_date0,
-              covid_hosp_admission_date1,
-              covid_hosp_admission_date2,
-              covid_hosp_admission_date3,
-              covid_hosp_admission_date4,
-              covid_hosp_admission_date5,
-              covid_hosp_admission_date6,
-              covid_hosp_admission_first_date7_27,
-              covid_hosp_admission_first,
-              covid_hosp_admission_first_date0_6,
-              covid_hosp_admission_2nd_date0_27,
-              days_between_treatment_and_first_covid_admission,
-              covid_hosp_discharge_first_date0_7,
+    select(-c(days_between_treatment_and_first_covid_admission,
               days_between_first_covid_admission_and_discharge))
 }
