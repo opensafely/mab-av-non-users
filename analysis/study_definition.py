@@ -1495,4 +1495,22 @@ study = StudyDefinition(
       "incidence": 0.05,
     },
   ),
+  # cause of death (death_date is extracted above (--> censoring var))
+  death_cause=patients.died_from_any_cause(
+    returning="underlying_cause_of_death",
+    on_or_after="covid_test_positive_date",
+    return_expectations={
+      "rate": "universal",
+      "incidence": 0.05,
+      "category": {
+        "ratios": {
+          "icd1": 0.2,
+          "icd2": 0.2,
+          "icd3": 0.2,
+          "icd4": 0.2,
+          "icd5": 0.2,
+        }
+      },
+    },
+  ),
 )
