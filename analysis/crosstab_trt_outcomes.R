@@ -14,6 +14,9 @@ data_cohort_day5 <-
   read_rds(here("output", "data", "data_processed_day5.rds"))
 data_cohort_day0 <-
   read_rds(here("output", "data", "data_processed_day0.rds"))
+data_cohort_day0_4 <-
+  data_cohort_day0 %>%
+  filter(fu_secondary <= 4)
 # create output folders
 dir_create(here("output", "data_properties"))
 dir_create(here("output", "tables"))
@@ -27,47 +30,93 @@ summarise_outcomes <- function(data,
   status <- enquo(status)
   data %>%
     select(treatment_strategy_cat, !!fu, !!status) %>%
-    group_by(treatment_strategy_cat, !!status) %>%
+    group_by(!!status, treatment_strategy_cat) %>%
     summarise(n = n(),
               fu_median = median(!!fu),
               fu_q1 = quantile(!!fu, p = 0.25, na.rm = TRUE),
               fu_q3 = quantile(!!fu, p = 0.75, na.rm = TRUE),
               .groups = "keep") %>%
+    mutate(n_redacted = case_when(n <= 5 ~ "<5",
+                                  TRUE ~ n %>% as.character()),
+           fu_median_redacted = case_when(n <= 10 ~ "[REDACTED]",
+                                          TRUE ~ fu_median %>% as.character()),
+           fu_q1_redacted = case_when(n <= 10 ~ "[REDACTED]",
+                                      TRUE ~ fu_q1 %>% as.character()),
+           fu_q3_redacted = case_when(n <= 10 ~ "[REDACTED]",
+                                      TRUE ~ fu_q3 %>% as.character())) %>%
+    select(-c(n, fu_median, fu_q1, fu_q3)) %>%
     write_csv(., 
               path(here("output", "data_properties"), filename))
 }
 
+# pt treated with sotrovimab whose first outcome is not counted as the outcome
+cat("#### Sotrovimab recipients whose first outcome is not counted ####\n")
+data_cohort_day5 %>%
+  filter(treatment_strategy_cat == "Sotrovimab" &
+           covid_hosp_admission_date == covid_hosp_admission_2nd_date0_27) %>%
+  nrow() %>% print()
+
+# pt hospitalised before treatment
+cat("\n#### Treated individuals whose date of treatment is after covid hospital admission ####\n")
+data_cohort_day0 %>%
+  filter(treatment == "Treated" &
+           covid_hosp_admission_date < date_treated) %>%
+  group_by(treatment_strategy_cat) %>%
+  summarise(n = n()) %>% print()
+cat("\n#### Treated individuals whose date of treatment is after all-cause hospital admission ####\n")
+data_cohort_day0 %>%
+  filter(treatment == "Treated" &
+           allcause_hosp_admission_date < date_treated) %>%
+  group_by(treatment_strategy_cat) %>%
+  summarise(n = n()) %>% print()
+
 # crosstabulation trt x outcomes
-cat("#### cohort day 5, primary outcome ####\n")
+cat("#### cohort day 5-27, primary outcome ####\n")
 summarise_outcomes(data_cohort_day5, 
                    fu_primary, 
                    status_primary,
                    "day5_primary.csv")
-cat("\n#### cohort day 5, secondary outcome ####\n")
+cat("\n#### cohort day 5-27, secondary outcome ####\n")
 summarise_outcomes(data_cohort_day5, 
                    fu_secondary, 
                    status_secondary,
                    "day5_secondary.csv")
-cat("\n#### cohort day 5, all outcomes ####\n")
+cat("\n#### cohort day 5-27, all outcomes ####\n")
 summarise_outcomes(data_cohort_day5, 
                    fu_all, 
                    status_all,
                    "day5_all.csv")
-cat("\n#### cohort day 0, primary outcome ####\n")
+cat("\n#### cohort day 0-27, primary outcome ####\n")
 summarise_outcomes(data_cohort_day0, 
                    fu_primary, 
                    status_primary,
                    "day0_primary.csv")
-cat("\n#### cohort day 0, secondary outcome ####\n")
+cat("\n#### cohort day 0-27, secondary outcome ####\n")
 summarise_outcomes(data_cohort_day0, 
                    fu_secondary, 
                    status_secondary,
                    "day0_secondary.csv")
-cat("\n#### cohort day 0, all outcomes ####\n")
+cat("\n#### cohort day 0-27, all outcomes ####\n")
 summarise_outcomes(data_cohort_day0, 
                    fu_all, 
                    status_all,
                    "day0_all.csv")
+cat("\n#### cohort day 0-4, primary outcome ####\n")
+summarise_outcomes(data_cohort_day0_4, 
+                   fu_primary, 
+                   status_primary,
+                   "day0_4_primary.csv")
+cat("\n#### cohort day 0-4, secondary outcome ####\n")
+summarise_outcomes(data_cohort_day0_4, 
+                   fu_secondary, 
+                   status_secondary,
+                   "day0_4_secondary.csv")
+cat("\n#### cohort day 0-4, all outcomes ####\n")
+summarise_outcomes(data_cohort_day0_4, 
+                   fu_all, 
+                   status_all,
+                   "day0_4_all.csv")
+
 
 # flowchart
 n_total <- data_cohort_day0 %>% nrow()
