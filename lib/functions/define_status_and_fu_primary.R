@@ -59,6 +59,9 @@ add_status_and_fu_primary <- function(data){
         status_primary == "covid_hosp" | 
           status_primary == "covid_death" ~ "covid_hosp_death",
         TRUE ~ status_primary
-      ) %>% as.factor()
+      ) %>% factor(levels = 
+                     c("covid_hosp_death", 
+                       "dereg",
+                       "none"))
     )
 }

@@ -41,7 +41,12 @@ add_status_and_fu_all <- function(data){
         min_date_all == covid_death_date ~ "covid_death",
         min_date_all == noncovid_death_date ~ "noncovid_death",
         TRUE ~ "none"
-      ) %>% as.factor(),
+      ) %>% factor(levels = c("covid_hosp",
+                              "noncovid_hosp",
+                              "covid_death",
+                              "noncovid_death",
+                              "dereg",
+                              "none")),
       # FOLLOW UP STATUS 'ALL" ----
       fu_all = case_when(
         status_all == "none" ~ as.difftime(27, units = "days"),

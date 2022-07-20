@@ -55,6 +55,8 @@ add_status_and_fu_secondary <- function(data){
         status_secondary == "allcause_hosp" | 
           status_secondary == "allcause_death" ~ "allcause_hosp_death",
         TRUE ~ status_secondary
-      ) %>% as.factor()
+      ) %>% factor(levels = c("allcause_hosp_death",
+                              "dereg",
+                              "none"))
     )
 }
