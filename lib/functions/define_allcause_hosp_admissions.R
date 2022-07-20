@@ -123,18 +123,6 @@ add_allcause_hosp_admission_outcome <- function(data){
          TRUE ~ allcause_hosp_admission_first_date0_6)
       ) %>%
         # deselect all columns not needed
-        select(-c(allcause_hosp_admission_date0,
-                  allcause_hosp_admission_date1,
-                  allcause_hosp_admission_date2,
-                  allcause_hosp_admission_date3,
-                  allcause_hosp_admission_date4,
-                  allcause_hosp_admission_date5,
-                  allcause_hosp_admission_date6,
-                  allcause_hosp_admission_first_date7_27,
-                  allcause_hosp_admission_first,
-                  allcause_hosp_admission_first_date0_6,
-                  allcause_hosp_admission_2nd_date0_27,
-                  days_between_treatment_and_first_allcause_admission,
-                  allcause_hosp_discharge_first_date0_7,
+        select(-c(days_between_treatment_and_first_allcause_admission,
                   days_between_first_allcause_admission_and_discharge))
 }

@@ -131,7 +131,8 @@ data_extract <- read_csv(
     allcause_hosp_discharge_first_date0_7 = col_date(format = "%Y-%m-%d"),
     allcause_hosp_date_mabs_procedure = col_date(format = "%Y-%m-%d"),
     # death
-    died_ons_covid_any_date = col_date(format = "%Y-%m-%d")
+    died_ons_covid_any_date = col_date(format = "%Y-%m-%d"),
+    death_cause = col_factor()
   ),
 )
 
