@@ -340,10 +340,16 @@ write_csv(rubins_rules,
           here("output", 
                "tables", 
                paste0("cox_models_", data_label, ".csv")))
+
 write_rds(rubins_rules, 
           here("output", 
                "tables", 
                paste0("cox_models_", data_label, ".rds")))
+
+write_csv(estimates,
+          here("output", 
+               "tables", 
+               paste0("cox_models_estimates", data_label, ".csv")))
 write_csv(log,
           here("output", 
                "tables", 
