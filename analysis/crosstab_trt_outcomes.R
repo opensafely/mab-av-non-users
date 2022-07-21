@@ -70,6 +70,17 @@ data_cohort_day0 %>%
   group_by(treatment_strategy_cat) %>%
   summarise(n = n()) %>% print()
 
+# table of diagnoses of all cause hospitalisation
+data_cohort_day5 %>%
+  filter(!is.na(allcause_hosp_admission_date)) %>%
+  group_by(treatment_strategy_cat, allcause_hosp_diagnosis) %>%
+  summarise(n = n(), .groups = "keep") %>%
+  mutate(n_redacted = case_when(n <= 5 ~ "<=5",
+                                TRUE ~ n %>% as.character())) %>%
+  select(-n) %>%
+  write_csv(path(here("output", "data_properties"), 
+                 "day5_allcause_hosp_diagnosis.csv"))
+
 # crosstabulation trt x outcomes
 cat("#### cohort day 5-27, primary outcome ####\n")
 summarise_outcomes(data_cohort_day5, 
