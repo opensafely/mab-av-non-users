@@ -63,14 +63,14 @@ data_cohort_day5 %>%
   nrow() %>% print()
 # pt treated with sotrovimab who has a first outcome but that outcome is not counted
 # as an outcome
-cat("\n#### Sotrovimab recipients whit a first outcome not counted day 0 ####\n")
+cat("\n#### Sotrovimab recipients with a first outcome not counted day 0 ####\n")
 data_cohort_day0 %>%
   filter(treatment_strategy_cat == "Sotrovimab" &
            is.na(covid_hosp_admission_date) & !is.na(covid_hosp_admission_first_date0_6)) %>%
   nrow() %>% print()
 # pt treated with sotrovimab who has a first outcome but that outcome is not counted
 # as an outcome
-cat("\n#### Sotrovimab recipients whit a first outcome not counted day 0 ####\n")
+cat("\n#### Sotrovimab recipients with a first outcome not counted day 5 ####\n")
 data_cohort_day5 %>%
   filter(treatment_strategy_cat == "Sotrovimab" &
            is.na(covid_hosp_admission_date) & !is.na(covid_hosp_admission_first_date0_6)) %>%
