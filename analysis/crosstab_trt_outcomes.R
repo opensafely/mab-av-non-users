@@ -50,7 +50,13 @@ summarise_outcomes <- function(data,
 }
 
 # pt treated with sotrovimab whose first outcome is not counted as the outcome
-cat("#### Sotrovimab recipients whose first outcome is not counted ####\n")
+# pt treated with sotrovimab whose first outcome is not counted as the outcome
+cat("#### Sotrovimab recipients whose first outcome is not counted day 0 ####\n")
+data_cohort_day0 %>%
+  filter(treatment_strategy_cat == "Sotrovimab" &
+           covid_hosp_admission_date == covid_hosp_admission_2nd_date0_27) %>%
+  nrow() %>% print()
+cat("\n#### Sotrovimab recipients whose first outcome is not counted ####\n")
 data_cohort_day5 %>%
   filter(treatment_strategy_cat == "Sotrovimab" &
            covid_hosp_admission_date == covid_hosp_admission_2nd_date0_27) %>%
