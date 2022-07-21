@@ -303,8 +303,6 @@ for(i in seq_along(trt_grp)) {
 }
 
 ## Rubin's Rules
-estimates <- estimates %>% 
-  filter(!is.na(logHR))
 
 # Point estimate mean & within imputation variance
 rubins_rules <- estimates %>% 
@@ -349,7 +347,7 @@ write_rds(rubins_rules,
 write_csv(estimates,
           here("output", 
                "tables", 
-               paste0("cox_models_estimates", data_label, ".csv")))
+               paste0("estimates_", data_label, ".csv")))
 write_csv(log,
           here("output", 
                "tables", 
