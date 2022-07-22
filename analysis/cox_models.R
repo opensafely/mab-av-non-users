@@ -346,7 +346,7 @@ for(i in seq_along(trt_grp)) {
       ggsave(plot, 
              filename = 
                here("output", "figs", 
-                    paste0(trt_grp[i], "_", adjustment_set, "_", outcomes[j], "_cumInc_day5.png")),
+                    paste0(trt_grp[i], "_",  outcomes[j], "_", adjustment_set, "_cumInc_day5.png")),
              width=20, height=14, units="cm")
 
 

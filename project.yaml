@@ -61,7 +61,7 @@ actions:
     needs: [data_process]
     outputs:
       highly_sensitive:
-        data: output/tables/cox_models_day5_ful.rds
+        data: output/tables/cox_models_day5_full.rds
       moderately_sensitive:
         figure1: output/figs/*_full_overlap_plot_day5_before_restriction.png
         figure2: output/figs/*_full_overlap_plot_day5_after_restriction.png
