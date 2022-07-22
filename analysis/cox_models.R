@@ -38,6 +38,20 @@ if (length(args) == 0){
   stop("No outcome specified")
 }
 
+# Adjustment set
+if (length(args) == 0){
+  adjustment_set = "full"
+} else if (args[[2]] == "full") {
+  adjustment_set = "full"
+} else if (args[[2]] == "agesex") {
+  adjustment_set = "agesex"
+} else if (args[[2]] == "crude") {
+  adjustment_set = "crude"
+} else {
+  # Print error if no argument specified
+  stop("No adjustment set specified")
+}
+
 ## Import data
 if (data_label == "day5") {
   data_cohort <- 
@@ -96,6 +110,10 @@ for(i in seq_along(trt_grp)) {
   # Fit Propensity Score Model ---
   # Vector of variables for PS model
   # Note: age modelled with cubic spline with 3 knots
+  
+  if (adjustment_set != "crude") {
+    
+    if (adjustment_set == "full"){
   vars <-
     c(
       "ns(age, df=3)",
@@ -131,11 +149,20 @@ for(i in seq_along(trt_grp)) {
       "az_most_recent_cov_vac",
       "moderna_most_recent_cov_vac"
     )
+    } else if (adjustment_set == "agesex") {
+      vars <-
+        c(
+          "ns(age, df=3)",
+          "sex"
+        )
+      
+    }
   # Specify model
   psModelFunction <- as.formula(
     paste("treatment", 
           paste(vars, collapse = " + "), 
           sep = " ~ "))
+
   # Check your model
   print(psModelFunction)
   # Fit PS model
@@ -145,7 +172,7 @@ for(i in seq_along(trt_grp)) {
   
   summary(psModel) %>% coefficients()
   saveRDS(psModel, here("output", "data_models",
-                        paste0(trt_grp[i], "_psModelFit.rds")))
+                        paste0(trt_grp[i], "_", adjustment_set, "_psModelFit.rds")))
   # Append patient-level predicted probability of being assigned to cohort
   data_cohort_sub$pscore <- predict(psModel, type = "response")
   # Overlap plot 
@@ -175,7 +202,7 @@ for(i in seq_along(trt_grp)) {
   ggsave(overlapPlot, 
          filename = 
            here("output", "figs", 
-                paste0(trt_grp[i], "_overlap_plot_day5_before_restriction.png")),
+                paste0(trt_grp[i], "_", adjustment_set, "_overlap_plot_day5_before_restriction.png")),
          width=20, height=14, units="cm")
   # Derive inverse probability of treatment weights (IPTW)
   data_cohort_sub$weights <-
@@ -231,7 +258,7 @@ for(i in seq_along(trt_grp)) {
   ggsave(overlapPlot2, 
          filename = 
            here("output", "figs", 
-                paste0(trt_grp[i], "_overlap_plot_day5_after_restriction.png")),
+                paste0(trt_grp[i], "_", adjustment_set, "_overlap_plot_day5_after_restriction.png")),
          width=20, height=14, units="cm")
   
   # Fit outcome model ---
@@ -319,11 +346,64 @@ for(i in seq_along(trt_grp)) {
       ggsave(plot, 
              filename = 
                here("output", "figs", 
-                    paste0(trt_grp[i], "_", outcomes[j], "_cumInc_day5.png")),
+                    paste0(trt_grp[i], "_",  outcomes[j], "_", adjustment_set, "_cumInc_day5.png")),
              width=20, height=14, units="cm")
 
 
     } else log[k, "error"] <- model_PSw()$messages
+  }
+  }
+  if (adjustment_set == "crude") {
+    for (j in seq_along(outcomes)){
+      outcome_event <- outcomes[j]
+      print(outcome_event)
+      # because we need to know where in 'estimates' and 'log' output should be
+      # saved
+      k <- i + ((j - 1) * 3)
+      estimates[k, "comparison"] <- t
+      estimates[k, "outcome"] <- outcome_event
+      log[k, "comparison"] <- t
+      log[k, "outcome"] <- outcome_event
+      # create formula for primary and secondary analysis
+      if (outcome_event == "primary"){
+        formula <- 
+          as.formula(
+            Surv(fu_primary, status_primary == "covid_hosp_death") ~ 
+              treatment)
+      } else if (outcome_event == "secondary"){
+        formula <- 
+          as.formula(
+            Surv(fu_secondary, status_secondary == "allcause_hosp_death") ~ 
+              treatment)
+      }
+      # Cox regression
+      # returns function model with components result, output, messages, 
+      # warnings and error
+      model <- 
+        safely_n_quietly(
+          .f = ~ coxph(formula, 
+                          data = data_cohort_sub)
+        )
+      # save results from model_PSw and save warnings or errors to log file
+      if (is.null(model()$error)){
+        # no error
+        log[k,"error"] <- NA_character_
+        if (length(model()$warnings) != 0){
+          # save warning in log
+          log[k, "warning"] <- paste(model()$warnings, collapse = '; ')
+        } else log[k, "warning"] <- NA_character_
+        
+        # select main effects from 'model_PSw'
+        selection <- 
+          model()$result$coefficients %>% names %>% startsWith("treatment")
+        
+        # save coefficients of model and CIs in estimates
+        estimates[k, "HR"] <- model()$result$coefficients[selection] %>% exp()
+        estimates[k, c("LowerCI", "UpperCI")] <- 
+          confint(model()$result)[selection,] %>% exp()
+      
+        } else log[k, "error"] <- model()$messages
+    }
   }
 }
 
@@ -331,13 +411,13 @@ for(i in seq_along(trt_grp)) {
 write_csv(estimates,
           here("output", 
                "tables", 
-               paste0("cox_models_", data_label, ".csv")))
+               paste0("cox_models_", data_label, "_", adjustment_set,".csv")))
 write_rds(estimates, 
           here("output", 
                "tables", 
-               paste0("cox_models_", data_label, ".rds")))
+               paste0("cox_models_", data_label, "_", adjustment_set, ".rds")))
 write_csv(log,
           here("output", 
                "tables", 
-               paste0("log_cox_models_", data_label, ".csv")))
+               paste0("log_cox_models_", data_label, "_", adjustment_set,".csv")))
 
