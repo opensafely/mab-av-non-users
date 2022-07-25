@@ -47,6 +47,39 @@ def hosp_admission_loop_over_days(days, prefix, diagnoses, primary_diagnoses):
     return variables
 
 
+# Function to create variable allcause_hosp_admission_diagnosis
+def make_hosp_admission_diagnosis(day):
+    return{
+        f"allcause_hosp_admission_diagnosis{day}": (
+            patients.admitted_to_hospital(
+                returning="primary_diagnosis",
+                with_patient_classification=["1"],  # ordinary admissions only - exclude day cases and regular attenders
+                # see https://docs.opensafely.org/study-def-variables/#sus for more info
+                between=[f"covid_test_positive_date + {day} days", f"covid_test_positive_date + {day} days"],
+                find_first_match_in_period=True,
+                date_format="YYYY-MM-DD",
+                return_expectations={
+                  "rate": "universal",
+                  "incidence": 0.05,
+                  "category": {
+                    "ratios": {
+                      "icd1": 0.2,
+                      "icd2": 0.2,
+                      "icd3": 0.2,
+                      "icd4": 0.2,
+                      "icd5": 0.2}, }, },
+            )
+        )
+    }
+
+
+def hosp_admission_diagnosis_loop_over_days(days):
+    variables = {}
+    for day in days:
+        variables.update(make_hosp_admission_diagnosis(day=day))
+    return variables
+
+
 # DEFINE STUDY POPULATION ----
 # Define study population and variables
 study = StudyDefinition(
@@ -1374,7 +1407,7 @@ study = StudyDefinition(
   # infusion
   # If a patient is admitted and discharged on the same day OR one day apart AND patient 
   # received sotrovimab --> this event should not be counted as an outcome
-  # COVID-related hospitalisation is here defined as icd10 code mentioned on the EHR (primary or underlying)
+  # COVID-related hospitalisation is here defined as icd10 code mentioned on the EHR (primary)
   **hosp_admission_loop_over_days(days={"0", "1", "2", "3", "4", "5", "6"}, prefix="covid", diagnoses=None, primary_diagnoses=covid_icd10_codes),
   # Day 8 - 28ad
   # assuming no day case admission after day 7
@@ -1434,6 +1467,8 @@ study = StudyDefinition(
   # Day 1 - day 7 extracted seperately in order to being able to identify day cases (those should not be censored)
   # Day 1
   **hosp_admission_loop_over_days(days={"0", "1", "2", "3", "4", "5", "6"}, prefix="allcause", diagnoses=None, primary_diagnoses=None),
+  # return primary cause of all cause hosp admission
+  **hosp_admission_diagnosis_loop_over_days(days={"0", "1", "2", "3", "4", "5", "6"}),
   # Day 8 - 28
   # assuming no day case admission after day 7
   allcause_hosp_admission_first_date7_27=patients.admitted_to_hospital(
@@ -1448,6 +1483,25 @@ study = StudyDefinition(
       "rate": "uniform",
       "incidence": 0.1
     },
+  ),
+  # return cause
+  allcause_hosp_admission_first_diagnosis7_27=patients.admitted_to_hospital(
+    returning="primary_diagnosis",
+    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
+    # see https://docs.opensafely.org/study-def-variables/#sus for more info
+    between=["covid_test_positive_date + 7 days", "covid_test_positive_date + 27 days"],
+    find_first_match_in_period=True,
+    date_format="YYYY-MM-DD",
+    return_expectations={
+      "rate": "universal",
+      "incidence": 0.05,
+      "category": {
+        "ratios": {
+          "icd1": 0.2,
+          "icd2": 0.2,
+          "icd3": 0.2,
+          "icd4": 0.2,
+          "icd5": 0.2}, }, },
   ),
   # Discharge
   # return discharge date to (make sure) identify and ignore day cases
