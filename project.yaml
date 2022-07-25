@@ -101,4 +101,15 @@ actions:
       moderately_sensitive:
         figure: output/figs/day5_treatment_pattern.png
 
+  cox_day0:
+    run: r:latest analysis/cox_models_day0.R
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day0.rds
+      moderately_sensitive:
+        table1: output/tables/cox_models_day0.csv
+        table2: output/tables/estimates_day0.csv
+        
+
         
