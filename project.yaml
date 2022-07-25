@@ -78,7 +78,7 @@ actions:
         figure: output/figs/day5_treatment_pattern.png
 
   cox_day0:
-    run: r:latest analysis/cox_models_day0.R day0
+    run: r:latest analysis/cox_models_day0.R
     needs: [data_process]
     outputs:
       highly_sensitive:
