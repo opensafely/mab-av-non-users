@@ -67,10 +67,10 @@ if (data_label == "day5") {
 # 'estimates' has 6 columns:
 # primary outcome x 3 (mol + sot vs none; sot vs none; mol vs none) plus
 # secondary outcome x 3 
-estimates <- matrix(nrow = 6, ncol = 6) %>% as.data.frame()
+estimates <- matrix(nrow = 6, ncol = 7) %>% as.data.frame()
 # give column names
 colnames(estimates) <- 
-  c("comparison", "outcome", "HR", "LowerCI", "UpperCI", "n")
+  c("comparison", "outcome", "HR", "LowerCI", "UpperCI", "n", "n_after_restriction")
 # create data.frame 'log' where errors and warnings are saved
 # 'log' has 3 columns: comparison, warning and error
 # 'log' has 6 rows like 'estimates'
@@ -225,14 +225,15 @@ for(i in seq_along(trt_grp)) {
   cat("#### Patients before restriction ####\n")
   print(dim(data_cohort_sub))  
   
-  data_cohort_sub <- data_cohort_sub %>% 
+  data_cohort_sub_trimmed <- data_cohort_sub %>% 
     filter(pscore >= ps_trim$min[1] & pscore <= ps_trim$max[1])
   
   cat("#### Patients after restriction ####\n")
-  print(dim(data_cohort_sub))  
+  print(dim(data_cohort_sub_trimmed))
+  estimates[c(1 + (i - 1), 4 + (i - 1)), "n_after_restriction"] <- nrow(data_cohort_sub_trimmed)
   
   # Overlap plot 
-  overlapPlot2 <- data_cohort_sub %>% 
+  overlapPlot2 <- data_cohort_sub_trimmed %>% 
     mutate(trtlabel = ifelse(treatment == "Treated",
                              yes = 'Treated',
                              no = 'Untreated')) %>%
@@ -263,7 +264,7 @@ for(i in seq_along(trt_grp)) {
   
   # Fit outcome model ---
   ## Define svy design for IPTW 
-  iptw <- svydesign(ids = ~ 1, data = data_cohort_sub, weights = ~ weights)
+  iptw <- svydesign(ids = ~ 1, data = data_cohort_sub_trimmed, weights = ~ weights)
   for (j in seq_along(outcomes)){
     outcome_event <- outcomes[j]
     print(outcome_event)
@@ -293,7 +294,7 @@ for(i in seq_along(trt_grp)) {
       safely_n_quietly(
         .f = ~ svycoxph(formula, 
                         design = iptw, 
-                        data = data_cohort_sub)
+                        data = data_cohort_sub_trimmed)
       )
     # save results from model_PSw and save warnings or errors to log file
     if (is.null(model_PSw()$error)){
@@ -316,7 +317,7 @@ for(i in seq_along(trt_grp)) {
       # Survival curves
       # Untreated
       survdata0 <- survfit(model_PSw()$result,
-                           newdata=mutate(data_cohort_sub, treatment="Untreated"))
+                           newdata=mutate(data_cohort_sub_trimmed, treatment="Untreated"))
     
       estimates0 <- data.frame(time = survdata0$time, 
                                estimate = 1 - rowMeans(survdata0$surv),
@@ -324,7 +325,7 @@ for(i in seq_along(trt_grp)) {
       
       # Treated
       survdata1 <- survfit(model_PSw()$result, 
-                           newdata=mutate(data_cohort_sub, treatment="Treated"))
+                           newdata=mutate(data_cohort_sub_trimmed, treatment="Treated"))
       
       estimates1 <- data.frame(time = survdata1$time, 
                                estimate = 1 - rowMeans(survdata1$surv),
