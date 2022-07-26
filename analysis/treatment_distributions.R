@@ -42,9 +42,11 @@ d_trt <- data_cohort %>%
   filter(treatment_strategy_cat != "Untreated") %>% 
   select(treatment_strategy_cat, tb_postest_treat) 
 
+d_trt$treatment_strategy_cat %>% table() %>% print()
+
 ## Plot treatment distributions by group
 q <- d_trt %>% 
-ggplot( 
+  ggplot( 
   aes(x=tb_postest_treat, 
       y=..density.., 
       fill=treatment_strategy_cat)) +
@@ -53,7 +55,7 @@ ggplot(
                  position = 'identity', 
                  binwidth = 1) +
   scale_fill_manual(values=c("#E69F00", "#0072B2")) +
-  scale_x_continuous(limits = c(0, 5)) + 
+  scale_x_continuous(limits = c(-1, 5)) + 
   labs(fill="Treatment") +
   xlab("Time-between positive test and treatment (days)") +
   ylab("Density") +
@@ -66,6 +68,3 @@ ggsave(q,
          here("output", "figs", 
               paste0(data_label, "_treatment_pattern.png")),
        width=20, height=14, units="cm")
-
-
-
