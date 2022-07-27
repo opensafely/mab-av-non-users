@@ -132,14 +132,14 @@ data_extract <- read_csv(
     allcause_hosp_discharge_first_date0_7 = col_date(format = "%Y-%m-%d"),
     allcause_hosp_date_mabs_procedure = col_date(format = "%Y-%m-%d"),
     # all cause diagnosis of hosp admission
-    allcause_hosp_admission_diagnosis0 = col_character(),
-    allcause_hosp_admission_diagnosis1 = col_character(),
-    allcause_hosp_admission_diagnosis2 = col_character(),
-    allcause_hosp_admission_diagnosis3 = col_character(),
-    allcause_hosp_admission_diagnosis4 = col_character(),
-    allcause_hosp_admission_diagnosis5 = col_character(),
-    allcause_hosp_admission_diagnosis6 = col_character(),
-    allcause_hosp_admission_first_diagnosis7_27 = col_character(),
+    #allcause_hosp_admission_diagnosis0 = col_character(),
+    #allcause_hosp_admission_diagnosis1 = col_character(),
+    #allcause_hosp_admission_diagnosis2 = col_character(),
+    #allcause_hosp_admission_diagnosis4 = col_character(),
+    #allcause_hosp_admission_diagnosis3 = col_character(),
+    #allcause_hosp_admission_diagnosis5 = col_character(),
+    #allcause_hosp_admission_diagnosis6 = col_character(),
+    #allcause_hosp_admission_first_diagnosis7_27 = col_character(),
     # death
     died_ons_covid_any_date = col_date(format = "%Y-%m-%d"),
     death_cause = col_factor()
