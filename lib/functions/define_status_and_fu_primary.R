@@ -61,6 +61,7 @@ add_status_and_fu_primary <- function(data){
         TRUE ~ status_primary
       ) %>% factor(levels = 
                      c("covid_hosp_death", 
+                       "noncovid_death",
                        "dereg",
                        "none"))
     )
