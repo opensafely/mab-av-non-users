@@ -16,7 +16,7 @@ library('reshape2')
 source(here::here("lib", "functions", "fct_case_when.R"))
 source(here::here("lib", "functions", "define_covid_hosp_admissions.R"))
 source(here::here("lib", "functions", "define_allcause_hosp_admissions.R"))
-source(here::here("lib", "functions", "define_allcause_hosp_diagnosis.R"))
+#source(here::here("lib", "functions", "define_allcause_hosp_diagnosis.R"))
 source(here::here("lib", "functions", "define_status_and_fu_all.R"))
 source(here::here("lib", "functions", "define_status_and_fu_primary.R"))
 source(here::here("lib", "functions", "define_status_and_fu_secondary.R"))
@@ -322,7 +322,7 @@ data_processed <- data_extract %>%
   # adds column allcause_hosp_admission_date
   add_allcause_hosp_admission_outcome() %>%
   # add column allcause_hosp_diagnosis
-  add_allcause_hosp_diagnosis() %>%
+  #add_allcause_hosp_diagnosis() %>%
   mutate(
     # Outcome prep --> outcomes are added in add_*_outcome() functions below
     study_window = covid_test_positive_date + days(27),
