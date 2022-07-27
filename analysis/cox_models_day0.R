@@ -96,125 +96,144 @@ psModelFunction <- as.formula(
         paste(vars, collapse = " + "), 
         sep = " ~ "))
 
-## Loop over analysis for each treatment comparison 
-for(i in seq_along(trt_grp)) {
-  # used later in 'estimates' data.frame to save which analysis is done
-  t <- trt_grp[i]
-  
-  # Select data used analysis ---
-  # Create data_cohort_sub (data.frame used for the day 0 analysis)
-  if (t == "All") {
-    cat("\n#### All Treated versus Untreated Comparison ####\n")
-    data_cohort_sub <- data_cohort
-  } else {  # (mol/sot are excluded in single comparison analyses)
-    cat(paste0("\n#### ", t, " versus Untreated Comparison ####\n"))
-    # Drop patients treated with molnupiravir or sotrovimab
-    data_cohort_sub <- 
-      data_cohort %>% 
-      filter(treatment_strategy_cat != t)
+for (j in seq_along(outcomes)){
+  outcome_event <- outcomes[j]
+  cat(paste0("\n#### ", outcome_event, " outcome ####\n"))
+  # find location in matrix
+  index <- length(trt_grp) * imputations_total * (j - 1) + 1
+  # Select treatment var used in analysis ---
+  if (outcome_event == "primary"){
+    data_cohort_trt <- 
+      data_cohort %>%
+      mutate(treatment_strategy_cat = treatment_strategy_cat_day0_prim,
+             treatment = treatment_day0_prim,
+             treatment_date = treatment_date_day0_prim)
+  } else if (outcome_event == "secondary"){
+    data_cohort_trt <-
+      data_cohort %>%
+      mutate(treatment_strategy_cat = treatment_strategy_cat_day0_sec,
+             treatment = treatment_day0_sec,
+             treatment_date = treatment_date_day0_sec)
   }
-  # Create data_ps_sub (data.frame used to fit propensity score model on)
-  # --> ps model is fitted in day 5 cohort
-  # Subset cohort to those who survive until day 5 to be used for PS estimation
-  data_ps_sub <-
-    data_cohort_sub %>% 
-    filter(fu_secondary > 4)
 
-  # Fit Propensity Score Model ---
-  # Fit PS model on data_ps_sub
-  psModel <- glm(psModelFunction,
-                 family = binomial(link = "logit"),
-                 data = data_ps_sub)
-  summary(psModel) %>% coefficients()
-  
-  # Add PS to day 0 cohort ---
-  # Identify patients for who treatment will be imputed
-  # (identical across all data_cohort_sub as number of untreated people is not
-  # changing)
-  patients_imputed <- 
-    data_cohort_sub %>% 
-    filter(treatment == "Untreated" & fu_secondary <= 4)
-  cat("#### No. of patients for who treatment will be imputed ####\n")
-  print(nrow(patients_imputed))
-  # Append patient-level predicted probability of being assigned to cohort
-  # Predict PS for members of Day 0 cohort from model fitted to those who survived to Day 5
-  data_cohort_sub$pscore <- 
-    predict(psModel, type = "response", newdata = data_cohort_sub)
-  
-  # Impute treatment ---
-  # For 'untreated' patients at time of outcome, assign:
-  # 'Treated' if pscore > rand 
-  # 'Untreated' if otherwise
-  for(m in 1:imputations_total) {
-    cat(paste0("#### Imputation ", m, " ####\n"))
-    # Reassign new data_cohort_sub dataset each imputation loop
-    data_cohort_sub_imp <- data_cohort_sub
-    # identify location in data.frame 'estimates' and 'log' where
-    # output is saved
-    index <- m + (i - 1) * imputations_total
-    # Generate random probability from uniform distribution
-    set.seed(seeds[index])
-    data_cohort_sub_imp$rand <- runif(nrow(data_cohort_sub), 0, 1)
-    estimates[c(index, index + 3 * imputations_total), "seed"] <- seeds[index]
-    log[c(index, index + 3 * imputations_total), "seed"] <- seeds[index]
-    # Impute "Treated" if pscore > rand
-    data_cohort_sub_imp <- 
-      data_cohort_sub_imp %>% 
-      mutate(treatment2 = case_when(
-        (treatment == "Treated") | 
-          (treatment == "Untreated" & fu_secondary <= 4 &
-             pscore > rand)  ~ "Treated",
-        TRUE ~ "Untreated") %>% factor(levels = c("Untreated", "Treated")))
-    # Identify how many patients are assigned to each treatment group
-    trt_count <- 
-      data_cohort_sub_imp %>% 
-      arrange(treatment) %>% 
-      count(treatment, treatment2)
-    # Save count in estimates data.frame
-    estimates[c(index, index + 3 * imputations_total), "n_assign_trt"] <- 
-      trt_count[2, 3]
-    estimates[c(index, index + 3 * imputations_total), "n_assign_untrt"] <- 
-      nrow(patients_imputed) - trt_count[2, 3]
-    cat("#### No. of patients for who treatment is imputed ####\n")
-    print(paste0("Treated: ", trt_count[2, 3],
-                 "; Untreated: ", nrow(patients_imputed) - trt_count[2, 3]))
+  for(i in seq_along(trt_grp)) {
+    # Some preperations ---
+    # select treatment
+    t <- trt_grp[i]
+    # identify location in matrix where estimates are saved
+    location <- index + imputations_total * (i - 1)
     
-    # Derive inverse probability of treatment weights (IPTW) ---
-    data_cohort_sub_imp$weights <-
-      ifelse(data_cohort_sub_imp$treatment2 == "Treated",
-             1 / data_cohort_sub$pscore,
-             1 / (1 - data_cohort_sub$pscore))
-     
-    # Check overlap PS ----
-    # Identify lowest and highest propensity score in each group
-    ps_trim <- data_cohort_sub_imp %>% 
-      select(treatment2, pscore) %>% 
-      group_by(treatment2) %>% 
-      summarise(min = min(pscore), max= max(pscore)) %>% 
-      ungroup() %>% 
-      summarise(min = max(min), max = min(max)) # see below for why max of min and min of max is taken
-    # Restricted to observations within a PS range common to both treated and untreated persons—
-    # (i.e. exclude all patients in the nonoverlapping parts of the PS distribution)
-    data_cohort_sub_imp <- 
-      data_cohort_sub_imp %>% 
-      filter(pscore >= ps_trim$min[1] & pscore <= ps_trim$max[1])
-    estimates[c(index, index + 3 * imputations_total), "n_after_restriction"] <- nrow(data_cohort_sub_imp)
+    # Select data used in analysis ---
+    # Create data_cohort_sub (data.frame used for the day 0 analysis)
+    if (t == "All") {
+      cat("\n#### All Treated versus Untreated Comparison ####\n")
+      data_cohort_sub <- data_cohort_trt
+    } else {  # (mol/sot are excluded in single comparison analyses)
+      cat(paste0("\n#### ", t, " versus Untreated Comparison ####\n"))
+      # Drop patients treated with molnupiravir or sotrovimab
+      data_cohort_sub <- 
+        data_cohort_trt %>% 
+        filter(treatment_strategy_cat != t)
+    }
+    # Create data_ps_sub (data.frame used to fit propensity score model on)
+    # --> ps model is fitted in day 5 cohort
+    # Subset cohort to those who survive until day 5 to be used for PS estimation
+    data_ps_sub <-
+      data_cohort_sub %>% 
+      filter(fu_secondary > 4)
     
-    # Fit outcome model ---
-    ## Define svy design for IPTW 
-    iptw <- svydesign(ids = ~ 1, data = data_cohort_sub_imp, weights = ~ weights)
-    for (j in seq_along(outcomes)){
-      outcome_event <- outcomes[j]
-      print(outcome_event)
-      # because we need to know where in 'estimates' and 'log' output should be
-      # saved
-      location <- index + 3 * imputations_total * (j - 1)
-      estimates[location, "comparison"] <- t
-      estimates[location, "outcome"] <- outcome_event
-      estimates[location, "imputation"] <- m
-      log[location, "comparison"] <- t
-      log[location, "outcome"] <- outcome_event
-      log[location, "imputation"] <- m
+    # Fit Propensity Score Model ---
+    # Fit PS model on data_ps_sub
+    psModel <- glm(psModelFunction,
+                   family = binomial(link = "logit"),
+                   data = data_ps_sub)
+    summary(psModel) %>% coefficients()
+    
+    # Add PS to day 0 cohort ---
+    # Identify patients for who treatment will be imputed
+    # (identical across all data_cohort_sub as number of untreated people is not
+    # changing)
+    patients_imputed <- 
+      data_cohort_sub %>% 
+      filter(treatment == "Untreated" & fu_secondary <= 4)
+    cat("#### No. of patients for who treatment will be imputed ####\n")
+    print(nrow(patients_imputed))
+    # Append patient-level predicted probability of being assigned to cohort
+    # Predict PS for members of Day 0 cohort from model fitted to those who survived to Day 5
+    data_cohort_sub$pscore <- 
+      predict(psModel, type = "response", newdata = data_cohort_sub)
+    
+    # Impute treatment ---
+    # For 'untreated' patients at time of outcome, assign:
+    # 'Treated' if pscore > rand 
+    # 'Untreated' if otherwise
+    for(m in 1:imputations_total) {
+      # save treatment var and outcome for reference
+      estimates[location + (m - 1), "comparison"] <- t
+      estimates[location + (m - 1), "outcome"] <- outcome_event
+      log[location + (m - 1), "comparison"] <- t
+      log[location + (m - 1), "outcome"] <- outcome_event
+      
+      # Preperations ---
+      cat(paste0("#### Imputation ", m, " ####\n"))
+      estimates[location + (m - 1), "imputation"] <- m
+      log[location + (m - 1), "imputation"] <- m
+      # Reassign new data_cohort_sub dataset each imputation loop
+      data_cohort_sub_imp <- data_cohort_sub
+      # Generate random probability from uniform distribution
+      seed_index <- (i - 1) * imputations_total + m 
+      set.seed(seeds[seed_index])
+      data_cohort_sub_imp$rand <- runif(nrow(data_cohort_sub), 0, 1)
+      estimates[location + (m - 1), "seed"] <- seeds[seed_index]
+      log[location + (m - 1), "seed"] <- seeds[seed_index]
+      
+      # Impute "Treated" if pscore > rand ---
+      data_cohort_sub_imp <- 
+        data_cohort_sub_imp %>% 
+        mutate(treatment2 = case_when(
+          (treatment == "Treated") | 
+            (treatment == "Untreated" & fu_secondary <= 4 &
+               pscore > rand)  ~ "Treated",
+          TRUE ~ "Untreated") %>% factor(levels = c("Untreated", "Treated")))
+      # Identify how many patients are assigned to each treatment group
+      trt_count <- 
+        data_cohort_sub_imp %>% 
+        arrange(treatment) %>% 
+        count(treatment, treatment2)
+      # Save count in estimates data.frame
+      estimates[location + (m - 1), "n_assign_trt"] <- 
+        trt_count[2, 3]
+      estimates[location + (m - 1), "n_assign_untrt"] <- 
+        nrow(patients_imputed) - trt_count[2, 3]
+      cat("#### No. of patients for who treatment is imputed ####\n")
+      print(paste0("Treated: ", trt_count[2, 3],
+                   "; Untreated: ", nrow(patients_imputed) - trt_count[2, 3]))
+      
+      # Derive inverse probability of treatment weights (IPTW) ---
+      data_cohort_sub_imp$weights <-
+        ifelse(data_cohort_sub_imp$treatment2 == "Treated",
+               1 / data_cohort_sub$pscore,
+               1 / (1 - data_cohort_sub$pscore))
+      
+      # Check overlap PS ----
+      # Identify lowest and highest propensity score in each group
+      ps_trim <- data_cohort_sub_imp %>% 
+        select(treatment2, pscore) %>% 
+        group_by(treatment2) %>% 
+        summarise(min = min(pscore), max= max(pscore)) %>% 
+        ungroup() %>% 
+        summarise(min = max(min), max = min(max)) # see below for why max of min and min of max is taken
+      # Restricted to observations within a PS range common to both treated and untreated persons—
+      # (i.e. exclude all patients in the nonoverlapping parts of the PS distribution)
+      data_cohort_sub_imp <- 
+        data_cohort_sub_imp %>% 
+        filter(pscore >= ps_trim$min[1] & pscore <= ps_trim$max[1])
+      estimates[location + (m - 1), "n_after_restriction"] <- nrow(data_cohort_sub_imp)
+      
+      # Fit outcome model ---
+      ## Define svy design for IPTW 
+      iptw <- svydesign(ids = ~ 1, data = data_cohort_sub_imp, weights = ~ weights)
+      
       # create formula for primary and secondary analysis
       if (outcome_event == "primary"){
         formula <- 
@@ -239,26 +258,29 @@ for(i in seq_along(trt_grp)) {
       # save results from model_PSw and save warnings or errors to log file
       if (is.null(model_PSw()$error)){
         # no error
-        log[location,"error"] <- NA_character_
+        log[location + (m - 1),"error"] <- NA_character_
         if (length(model_PSw()$warnings) != 0){
           # save warning in log
-          log[location, "warning"] <- paste(model_PSw()$warnings, collapse = '; ')
-        } else log[location, "warning"] <- NA_character_
+          log[location + (m - 1), "warning"] <- paste(model_PSw()$warnings, collapse = '; ')
+        } else log[location + (m - 1), "warning"] <- NA_character_
         
         # select main effects from 'model_PSw'
         selection <- 
           model_PSw()$result$coefficients %>% names %>% startsWith("treatment2")
         
         # save coefficients of model and var in estimates
-        estimates[location, "logHR"] <- 
+        estimates[location + (m - 1), "logHR"] <- 
           model_PSw()$result$coefficients[selection] 
-        estimates[location, c("var")] <- 
-         model_PSw()$result$var[selection] # Gives the robust variance
-      # error
-      } else log[location, "error"] <- model_PSw()$messages
+        estimates[location + (m - 1), c("var")] <- 
+          model_PSw()$result$var[selection] # Gives the robust variance
+        # error
+      } else log[location + (m - 1), "error"] <- model_PSw()$messages
     }
   }
 }
+  
+## Loop over analysis for each treatment comparison 
+
 
 ## Rubin's Rules---
 # Point estimate mean & within imputation variance

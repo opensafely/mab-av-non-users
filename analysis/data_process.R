@@ -347,7 +347,40 @@ data_processed <- data_extract %>%
   # adds column status_primary and fu_primary
   add_status_and_fu_primary() %>%
   # adds column status_secondary and fu_secondary
-  add_status_and_fu_secondary()
+  add_status_and_fu_secondary() %>%
+  # add treatment allocation for day 0 analysis 
+  # for more info, see 
+  # https://docs.google.com/document/d/1ZPLQ34C0SrXsIrBXy3j9iIlRCfnEEYbEUmgMBx6mv8U/edit#heading=h.sncyl4m0nk5s
+  mutate(
+    ## PRIMARY ##
+    # Treatment strategy categories
+    treatment_strategy_cat_day0_prim = case_when(
+      covid_hosp_admission_date < date_treated ~ "Untreated",
+      TRUE ~ treatment_strategy_cat %>% as.character()) %>% 
+      factor(levels = c("Untreated",  "Sotrovimab", "Molnupiravir")),
+    # Treatment strategy overall
+    treatment_day0_prim = case_when(
+      covid_hosp_admission_date < date_treated ~ "Untreated",
+      TRUE ~ treatment %>% as.character()) %>% 
+      factor(levels = c("Untreated", "Treated")),
+    # Treatment date
+    treatment_date_day0_prim = 
+      ifelse(treatment_day0_prim == "Treated", date_treated, NA_Date_),
+    ## SECONDARY ##
+    # Treatment strategy categories
+    treatment_strategy_cat_day0_sec = case_when(
+      allcause_hosp_admission_date < date_treated ~ "Untreated",
+      TRUE ~ treatment_strategy_cat %>% as.character()) %>% 
+      factor(levels = c("Untreated", "Sotrovimab", "Molnupiravir")),
+    # Treatment strategy overall
+    treatment_day0_sec = case_when(
+      allcause_hosp_admission_date < date_treated ~ "Untreated",
+      TRUE ~ treatment %>% as.character()) %>% 
+      factor(levels = c("Untreated", "Treated")),
+    # Treatment date
+    treatment_date_day0_sec = 
+      ifelse(treatment_day0_sec == "Treated", date_treated, NA_Date_),
+  )
 
 ## Apply additional eligibility and exclusion criteria
 data_processed_eligible <- data_processed %>%
