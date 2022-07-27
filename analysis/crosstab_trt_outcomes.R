@@ -90,6 +90,34 @@ data_cohort_day0 %>%
            allcause_hosp_admission_date < date_treated) %>%
   group_by(treatment_strategy_cat) %>%
   summarise(n = n()) %>% print()
+cat("\n#### Treated individuals whose date of treatment is after non-covid hospital admission ####\n")
+data_cohort_day0 %>%
+  filter(treatment == "Treated" &
+           noncovid_hosp_admission_date < date_treated) %>%
+  group_by(treatment_strategy_cat) %>%
+  summarise(n = n()) %>% print()
+cat("\n#### Overview of treatment groups in day 5 analysis ####\n")
+data_cohort_day0 %>%
+  group_by(treatment_strategy_cat) %>%
+  summarise(n = n()) %>% print()
+data_cohort_day0 %>%
+  group_by(treatment) %>%
+  summarise(n = n()) %>% print()
+cat("\n#### Overview of treatment groups in day 0 analysis ####\n")
+cat("#### PRIMARY ####")
+data_cohort_day0 %>%
+  group_by(treatment_strategy_cat_day0_prim) %>%
+  summarise(n = n()) %>% print()
+data_cohort_day0 %>%
+  group_by(treatment_strategy_cat_day0_sec) %>%
+  summarise(n = n()) %>% print()
+cat("#### SECONDARY ####")
+data_cohort_day0 %>%
+  group_by(treatment_day0_prim) %>%
+  summarise(n = n()) %>% print()
+data_cohort_day0 %>%
+  group_by(treatment_day0_sec) %>%
+  summarise(n = n()) %>% print()
 
 # table of diagnoses of all cause hospitalisation
 # data_cohort_day5 %>%
