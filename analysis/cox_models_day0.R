@@ -19,7 +19,7 @@ source(here("lib", "functions", "safely_n_quietly.R"))
 fs::dir_create(here::here("output", "tables"))
 ## Load data
 data_cohort <-
-    read_rds(here::here("output", "data", "data_processed_day0.rds"))
+  read_rds(here::here("output", "data", "data_processed_day0.rds"))
 ## Specify number of PS imputations
 imputations_total <- 20
 seeds <- runif(imputations_total * 3, min = 0, max = 1e6) %>% floor()
@@ -45,6 +45,16 @@ log <- matrix(nrow = 6 * imputations_total, ncol = 5) %>% as.data.frame()
 # give column names
 colnames(log) <- 
   c("comparison", "outcome","imputation", "warning", "error")
+
+# create data.frame 'outcomes' where number of outcomes are save
+# --> number of rows is iterations x imputations_total
+outcomes_summary<- matrix(nrow = 6 * imputations_total, ncol = 9) %>% as.data.frame()
+# give column names
+colnames(outcomes_summary) <- 
+  c("comparison", "outcome", "imputation", 
+    "n_outcome_day0_trt", "n_outcome_day0_untrt",
+    "n_outcome_day1_trt","n_outcome_day1_untrt",
+    "n_outcome_day2_trt","n_outcome_day2_untrt")
 
 # Specify treated group for comparison (Treated vs Untreated)
 # used to loop trough different analyses
@@ -115,7 +125,7 @@ for (j in seq_along(outcomes)){
              treatment = treatment_day0_sec,
              treatment_date = treatment_date_day0_sec)
   }
-
+  
   for(i in seq_along(trt_grp)) {
     # Some preperations ---
     # select treatment
@@ -173,11 +183,14 @@ for (j in seq_along(outcomes)){
       estimates[location + (m - 1), "outcome"] <- outcome_event
       log[location + (m - 1), "comparison"] <- t
       log[location + (m - 1), "outcome"] <- outcome_event
+      outcomes_summary[location + (m - 1), "comparison"] <- t
+      outcomes_summary[location + (m - 1), "outcome"] <- outcome_event
       
       # Preperations ---
       cat(paste0("#### Imputation ", m, " ####\n"))
       estimates[location + (m - 1), "imputation"] <- m
       log[location + (m - 1), "imputation"] <- m
+      outcomes_summary[location + (m - 1), "imputation"] <- m
       # Reassign new data_cohort_sub dataset each imputation loop
       data_cohort_sub_imp <- data_cohort_sub
       # Generate random probability from uniform distribution
@@ -230,6 +243,30 @@ for (j in seq_along(outcomes)){
         filter(pscore >= ps_trim$min[1] & pscore <= ps_trim$max[1])
       estimates[location + (m - 1), "n_after_restriction"] <- nrow(data_cohort_sub_imp)
       
+      #save outcomes
+      if (outcome_event == "primary"){
+        outcome_dat <- data_cohort_sub_imp %>% 
+          filter(status_primary == "covid_hosp_death") %>% 
+          mutate(fu_primary = ifelse(fu_primary >= 2, 2, fu_primary)) %>% 
+          group_by(treatment2, fu_primary) %>% 
+          count() %>%
+          ungroup()
+        
+      } else if (outcome_event == "secondary"){
+        outcome_dat <- data_cohort_sub_imp %>% 
+          filter(status_primary == "allcause_hosp_death") %>% 
+          mutate(fu_primary = ifelse(fu_primary >= 2, 2, fu_primary)) %>% 
+          group_by(treatment2, fu_primary) %>% 
+          count() %>%
+          ungroup()
+      }
+      outcomes_summary[location + (m - 1), "n_outcome_day0_untrt"] <- outcome_dat %>% filter(treatment2 == "Untreated" & fu_primary == 0) %>% select(n) %>% as.numeric()
+      outcomes_summary[location + (m - 1), "n_outcome_day1_untrt"] <- outcome_dat %>% filter(treatment2 == "Untreated" & fu_primary == 1) %>% select(n) %>% as.numeric()
+      outcomes_summary[location + (m - 1), "n_outcome_day2_untrt"] <- outcome_dat %>% filter(treatment2 == "Untreated" & fu_primary == 2) %>% select(n) %>% as.numeric()
+      outcomes_summary[location + (m - 1), "n_outcome_day0_trt"] <- outcome_dat %>% filter(treatment2 == "Treated" & fu_primary == 0) %>% select(n) %>% as.numeric()
+      outcomes_summary[location + (m - 1), "n_outcome_day1_trt"] <- outcome_dat %>% filter(treatment2 == "Treated" & fu_primary == 1) %>% select(n) %>% as.numeric()
+      outcomes_summary[location + (m - 1), "n_outcome_day2_trt"] <- outcome_dat %>% filter(treatment2 == "Treated" & fu_primary == 2) %>% select(n) %>% as.numeric()
+      
       # Fit outcome model ---
       ## Define svy design for IPTW 
       iptw <- svydesign(ids = ~ 1, data = data_cohort_sub_imp, weights = ~ weights)
@@ -278,7 +315,7 @@ for (j in seq_along(outcomes)){
     }
   }
 }
-  
+
 ## Loop over analysis for each treatment comparison 
 
 
@@ -328,6 +365,11 @@ write_csv(estimates,
           here("output", 
                "tables", 
                paste0("estimates_day0.csv")))
+# save original outcomes
+write_csv(outcomes_summary,
+          here("output", 
+               "tables", 
+               paste0("outcomes_day0.csv")))
 # save log file
 write_csv(log,
           here("output", 
