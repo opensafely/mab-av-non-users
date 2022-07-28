@@ -183,7 +183,7 @@ for (j in seq_along(outcomes)){
       # Generate random probability from uniform distribution
       seed_index <- (i - 1) * imputations_total + m 
       set.seed(seeds[seed_index])
-      data_cohort_sub_imp$rand <- runif(nrow(data_cohort_sub), 0, 1)
+      data_cohort_sub_imp$rand <- runif(nrow(data_cohort_sub_imp), 0, 1)
       estimates[location + (m - 1), "seed"] <- seeds[seed_index]
       log[location + (m - 1), "seed"] <- seeds[seed_index]
       
@@ -212,8 +212,8 @@ for (j in seq_along(outcomes)){
       # Derive inverse probability of treatment weights (IPTW) ---
       data_cohort_sub_imp$weights <-
         ifelse(data_cohort_sub_imp$treatment2 == "Treated",
-               1 / data_cohort_sub$pscore,
-               1 / (1 - data_cohort_sub$pscore))
+               1 / data_cohort_sub_imp$pscore,
+               1 / (1 - data_cohort_sub_imp$pscore))
       
       # Check overlap PS ----
       # Identify lowest and highest propensity score in each group
