@@ -103,7 +103,7 @@ for(i in seq_along(trt_grp)) {
     # Drop patients treated with molnupiravir or sotrovimab
     data_cohort_sub <- 
       data_cohort %>% 
-      filter(treatment_strategy_cat != trt_grp[i])
+      filter(treatment_strategy_cat %in% c("Untreated", trt_grp[i]))
     estimates[c(1 + (i - 1), 4 + (i - 1)), "n"] <- (nrow(data_cohort_sub))
   }
 

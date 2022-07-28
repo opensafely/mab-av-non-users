@@ -133,7 +133,7 @@ for (j in seq_along(outcomes)){
       # Drop patients treated with molnupiravir or sotrovimab
       data_cohort_sub <- 
         data_cohort_trt %>% 
-        filter(treatment_strategy_cat != t)
+        filter(treatment_strategy_cat %in% c("Untreated", t))
     }
     # Create data_ps_sub (data.frame used to fit propensity score model on)
     # --> ps model is fitted in day 5 cohort
