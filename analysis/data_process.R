@@ -339,6 +339,10 @@ data_processed <- data_extract %>%
     noncovid_hosp_admission_date = case_when(
       !is.na(allcause_hosp_admission_date) & 
         is.na(covid_hosp_admission_date) ~ allcause_hosp_admission_date,
+      (!is.na(allcause_hosp_admission_date) &
+        !is.na(covid_hosp_admission_date)) &
+        allcause_hosp_admission_date < covid_hosp_admission_date ~
+        allcause_hosp_admission_date,
       TRUE ~ NA_Date_
     ),
   ) %>%
