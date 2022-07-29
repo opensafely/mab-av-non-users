@@ -291,23 +291,14 @@ data_processed <- data_extract %>%
     # Treatment date
     treatment_date = ifelse(treatment == "Treated", date_treated, NA_Date_),
    
-    # Identify patients treated with multiple treatments on the same day
-    treated_multiple_same_day = 
-      case_when(is.na(sotrovimab_covid_therapeutics) ~ 0,
-                is.na(molnupiravir_covid_therapeutics) ~ 0,
-                is.na(remdesivir_covid_therapeutics ) ~ 0,
-                is.na(paxlovid_covid_therapeutics) ~ 0,
-                sotrovimab_covid_therapeutics == 
-                  molnupiravir_covid_therapeutics ~ 1,
-                sotrovimab_covid_therapeutics == 
-                  paxlovid_covid_therapeutics ~ 1,
-                sotrovimab_covid_therapeutics == 
-                  remdesivir_covid_therapeutics ~ 1,
-               molnupiravir_covid_therapeutics == 
-                 paxlovid_covid_therapeutics ~ 1,
-               molnupiravir_covid_therapeutics == 
-                 remdesivir_covid_therapeutics ~ 1,
-                TRUE ~ 0),
+   # Identify patients treated with sot and mol on same day
+   treated_sot_mol_same_day = 
+     case_when(is.na(sotrovimab_covid_therapeutics) ~ 0,
+               is.na(molnupiravir_covid_therapeutics) ~ 0,
+               sotrovimab_covid_therapeutics == 
+                 molnupiravir_covid_therapeutics ~ 1,
+               TRUE ~ 0),
+   
     
     # Time-between symptom onset and treatment in those treatead
     tb_symponset_treat = 
@@ -401,7 +392,7 @@ data_processed_eligible <- data_processed %>%
   filter(
     # Exclude patients treated with multiple treatments on the same
     # day 
-    treated_multiple_same_day  == 0,
+    treated_sot_mol_same_day  == 0
   )
 
 cat("#### data_processed ####\n")
