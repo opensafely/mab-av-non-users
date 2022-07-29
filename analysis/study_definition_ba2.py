@@ -111,6 +111,8 @@ study = StudyDefinition(
     )
     AND NOT prev_treated
     AND high_risk_group
+    AND NOT paxlovid_covid_rx
+    AND NOT remdesivir_covid_rx
     """,
   ),
 
@@ -138,7 +140,7 @@ study = StudyDefinition(
     between=["index_date", end_date],
     return_expectations={
       "incidence": 1.0,
-      "date": {"earliest": "2022-02-11", "latest": "2022-02-01"},
+      "date": {"earliest": "2022-02-11", "latest": "2022-05-21"},
     },
   ),
   # Was patients registered at the time of a positive test?
@@ -226,10 +228,33 @@ study = StudyDefinition(
 
   # PREVIOUS TREATMENT - NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
   # Paxlovid
+  paxlovid_covid_rx=patients.with_covid_therapeutics(
+    with_these_therapeutics="Paxlovid",
+    with_these_indications="non_hospitalised",
+    on_or_after="covid_test_positive_date",
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.01
+    },
+  ),
+
+    # Remdesivir
+  remdesivir_covid_rx=patients.with_covid_therapeutics(
+    with_these_therapeutics="Remdesivir",
+    with_these_indications="non_hospitalised",
+    on_or_after="covid_test_positive_date",
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.01
+    },
+  ),
+
+  # PREVIOUS TREATMENT - NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
+  # Paxlovid
   paxlovid_covid_prev=patients.with_covid_therapeutics(
     with_these_therapeutics="Paxlovid",
     with_these_indications="non_hospitalised",
-    on_or_after="covid_test_positive_date - 1 day",
+    on_or_before="covid_test_positive_date - 1 day",
     returning="binary_flag",
     return_expectations={
       "incidence": 0.01
