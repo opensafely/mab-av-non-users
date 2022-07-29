@@ -96,6 +96,13 @@ data_cohort_day0 %>%
            noncovid_hosp_admission_date < date_treated) %>%
   group_by(treatment_strategy_cat) %>%
   summarise(n = n()) %>% print()
+cat("\n#### Treated individuals with non covid and covid hosp on same day ####\n")
+data_cohort_day0 %>%
+  filter(treatment == "Treated" &
+           noncovid_hosp_admission == covid_hosp_admission) %>%
+  summarise(n = n()) %>% print()
+
+
 cat("\n#### Overview of treatment groups in day 5 analysis ####\n")
 data_cohort_day0 %>%
   group_by(treatment_strategy_cat) %>%
