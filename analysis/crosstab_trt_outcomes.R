@@ -99,7 +99,7 @@ data_cohort_day0 %>%
 cat("\n#### Treated individuals with non covid and covid hosp on same day ####\n")
 data_cohort_day0 %>%
   filter(treatment == "Treated" &
-           noncovid_hosp_admission == covid_hosp_admission) %>%
+           noncovid_hosp_admission_date == covid_hosp_admission_date) %>%
   summarise(n = n()) %>% print()
 
 
