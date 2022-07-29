@@ -229,7 +229,7 @@ study = StudyDefinition(
   paxlovid_covid_prev=patients.with_covid_therapeutics(
     with_these_therapeutics="Paxlovid",
     with_these_indications="non_hospitalised",
-    on_or_after="covid_test_positive_date - 1 day",
+    on_or_before="covid_test_positive_date - 1 day",
     returning="binary_flag",
     return_expectations={
       "incidence": 0.01
