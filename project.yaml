@@ -134,6 +134,20 @@ actions:
         table1: output/tables/cox_models_day5_agesex.csv
         table2: output/tables/log_cox_models_day5_agesex.csv
         model1: output/data_models/*_agesex_psModelFit.rds
+
+  cox_day5_age_sex_ba2:
+    run: r:latest analysis/cox_models_ba2.R day5 agesex
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5_agesex_ba2.rds
+      moderately_sensitive:
+        figure1: output/figs/*_agesex_overlap_plot_day5_before_restriction_ba2.png
+        figure2: output/figs/*_agesex_overlap_plot_day5_after_restriction_ba2.png
+        figure3: output/figs/*_agesex_cumInc_day5_ba2.png
+        table1: output/tables/cox_models_day5_agesex_ba2.csv
+        table2: output/tables/log_cox_models_day5_agesex_ba2.csv
+        model1: output/data_models/*_agesex_psModelFit_ba2.rds
   
   cox_day5_crude:
     run: r:latest analysis/cox_models.R day5 crude
@@ -145,6 +159,16 @@ actions:
         table1: output/tables/cox_models_day5_crude.csv
         table2: output/tables/log_cox_models_day5_crude.csv
 
+  cox_day5_crude_ba2:
+    run: r:latest analysis/cox_models_ba2.R day5 crude
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5_crude_ba2.rds
+      moderately_sensitive:
+        table1: output/tables/cox_models_day5_crude_ba2.csv
+        table2: output/tables/log_cox_models_day5_crude_ba2.csv
+        
   trt_pat_day5:
     run: r:latest analysis/treatment_distributions.R day5
     needs: [data_process]
