@@ -12,7 +12,7 @@ from codelists import *
 # Define study time variables by importing study-dates
 # Import json module
 import json
-with open('lib/design/study-dates.json', 'r') as f:
+with open('lib/design/study-dates-ba2.json', 'r') as f:
     study_dates = json.load(f)
 start_date = study_dates["start_date"]
 end_date = study_dates["end_date"]
@@ -87,7 +87,7 @@ study = StudyDefinition(
   # PRELIMINARIES ----
   # Configure the expectations framework
   default_expectations={
-    "date": {"earliest": "2021-11-01", "latest": "today"},
+    "date": {"earliest": "2022-01-01", "latest": "today"},
     "rate": "uniform",
     "incidence": 0.05,
   }, 
@@ -111,6 +111,8 @@ study = StudyDefinition(
     )
     AND NOT prev_treated
     AND high_risk_group
+    AND NOT paxlovid_covid_rx
+    AND NOT remdesivir_covid_rx
     """,
   ),
 
@@ -138,7 +140,7 @@ study = StudyDefinition(
     between=["index_date", end_date],
     return_expectations={
       "incidence": 1.0,
-      "date": {"earliest": "2021-12-16", "latest": "2022-02-01"},
+      "date": {"earliest": "2022-02-11", "latest": "2022-05-21"},
     },
   ),
   # Was patients registered at the time of a positive test?
@@ -172,7 +174,7 @@ study = StudyDefinition(
     returning="date",
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2021-12-16"},
+      "date": {"earliest": "2022-02-11"},
       "incidence": 0.5
     },
   ),
@@ -185,7 +187,7 @@ study = StudyDefinition(
     returning="date",
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2021-12-16"},
+      "date": {"earliest": "2022-02-11"},
       "incidence": 0.2
     },
   ),
@@ -198,7 +200,7 @@ study = StudyDefinition(
     returning="date",
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2021-12-16"},
+      "date": {"earliest": "2022-02-11"},
       "incidence": 0.5
     },
   ),
@@ -211,7 +213,7 @@ study = StudyDefinition(
     returning="date",
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2021-12-16"},
+      "date": {"earliest": "2022-02-11"},
       "incidence": 0.05
     },
   ),
@@ -222,6 +224,29 @@ study = StudyDefinition(
     "remdesivir_covid_therapeutics",
     "molnupiravir_covid_therapeutics",
     "casirivimab_covid_therapeutics",
+  ),
+
+  # PREVIOUS TREATMENT - NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
+  # Paxlovid
+  paxlovid_covid_rx=patients.with_covid_therapeutics(
+    with_these_therapeutics="Paxlovid",
+    with_these_indications="non_hospitalised",
+    on_or_after="covid_test_positive_date",
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.01
+    },
+  ),
+
+    # Remdesivir
+  remdesivir_covid_rx=patients.with_covid_therapeutics(
+    with_these_therapeutics="Remdesivir",
+    with_these_indications="non_hospitalised",
+    on_or_after="covid_test_positive_date",
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.01
+    },
   ),
 
   # PREVIOUS TREATMENT - NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
