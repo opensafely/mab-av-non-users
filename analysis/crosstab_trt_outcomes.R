@@ -75,7 +75,11 @@ data_cohort_day5 %>%
   filter(treatment_strategy_cat == "Sotrovimab" &
            is.na(covid_hosp_admission_date) & !is.na(covid_hosp_admission_first_date0_6)) %>%
   nrow() %>% print()
-
+# All cause hosp and covid hosp on same date?
+cat("\n#### All cause hosp and covid hosp on same date? ####\n")
+data_cohort_day5 %>% 
+  filter(allcause_hosp_admission_date == covid_hosp_admission_date) %>%
+  nrow() %>% print()
 
 # pt hospitalised before treatment
 cat("\n#### Treated individuals whose date of treatment is after covid hospital admission ####\n")
