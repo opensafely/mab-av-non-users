@@ -513,6 +513,16 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
+  non_haem_cancer_new=patients.with_these_clinical_events(
+    combine_codelists(
+      non_haem_cancer_new_codes
+    ),
+    between=["covid_test_positive_date - 6 months", "covid_test_positive_date"],
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
+  ),
   # Haematological diseases
   haematopoietic_stem_cell_transplant_nhsd_snomed=patients.with_these_clinical_events(
     haematopoietic_stem_cell_transplant_nhsd_snomed_codes,
@@ -667,6 +677,16 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
+  immunosupression_new=patients.with_these_clinical_events(
+    combine_codelists(
+      immunosuppression_new_codes
+    ),
+    between=["covid_test_positive_date - 6 months", "covid_test_positive_date"],
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
+    },
+  ),
   # HIV/AIDs
   hiv_aids_nhsd_snomed=patients.with_these_clinical_events(
     hiv_aids_nhsd_snomed_codes,
@@ -807,6 +827,16 @@ study = StudyDefinition(
     """,
     return_expectations={
       "incidence": 0.05
+    },
+  ),
+  solid_organ_transplant_new=patients.with_these_clinical_events(
+    combine_codelists(
+      solid_organ_transplant_new_codes
+    ),
+    between=["covid_test_positive_date - 6 months", "covid_test_positive_date"],
+    returning="binary_flag",
+    return_expectations={
+      "incidence": 0.4
     },
   ),
   # Rare neurological conditions

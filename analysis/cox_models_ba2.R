@@ -114,41 +114,41 @@ for(i in seq_along(trt_grp)) {
   if (adjustment_set != "crude") {
     
     if (adjustment_set == "full"){
-  vars <-
-    c(
-      "ns(age, df=3)",
-      "ns(study_week, df=3)",
-      "sex",
-      "ethnicity",
-      "imdQ5" ,
-      "stp",
-      "rural_urban",
-      "huntingtons_disease_nhsd" ,
-      "myasthenia_gravis_nhsd" ,
-      "motor_neurone_disease_nhsd" ,
-      "multiple_sclerosis_nhsd"  ,
-      "solid_organ_transplant_nhsd",
-      "hiv_aids_nhsd" ,
-      "immunosupression_nhsd" ,
-      "imid_nhsd" ,
-      "liver_disease_nhsd",
-      "ckd_stage_5_nhsd",
-      "haematological_disease_nhsd" ,
-      "cancer_opensafely_snomed" ,
-      "downs_syndrome_nhsd",
-      "diabetes",
-      "bmi_group",
-      "smoking_status",
-      "copd",
-      "dialysis",
-      "cancer",
-      "lung_cancer",
-      "haem_cancer",
-      "vaccination_status",
-      "pfizer_most_recent_cov_vac",
-      "az_most_recent_cov_vac",
-      "moderna_most_recent_cov_vac"
-    )
+      vars <-
+        c(
+          "ns(age, df=3)",
+          "ns(study_week, df=3)",
+          "sex",
+          "ethnicity",
+          "imdQ5" ,
+          "stp",
+          "rural_urban",
+          "huntingtons_disease_nhsd" ,
+          "myasthenia_gravis_nhsd" ,
+          "motor_neurone_disease_nhsd" ,
+          "multiple_sclerosis_nhsd"  ,
+          "solid_organ_transplant_new",
+          "hiv_aids_nhsd" ,
+          "immunosupression_new" ,
+          "imid_nhsd" ,
+          "liver_disease_nhsd",
+          "ckd_stage_5_nhsd",
+          "haematological_disease_nhsd",
+          "non_haem_cancer_new",
+          "downs_syndrome_nhsd",
+          "diabetes",
+          "bmi_group",
+          "smoking_status",
+          "copd",
+          "dialysis",
+          "cancer",
+          "lung_cancer",
+          "haem_cancer",
+          "vaccination_status",
+          "pfizer_most_recent_cov_vac",
+          "az_most_recent_cov_vac",
+          "moderna_most_recent_cov_vac"
+        )
     } else if (adjustment_set == "agesex") {
       vars <-
         c(
@@ -172,7 +172,7 @@ for(i in seq_along(trt_grp)) {
   
   summary(psModel) %>% coefficients()
   saveRDS(psModel, here("output", "data_models",
-                        paste0(trt_grp[i], "_", adjustment_set, "_psModelFit_ba2.rds")))
+                        paste0(trt_grp[i], "_", adjustment_set, "_psModelFit_ba2_new.rds")))
   # Append patient-level predicted probability of being assigned to cohort
   data_cohort_sub$pscore <- predict(psModel, type = "response")
   # Overlap plot 
@@ -202,7 +202,7 @@ for(i in seq_along(trt_grp)) {
   ggsave(overlapPlot, 
          filename = 
            here("output", "figs", 
-                paste0(trt_grp[i], "_", adjustment_set, "_overlap_plot_day5_before_restriction_ba2.png")),
+                paste0(trt_grp[i], "_", adjustment_set, "_overlap_plot_day5_before_restriction_ba2_new.png")),
          width=20, height=14, units="cm")
   # Derive inverse probability of treatment weights (IPTW)
   data_cohort_sub$weights <-
@@ -259,7 +259,7 @@ for(i in seq_along(trt_grp)) {
   ggsave(overlapPlot2, 
          filename = 
            here("output", "figs", 
-                paste0(trt_grp[i], "_", adjustment_set, "_overlap_plot_day5_after_restriction_ba2.png")),
+                paste0(trt_grp[i], "_", adjustment_set, "_overlap_plot_day5_after_restriction_ba2_new.png")),
          width=20, height=14, units="cm")
   
   # Fit outcome model ---
@@ -347,7 +347,7 @@ for(i in seq_along(trt_grp)) {
       ggsave(plot, 
              filename = 
                here("output", "figs", 
-                    paste0(trt_grp[i], "_",  outcomes[j], "_", adjustment_set, "_cumInc_day5_ba2.png")),
+                    paste0(trt_grp[i], "_",  outcomes[j], "_", adjustment_set, "_cumInc_day5_ba2_new.png")),
              width=20, height=14, units="cm")
 
 
@@ -412,13 +412,13 @@ for(i in seq_along(trt_grp)) {
 write_csv(estimates,
           here("output", 
                "tables", 
-               paste0("cox_models_", data_label, "_", adjustment_set,"_ba2.csv")))
+               paste0("cox_models_", data_label, "_", adjustment_set,"_ba2_new.csv")))
 write_rds(estimates, 
           here("output", 
                "tables", 
-               paste0("cox_models_", data_label, "_", adjustment_set, "_ba2.rds")))
+               paste0("cox_models_", data_label, "_", adjustment_set, "_ba2_new.rds")))
 write_csv(log,
           here("output", 
                "tables", 
-               paste0("log_cox_models_", data_label, "_", adjustment_set,"_ba2.csv")))
+               paste0("log_cox_models_", data_label, "_", adjustment_set,"_ba2_new.csv")))
 

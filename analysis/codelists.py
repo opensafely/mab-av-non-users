@@ -472,3 +472,22 @@ second_dose_declined = codelist_from_csv(
 covid_vaccine_declined_codes = combine_codelists(
   first_dose_declined, second_dose_declined
 )
+
+# New codelists
+non_haem_cancer_new_codes = codelist_from_csv(
+  "codelists/user-bangzheng-cancer-excluding-lung-and-haematological-snomed-new.csv",
+  system = "snomed",
+  column = "code"
+)
+
+immunosuppression_new_codes = codelist_from_csv(
+  "codelists/user-bangzheng-nhsd-immunosupression-pcdcluster-snomed-ct-new.csv",
+  system = "snomed",
+  column = "code"
+)
+
+solid_organ_transplant_new_codes = codelist_from_csv(
+  "codelists/user-bangzheng-nhsd-transplant-spl-atriskv4-snomed-ct-new.csv",
+  system = "snomed",
+  column = "code"
+)
