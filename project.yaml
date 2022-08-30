@@ -94,18 +94,18 @@ actions:
     needs: [data_process]
     outputs:
       highly_sensitive:
-        data: output/tables/table1_redacted_day5.rds
+        data: output/tables/table1_redacted_day5_new.rds
       moderately_sensitive:
-        table: output/tables/table1_redacted_day5.html
+        table: output/tables/table1_redacted_day5_new.html
 
   table_1_day5_ba2:
     run: r:latest analysis/table_1_ba2.R day5
     needs: [data_process_ba2]
     outputs:
       highly_sensitive:
-        data: output/tables/table1_redacted_day5_ba2.rds
+        data: output/tables/table1_redacted_day5_ba2_new.rds
       moderately_sensitive:
-        table: output/tables/table1_redacted_day5_ba2.html
+        table: output/tables/table1_redacted_day5_ba2_new.html
 
   cox_day5_full:
     run: r:latest analysis/cox_models.R day5 full
