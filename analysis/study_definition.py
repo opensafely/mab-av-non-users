@@ -1549,6 +1549,20 @@ study = StudyDefinition(
       "incidence": 0.05,
     },
   ),
+  # covid as primary cause of death
+  # Patients with ONS-registered death
+  died_ons_covid_any_date=patients.with_these_codes_on_death_certificate(
+    covid_icd10_codes,  # imported from codelists.py
+    returning="date_of_death",
+    between=["covid_test_positive_date", "covid_test_positive_date + 27 days"],
+    date_format="YYYY-MM-DD",
+    match_only_underlying_cause=True,  # boolean for indicating if filters
+    # results to only specified cause of death
+    return_expectations={
+      "rate": "exponential_increase",
+      "incidence": 0.05,
+    },
+  ),
   # cause of death (death_date is extracted above (--> censoring var))
   death_cause=patients.died_from_any_cause(
     returning="underlying_cause_of_death",
