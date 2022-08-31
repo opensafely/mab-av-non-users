@@ -1551,7 +1551,7 @@ study = StudyDefinition(
   ),
   # covid as primary cause of death
   # Patients with ONS-registered death
-  died_ons_covid_any_date=patients.with_these_codes_on_death_certificate(
+  died_ons_covid_date=patients.with_these_codes_on_death_certificate(
     covid_icd10_codes,  # imported from codelists.py
     returning="date_of_death",
     between=["covid_test_positive_date", "covid_test_positive_date + 27 days"],
