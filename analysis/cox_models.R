@@ -129,7 +129,7 @@ for(i in seq_along(trt_grp)) {
       "multiple_sclerosis_nhsd",
       "solid_organ_transplant_new",
       "hiv_aids_nhsd",
-      "immunosuppression_new",
+      "immunosupression_new",
       "imid_nhsd",
       "liver_disease_nhsd",
       "ckd_stage_5_nhsd",
