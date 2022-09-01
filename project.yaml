@@ -181,7 +181,7 @@ actions:
         data: output/tables/cox_models_day5_crude_ba2_new.rds
       moderately_sensitive:
         table1: output/tables/cox_models_day5_crude_ba2_new.csv
-        table2: output/tables/log_cox_models_day5_crude_ba2_newruna.csv
+        table2: output/tables/log_cox_models_day5_crude_ba2_new.csv
         
   trt_pat_day5:
     run: r:latest analysis/treatment_distributions.R day5
