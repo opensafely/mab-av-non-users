@@ -1457,15 +1457,16 @@ study = StudyDefinition(
   ), 
 
   # OUTCOMES ----  
-  # COVID-related hospitalisation on day 0 (+ve test), 1, 2, 3, 4, 5 or 6 
-  # These events are extracted seperately in case patient is admitted twice, and first time was for sotrovimab
-  # infusion
+
+  # Hospitalisation with COVID as the primary cause on day 0 (+ve test), 1, 2, 3, 4, 5 or 6 
+  # These events are extracted seperately in case patient is admitted twice, and first admission 
+  # was for sotrovimab infusion
   # If a patient is admitted and discharged on the same day OR one day apart AND patient 
-  # received sotrovimab --> this event should not be counted as an outcome
+  # received sotrovimab --> this event should not be counted as an outcome (sorted in data_process.R)
   # COVID-related hospitalisation is here defined as icd10 code mentioned on the EHR (primary)
   **hosp_admission_loop_over_days(days={"0", "1", "2", "3", "4", "5", "6"}, prefix="covid", diagnoses=None, primary_diagnoses=covid_icd10_codes),
-  # Day 8 - 28ad
-  # assuming no day case admission after day 7
+  # Day 8 - 28
+  # we're assuming no day case admission (for receiving sotrovimab) after day 7
   covid_hosp_admission_first_date7_27=patients.admitted_to_hospital(
     returning="date_admitted",
     with_these_primary_diagnoses=covid_icd10_codes,
@@ -1501,10 +1502,72 @@ study = StudyDefinition(
   ),
   # mention of mabs procedure
   # --> if so, hospital admission should not be counted as outcome
-  # (could this occur if patient gets mabs while hospitalised????)
   covid_hosp_date_mabs_procedure=patients.admitted_to_hospital(
     returning="date_admitted",
     with_these_primary_diagnoses=covid_icd10_codes,
+    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
+    # see https://docs.opensafely.org/study-def-variables/#sus for more info
+    with_these_procedures=mabs_procedure_codes,
+    on_or_after="covid_test_positive_date",
+    find_first_match_in_period=True,
+    date_format="YYYY-MM-DD",
+    return_expectations={
+      "date": {"earliest": "2022-02-16"},
+      "rate": "uniform",
+      "incidence": 0.1
+    },
+  ),
+
+  # Hospitalisation with COVID as one of the diagnoses on day 0 (+ve test), 1, 2, 3, 4, 5 or 6 
+  # These events are extracted seperately in case patient is admitted twice, and first admission was 
+  # for sotrovimab infusion
+  # If a patient is admitted and discharged on the same day OR one day apart AND patient 
+  # received sotrovimab --> this event should not be counted as an outcome (sorted in data_process.R)
+  # COVID-related hospitalisation is here defined as icd10 code mentioned on the EHR (primary)
+  **hosp_admission_loop_over_days(days={"0", "1", "2", "3", "4", "5", "6"}, prefix="covid_any", diagnoses=covid_icd10_codes, primary_diagnoses=None),
+  # Day 8 - 28
+  # assuming no day case admission (for receiving sotrovimab) after day 7
+  covid_any_hosp_admission_first_date7_27=patients.admitted_to_hospital(
+    returning="date_admitted",
+    with_these_primary_diagnoses=None,
+    with_these_diagnoses=covid_icd10_codes,
+    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
+    # see https://docs.opensafely.org/study-def-variables/#sus for more info
+    between=["covid_test_positive_date + 7 days", "covid_test_positive_date + 27 days"],
+    find_first_match_in_period=True,
+    date_format="YYYY-MM-DD",
+    return_expectations={
+      "date": {"earliest": "2022-02-16"},
+      "rate": "uniform",
+      "incidence": 0.1
+    },
+  ),
+  # Discharge
+  # return discharge date to (make sure) identify and ignore day cases
+  # We only want to know date of first discharge (find_first_match_in_period = TRUE)
+  # --> needed to identify day cases for sotrovimab infusions
+  # max admission for sotro is day 6 (2 days after day 4), so max discharge is day 7
+  covid_any_hosp_discharge_first_date0_7=patients.admitted_to_hospital(
+    returning="date_discharged",
+    with_these_primary_diagnoses=None,
+    with_these_diagnoses=covid_icd10_codes,
+    with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
+    # see https://docs.opensafely.org/study-def-variables/#sus for more info
+    between=["covid_hosp_admission_date0", "covid_hosp_admission_date0 + 7 days"],
+    find_first_match_in_period=True,
+    date_format="YYYY-MM-DD",
+    return_expectations={
+      "date": {"earliest": "2022-02-16"},
+      "rate": "uniform",
+      "incidence": 0.1
+    },
+  ),
+  # mention of mabs procedure
+  # --> if so, hospital admission should not be counted as outcome
+  covid_any_hosp_date_mabs_procedure=patients.admitted_to_hospital(
+    returning="date_admitted",
+    with_these_primary_diagnoses=None,
+    with_these_diagnoses=covid_icd10_codes,
     with_patient_classification=["1"], # ordinary admissions only - exclude day cases and regular attenders
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
     with_these_procedures=mabs_procedure_codes,
@@ -1598,6 +1661,20 @@ study = StudyDefinition(
     between=["covid_test_positive_date", "covid_test_positive_date + 27 days"],
     date_format="YYYY-MM-DD",
     match_only_underlying_cause=False,  # boolean for indicating if filters
+    # results to only specified cause of death
+    return_expectations={
+      "rate": "exponential_increase",
+      "incidence": 0.05,
+    },
+  ),
+  # covid as primary cause of death
+  # Patients with ONS-registered death
+  died_ons_covid_date=patients.with_these_codes_on_death_certificate(
+    covid_icd10_codes,  # imported from codelists.py
+    returning="date_of_death",
+    between=["covid_test_positive_date", "covid_test_positive_date + 27 days"],
+    date_format="YYYY-MM-DD",
+    match_only_underlying_cause=True,  # boolean for indicating if filters
     # results to only specified cause of death
     return_expectations={
       "rate": "exponential_increase",
