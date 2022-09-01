@@ -120,21 +120,21 @@ for(i in seq_along(trt_grp)) {
       "ns(study_week, df=3)",
       "sex",
       "ethnicity",
-      "imdQ5" ,
+      "imdQ5",
       "stp",
       "rural_urban",
-      "huntingtons_disease_nhsd" ,
-      "myasthenia_gravis_nhsd" ,
-      "motor_neurone_disease_nhsd" ,
-      "multiple_sclerosis_nhsd"  ,
-      "solid_organ_transplant_nhsd",
-      "hiv_aids_nhsd" ,
-      "immunosupression_nhsd" ,
-      "imid_nhsd" ,
+      "huntingtons_disease_nhsd",
+      "myasthenia_gravis_nhsd",
+      "motor_neurone_disease_nhsd",
+      "multiple_sclerosis_nhsd",
+      "solid_organ_transplant_new",
+      "hiv_aids_nhsd",
+      "immunosupression_new",
+      "imid_nhsd",
       "liver_disease_nhsd",
       "ckd_stage_5_nhsd",
-      "haematological_disease_nhsd" ,
-      "cancer_opensafely_snomed" ,
+      "haematological_disease_nhsd",
+      "non_haem_cancer_new",
       "downs_syndrome_nhsd",
       "diabetes",
       "bmi_group",
@@ -172,7 +172,7 @@ for(i in seq_along(trt_grp)) {
   
   summary(psModel) %>% coefficients()
   saveRDS(psModel, here("output", "data_models",
-                        paste0(trt_grp[i], "_", adjustment_set, "_psModelFit.rds")))
+                        paste0(trt_grp[i], "_", adjustment_set, "_psModelFit_new.rds")))
   # Append patient-level predicted probability of being assigned to cohort
   data_cohort_sub$pscore <- predict(psModel, type = "response")
   # Overlap plot 
@@ -202,7 +202,7 @@ for(i in seq_along(trt_grp)) {
   ggsave(overlapPlot, 
          filename = 
            here("output", "figs", 
-                paste0(trt_grp[i], "_", adjustment_set, "_overlap_plot_day5_before_restriction.png")),
+                paste0(trt_grp[i], "_", adjustment_set, "_overlap_plot_day5_before_restriction_new.png")),
          width=20, height=14, units="cm")
   # Derive inverse probability of treatment weights (IPTW)
   data_cohort_sub$weights <-
@@ -259,7 +259,7 @@ for(i in seq_along(trt_grp)) {
   ggsave(overlapPlot2, 
          filename = 
            here("output", "figs", 
-                paste0(trt_grp[i], "_", adjustment_set, "_overlap_plot_day5_after_restriction.png")),
+                paste0(trt_grp[i], "_", adjustment_set, "_overlap_plot_day5_after_restriction_new.png")),
          width=20, height=14, units="cm")
   
   # Fit outcome model ---
@@ -347,7 +347,7 @@ for(i in seq_along(trt_grp)) {
       ggsave(plot, 
              filename = 
                here("output", "figs", 
-                    paste0(trt_grp[i], "_",  outcomes[j], "_", adjustment_set, "_cumInc_day5.png")),
+                    paste0(trt_grp[i], "_",  outcomes[j], "_", adjustment_set, "_cumInc_day5_new.png")),
              width=20, height=14, units="cm")
 
 
@@ -412,13 +412,13 @@ for(i in seq_along(trt_grp)) {
 write_csv(estimates,
           here("output", 
                "tables", 
-               paste0("cox_models_", data_label, "_", adjustment_set,".csv")))
+               paste0("cox_models_", data_label, "_", adjustment_set,"_new.csv")))
 write_rds(estimates, 
           here("output", 
                "tables", 
-               paste0("cox_models_", data_label, "_", adjustment_set, ".rds")))
+               paste0("cox_models_", data_label, "_", adjustment_set, "_new.rds")))
 write_csv(log,
           here("output", 
                "tables", 
-               paste0("log_cox_models_", data_label, "_", adjustment_set,".csv")))
+               paste0("log_cox_models_", data_label, "_", adjustment_set,"_new.csv")))
 

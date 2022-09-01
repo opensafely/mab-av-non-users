@@ -94,94 +94,94 @@ actions:
     needs: [data_process]
     outputs:
       highly_sensitive:
-        data: output/tables/table1_redacted_day5.rds
+        data: output/tables/table1_redacted_day5_new.rds
       moderately_sensitive:
-        table: output/tables/table1_redacted_day5.html
+        table: output/tables/table1_redacted_day5_new.html
 
   table_1_day5_ba2:
     run: r:latest analysis/table_1_ba2.R day5
     needs: [data_process_ba2]
     outputs:
       highly_sensitive:
-        data: output/tables/table1_redacted_day5_ba2.rds
+        data: output/tables/table1_redacted_day5_ba2_new.rds
       moderately_sensitive:
-        table: output/tables/table1_redacted_day5_ba2.html
+        table: output/tables/table1_redacted_day5_ba2_new.html
 
   cox_day5_full:
     run: r:latest analysis/cox_models.R day5 full
     needs: [data_process]
     outputs:
       highly_sensitive:
-        data: output/tables/cox_models_day5_full.rds
+        data: output/tables/cox_models_day5_full_new.rds
       moderately_sensitive:
-        figure1: output/figs/*_full_overlap_plot_day5_before_restriction.png
-        figure2: output/figs/*_full_overlap_plot_day5_after_restriction.png
-        figure3: output/figs/*_full_cumInc_day5.png
-        table1: output/tables/cox_models_day5_full.csv
-        table2: output/tables/log_cox_models_day5_full.csv
-        model1: output/data_models/*_full_psModelFit.rds
+        figure1: output/figs/*_full_overlap_plot_day5_before_restriction_new.png
+        figure2: output/figs/*_full_overlap_plot_day5_after_restriction_new.png
+        figure3: output/figs/*_full_cumInc_day5_new.png
+        table1: output/tables/cox_models_day5_full_new.csv
+        table2: output/tables/log_cox_models_day5_full_new.csv
+        model1: output/data_models/*_full_psModelFit_new.rds
 
   cox_day5_full_ba2:
     run: r:latest analysis/cox_models_ba2.R day5 full
     needs: [data_process_ba2]
     outputs:
       highly_sensitive:
-        data: output/tables/cox_models_day5_full_ba2.rds
+        data: output/tables/cox_models_day5_full_ba2_new.rds
       moderately_sensitive:
-        figure1: output/figs/*_full_overlap_plot_day5_before_restriction_ba2.png
-        figure2: output/figs/*_full_overlap_plot_day5_after_restriction_ba2.png
-        figure3: output/figs/*_full_cumInc_day5_ba2.png
-        table1: output/tables/cox_models_day5_full_ba2.csv
-        table2: output/tables/log_cox_models_day5_full_ba2.csv
-        model1: output/data_models/*_full_psModelFit_ba2.rds
+        figure1: output/figs/*_full_overlap_plot_day5_before_restriction_ba2_new.png
+        figure2: output/figs/*_full_overlap_plot_day5_after_restriction_ba2_new.png
+        figure3: output/figs/*_full_cumInc_day5_ba2_new.png
+        table1: output/tables/cox_models_day5_full_ba2_new.csv
+        table2: output/tables/log_cox_models_day5_full_ba2_new.csv
+        model1: output/data_models/*_full_psModelFit_ba2_new.rds
 
   cox_day5_age_sex:
     run: r:latest analysis/cox_models.R day5 agesex
     needs: [data_process]
     outputs:
       highly_sensitive:
-        data: output/tables/cox_models_day5_agesex.rds
+        data: output/tables/cox_models_day5_agesex_new.rds
       moderately_sensitive:
-        figure1: output/figs/*_agesex_overlap_plot_day5_before_restriction.png
-        figure2: output/figs/*_agesex_overlap_plot_day5_after_restriction.png
-        figure3: output/figs/*_agesex_cumInc_day5.png
-        table1: output/tables/cox_models_day5_agesex.csv
-        table2: output/tables/log_cox_models_day5_agesex.csv
-        model1: output/data_models/*_agesex_psModelFit.rds
+        figure1: output/figs/*_agesex_overlap_plot_day5_before_restriction_new.png
+        figure2: output/figs/*_agesex_overlap_plot_day5_after_restriction_new.png
+        figure3: output/figs/*_agesex_cumInc_day5_new.png
+        table1: output/tables/cox_models_day5_agesex_new.csv
+        table2: output/tables/log_cox_models_day5_agesex_new.csv
+        model1: output/data_models/*_agesex_psModelFit_new.rds
 
   cox_day5_age_sex_ba2:
     run: r:latest analysis/cox_models_ba2.R day5 agesex
     needs: [data_process_ba2]
     outputs:
       highly_sensitive:
-        data: output/tables/cox_models_day5_agesex_ba2.rds
+        data: output/tables/cox_models_day5_agesex_ba2_new.rds
       moderately_sensitive:
-        figure1: output/figs/*_agesex_overlap_plot_day5_before_restriction_ba2.png
-        figure2: output/figs/*_agesex_overlap_plot_day5_after_restriction_ba2.png
-        figure3: output/figs/*_agesex_cumInc_day5_ba2.png
-        table1: output/tables/cox_models_day5_agesex_ba2.csv
-        table2: output/tables/log_cox_models_day5_agesex_ba2.csv
-        model1: output/data_models/*_agesex_psModelFit_ba2.rds
+        figure1: output/figs/*_agesex_overlap_plot_day5_before_restriction_ba2_new.png
+        figure2: output/figs/*_agesex_overlap_plot_day5_after_restriction_ba2_new.png
+        figure3: output/figs/*_agesex_cumInc_day5_ba2_new.png
+        table1: output/tables/cox_models_day5_agesex_ba2_new.csv
+        table2: output/tables/log_cox_models_day5_agesex_ba2_new.csv
+        model1: output/data_models/*_agesex_psModelFit_ba2_new.rds
   
   cox_day5_crude:
     run: r:latest analysis/cox_models.R day5 crude
     needs: [data_process]
     outputs:
       highly_sensitive:
-        data: output/tables/cox_models_day5_crude.rds
+        data: output/tables/cox_models_day5_crude_new.rds
       moderately_sensitive:
-        table1: output/tables/cox_models_day5_crude.csv
-        table2: output/tables/log_cox_models_day5_crude.csv
+        table1: output/tables/cox_models_day5_crude_new.csv
+        table2: output/tables/log_cox_models_day5_crude_new.csv
 
   cox_day5_crude_ba2:
     run: r:latest analysis/cox_models_ba2.R day5 crude
     needs: [data_process_ba2]
     outputs:
       highly_sensitive:
-        data: output/tables/cox_models_day5_crude_ba2.rds
+        data: output/tables/cox_models_day5_crude_ba2_new.rds
       moderately_sensitive:
-        table1: output/tables/cox_models_day5_crude_ba2.csv
-        table2: output/tables/log_cox_models_day5_crude_ba2.csv
+        table1: output/tables/cox_models_day5_crude_ba2_new.csv
+        table2: output/tables/log_cox_models_day5_crude_ba2_new.csv
         
   trt_pat_day5:
     run: r:latest analysis/treatment_distributions.R day5

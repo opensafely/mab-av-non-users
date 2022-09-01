@@ -66,7 +66,7 @@ counts <- data_cohort %>%
     bmi_group,
     imdQ5,
     smoking_status,
-  
+    
     ## Clinical
     diabetes,
     copd,
@@ -89,20 +89,23 @@ counts <- data_cohort %>%
     myasthenia_gravis_nhsd,
     motor_neurone_disease_nhsd,
     multiple_sclerosis_nhsd,
-    solid_organ_transplant_nhsd,
+    #solid_organ_transplant_nhsd,
+    solid_organ_transplant_new,
     hiv_aids_nhsd,
-    immunosupression_nhsd,
+    #immunosupression_nhsd,
+    immunosupression_new,
     imid_nhsd,
     liver_disease_nhsd,
     ckd_stage_5_nhsd,
     haematological_disease_nhsd,
-    cancer_opensafely_snomed,
+    #cancer_opensafely_snomed,
+    non_haem_cancer_new,
     downs_syndrome_nhsd,  
     
     ## Geography
     region_nhs,
     rural_urban
-  ) 
+  )
 
 ## Generate full and stratified table
 pop_levels = c("All", "Molnupiravir", "Sotrovimab", "Untreated")
@@ -175,7 +178,7 @@ file_name <- paste0("table1_redacted_", data_label)
 
 
 gtsave(gt(collated_table), 
-       filename = here("output", "tables", paste0(file_name, "_ba2.html")))
+       filename = here("output", "tables", paste0(file_name, "_ba2_new.html")))
 write_rds(collated_table,
           compress = "gz",
-          path("output", "tables", paste0(file_name, "_ba2.rds")))
+          path("output", "tables", paste0(file_name, "_ba2_new.rds")))

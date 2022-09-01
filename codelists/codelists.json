@@ -285,8 +285,8 @@
     "primis-covid19-vacc-uptake-eth2001.csv": {
       "id": "primis-covid19-vacc-uptake/eth2001/v1",
       "url": "https://codelists.opensafely.org/codelist/primis-covid19-vacc-uptake/eth2001/v1/",
-      "downloaded_at": "2022-03-31 23:27:40.527033Z",
-      "sha": "36e4eacba898e6ec72da8ff66e8c673bfd9aa8e4"
+      "downloaded_at": "2022-08-29 09:27:03.483331Z",
+      "sha": "2ff9aea91a05f41fe911a885eee50d2494247d58"
     },
     "nhsd-primary-care-domain-refsets-autism_cod.csv": {
       "id": "nhsd-primary-care-domain-refsets/autism_cod/20210127",
@@ -407,6 +407,24 @@
       "url": "https://codelists.opensafely.org/codelist/opensafely/haematological-cancer/2020-04-15/",
       "downloaded_at": "2022-06-20 21:10:29.160118Z",
       "sha": "59d65c613a7b984ba46eca8a74eedcc6320609fe"
+    },
+    "user-bangzheng-cancer-excluding-lung-and-haematological-snomed-new.csv": {
+      "id": "user/bangzheng/cancer-excluding-lung-and-haematological-snomed-new/31cac0ec",
+      "url": "https://codelists.opensafely.org/codelist/user/bangzheng/cancer-excluding-lung-and-haematological-snomed-new/31cac0ec/",
+      "downloaded_at": "2022-08-29 09:27:10.752220Z",
+      "sha": "cac87b571ed24373102d103bbf03d593966bd8bd"
+    },
+    "user-bangzheng-nhsd-immunosupression-pcdcluster-snomed-ct-new.csv": {
+      "id": "user/bangzheng/nhsd-immunosupression-pcdcluster-snomed-ct-new/7c9a7542",
+      "url": "https://codelists.opensafely.org/codelist/user/bangzheng/nhsd-immunosupression-pcdcluster-snomed-ct-new/7c9a7542/",
+      "downloaded_at": "2022-08-29 09:27:11.081455Z",
+      "sha": "09287f14fed4848e8fb7e706e859ebc1f316be74"
+    },
+    "user-bangzheng-nhsd-transplant-spl-atriskv4-snomed-ct-new.csv": {
+      "id": "user/bangzheng/nhsd-transplant-spl-atriskv4-snomed-ct-new/15a9e878",
+      "url": "https://codelists.opensafely.org/codelist/user/bangzheng/nhsd-transplant-spl-atriskv4-snomed-ct-new/15a9e878/",
+      "downloaded_at": "2022-08-29 09:27:11.396687Z",
+      "sha": "56a9f8c2b600286b5403ad532097a82fcbdccd7d"
     }
   }
 }

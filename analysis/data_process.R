@@ -85,6 +85,9 @@ data_extract <- read_csv(
     ckd_stage_5_nhsd = col_logical(), 
     haematological_disease_nhsd = col_logical(), 
     cancer_opensafely_snomed = col_logical(), 
+    non_haem_cancer_new = col_logical(),
+    immunosupression_new = col_logical(),
+    solid_organ_transplant_new = col_logical(),
     downs_syndrome_nhsd  = col_logical(), 
 
     # CLINICAL/DEMOGRAPHIC COVARIATES ----
