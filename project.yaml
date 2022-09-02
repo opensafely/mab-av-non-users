@@ -280,7 +280,7 @@ actions:
         data: output/tables/cox_models_day5_crude_ba2_organ_new.rds
       moderately_sensitive:
         table1: output/tables/cox_models_day5_crude_ba2_organ_new.csv
-        table2: output/tables/log_cox_models_day5_ba2_crude_organ_new.csv
+        table2: output/tables/log_cox_models_day5_crude_ba2_organ_new.csv
 
   cox_day5_full_haem_malig:
     run: r:latest analysis/cox_models_haem_malig.R day5 full
