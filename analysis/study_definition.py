@@ -101,7 +101,7 @@ study = StudyDefinition(
     AND NOT has_died
     AND (sex = "M" OR sex = "F")
     AND NOT stp = ""
-    AND (imd >= 0 AND has_msoa)
+    AND imd != -1
     AND (
      registered_eligible
       AND
