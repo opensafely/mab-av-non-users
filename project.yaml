@@ -201,6 +201,161 @@ actions:
         table2: output/tables/estimates_day0.csv
         table3: output/tables/log_cox_models_day0.csv
         table4: output/tables/outcomes_day0.csv
-        
+  
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## Subgroup
+  ## # # # # # # # # # # # # # # # # # # #    
+
+  cox_day5_full_organ:
+    run: r:latest analysis/cox_models_organ.R day5 full
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5_full_organ_new.rds
+      moderately_sensitive:
+        figure1: output/figs/*_full_overlap_plot_day5_before_restriction_organ_new.png
+        figure2: output/figs/*_full_overlap_plot_day5_after_restriction_organ_new.png
+        figure3: output/figs/*_full_cumInc_day5_organ_new.png
+        table1: output/tables/cox_models_day5_full_organ_new.csv
+        table2: output/tables/log_cox_models_day5_full_organ_new.csv
+        model1: output/data_models/*_full_psModelFit_organ_new.rds
+
+  cox_day5_age_sex_organ:
+    run: r:latest analysis/cox_models_organ.R day5 agesex
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5_agesex_organ_new.rds
+      moderately_sensitive:
+        figure1: output/figs/*_agesex_overlap_plot_day5_before_restriction_organ_new.png
+        figure2: output/figs/*_agesex_overlap_plot_day5_after_restriction_organ_new.png
+        figure3: output/figs/*_agesex_cumInc_day5_organ_new.png
+        table1: output/tables/cox_models_day5_agesex_organ_new.csv
+        table2: output/tables/log_cox_models_day5_agesex_organ_new.csv
+        model1: output/data_models/*_agesex_psModelFit_organ_new.rds
+  
+  cox_day5_crude_organ:
+    run: r:latest analysis/cox_models_organ.R day5 crude
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5_crude_organ_new.rds
+      moderately_sensitive:
+        table1: output/tables/cox_models_day5_crude_organ_new.csv
+        table2: output/tables/log_cox_models_day5_crude_organ_new.csv
+
+  cox_day5_full_organ_ba2:
+    run: r:latest analysis/cox_models_organ_ba2.R day5 full
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5_full_ba2_organ_new.rds
+      moderately_sensitive:
+        figure1: output/figs/*_full_overlap_plot_day5_before_restriction_ba2_organ_new.png
+        figure2: output/figs/*_full_overlap_plot_day5_after_restriction_ba2_organ_new.png
+        figure3: output/figs/*_full_cumInc_day5_ba2_organ_new.png
+        table1: output/tables/cox_models_day5_full_ba2_organ_new.csv
+        table2: output/tables/log_cox_models_day5_full_ba2_organ_new.csv
+        model1: output/data_models/*_full_psModelFit_ba2_organ_new.rds
+
+  cox_day5_age_sex_organ_ba2:
+    run: r:latest analysis/cox_models_organ_ba2.R day5 agesex
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5_agesex_ba2_organ_new.rds
+      moderately_sensitive:
+        figure1: output/figs/*_agesex_overlap_plot_day5_before_restriction_ba2_organ_new.png
+        figure2: output/figs/*_agesex_overlap_plot_day5_after_restriction_ba2_organ_new.png
+        figure3: output/figs/*_agesex_cumInc_day5_ba2_organ_new.png
+        table1: output/tables/cox_models_day5_agesex_ba2_organ_new.csv
+        table2: output/tables/log_cox_models_day5_agesex_ba2_organ_new.csv
+        model1: output/data_models/*_agesex_psModelFit_ba2_organ_new.rds
+  
+  cox_day5_crude_organ_ba2:
+    run: r:latest analysis/cox_models_organ_ba2.R day5 crude
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5_crude_ba2_organ_new.rds
+      moderately_sensitive:
+        table1: output/tables/cox_models_day5_crude_ba2_organ_new.csv
+        table2: output/tables/log_cox_models_day5_crude_ba2_organ_new.csv
+
+  cox_day5_full_haem_malig:
+    run: r:latest analysis/cox_models_haem_malig.R day5 full
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5_full_haem_malig_new.rds 
+      moderately_sensitive:
+        figure1: output/figs/*_full_overlap_plot_day5_before_restriction_haem_malig_new.png
+        figure2: output/figs/*_full_overlap_plot_day5_after_restriction_haem_malig_new.png
+        figure3: output/figs/*_full_cumInc_day5_haem_malig_new.png
+        table1: output/tables/cox_models_day5_full_haem_malig_new.csv
+        table2: output/tables/log_cox_models_day5_full_haem_malig_new.csv
+        model1: output/data_models/*_full_psModelFit_haem_malig_new.rds
+
+  cox_day5_age_sex_haem_malig:
+    run: r:latest analysis/cox_models_haem_malig.R day5 agesex
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5_agesex_haem_malig_new.rds
+      moderately_sensitive:
+        figure1: output/figs/*_agesex_overlap_plot_day5_before_restriction_haem_malig_new.png
+        figure2: output/figs/*_agesex_overlap_plot_day5_after_restriction_haem_malig_new.png
+        figure3: output/figs/*_agesex_cumInc_day5_haem_malig_new.png
+        table1: output/tables/cox_models_day5_agesex_haem_malig_new.csv
+        table2: output/tables/log_cox_models_day5_agesex_haem_malig_new.csv
+        model1: output/data_models/*_agesex_psModelFit_haem_malig_new.rds
+
+  cox_day5_crude_haem_malig:
+    run: r:latest analysis/cox_models_haem_malig.R day5 crude
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5_crude_haem_malig_new.rds
+      moderately_sensitive:
+        table1: output/tables/cox_models_day5_crude_haem_malig_new.csv
+        table2: output/tables/log_cox_models_day5_crude_haem_malig_new.csv
+
+  cox_day5_full_haem_malig_ba2:
+    run: r:latest analysis/cox_models_haem_malig_ba2.R day5 full
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5_full_ba2_haem_malig_new.rds 
+      moderately_sensitive:
+        figure1: output/figs/*_full_overlap_plot_day5_before_restriction_ba2_haem_malig_new.png
+        figure2: output/figs/*_full_overlap_plot_day5_after_restriction_ba2_haem_malig_new.png
+        figure3: output/figs/*_full_cumInc_day5_ba2_haem_malig_new.png
+        table1: output/tables/cox_models_day5_full_ba2_haem_malig_new.csv
+        table2: output/tables/log_cox_models_day5_full_ba2_haem_malig_new.csv
+        model1: output/data_models/*_full_psModelFit_ba2_haem_malig_new.rds
+
+  cox_day5_age_sex_haem_malig_ba2:
+    run: r:latest analysis/cox_models_haem_malig_ba2.R day5 agesex
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5_agesex_ba2_haem_malig_new.rds
+      moderately_sensitive:
+        figure1: output/figs/*_agesex_overlap_plot_day5_before_restriction_ba2_haem_malig_new.png
+        figure2: output/figs/*_agesex_overlap_plot_day5_after_restriction_ba2_haem_malig_new.png
+        figure3: output/figs/*_agesex_cumInc_day5_ba2_haem_malig_new.png
+        table1: output/tables/cox_models_day5_agesex_ba2_haem_malig_new.csv
+        table2: output/tables/log_cox_models_day5_agesex_ba2_haem_malig_new.csv
+        model1: output/data_models/*_agesex_psModelFit_ba2_haem_malig_new.rds
+
+  cox_day5_crude_haem_malig_ba2:
+    run: r:latest analysis/cox_models_haem_malig_ba2.R day5 crude
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/tables/cox_models_day5_crude_ba2_haem_malig_new.rds
+      moderately_sensitive:
+        table1: output/tables/cox_models_day5_crude_ba2_haem_malig_new.csv
+        table2: output/tables/log_cox_models_day5_crude_ba2_haem_malig_new.csv
 
         
