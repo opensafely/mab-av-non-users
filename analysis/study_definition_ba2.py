@@ -101,7 +101,7 @@ study = StudyDefinition(
     AND NOT has_died
     AND (sex = "M" OR sex = "F")
     AND NOT stp = ""
-    AND (imd >= 0 AND has_msoa)
+    AND imd != -1
     AND (
      registered_eligible
       AND
@@ -662,8 +662,40 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
+  oral_steroid_drug_nhsd_3m_count=patients.with_these_medications(
+    codelist=combine_codelists(
+      oral_steroid_drugs_dmd_codes,
+      oral_steroid_drugs_snomed_codes),
+    returning="number_of_matches_in_period",
+    between=["covid_test_positive_date - 3 months", "covid_test_positive_date"],
+    return_expectations={
+      "incidence": 0.1,
+      "int": {"distribution": "normal", "mean": 2, "stddev": 1},
+    },
+  ),
+  oral_steroid_drug_nhsd_12m_count=patients.with_these_medications(
+    codelist=combine_codelists(
+      oral_steroid_drugs_dmd_codes,
+      oral_steroid_drugs_snomed_codes),
+    returning="number_of_matches_in_period",
+    between=["covid_test_positive_date - 12 months", "covid_test_positive_date"],
+    return_expectations={
+      "incidence": 0.1,
+      "int": {"distribution": "normal", "mean": 3, "stddev": 1},
+    },
+  ),
+  oral_steroid_drugs_nhsd2=patients.satisfying(
+    """
+    oral_steroid_drugs_nhsd AND
+    (oral_steroid_drug_nhsd_3m_count >=2 AND
+    oral_steroid_drug_nhsd_12m_count >=4)
+    """,
+    return_expectations={
+      "incidence": 0.05
+    },
+  ),
   imid_nhsd=patients.satisfying(
-    "immunosuppresant_drugs_nhsd OR oral_steroid_drugs_nhsd",
+    "immunosuppresant_drugs_nhsd OR oral_steroid_drugs_nhsd2",
     return_expectations={
       "incidence": 0.05
     },
