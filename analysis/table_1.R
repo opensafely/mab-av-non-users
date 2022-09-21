@@ -35,7 +35,7 @@ if (length(args) == 0){
 }
 
 ## Set rounding and redaction thresholds
-rounding_threshold = 1
+rounding_threshold = 5
 redaction_threshold = 10
 
 ## Import data
