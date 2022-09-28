@@ -198,8 +198,6 @@ actions:
     run: r:latest analysis/cox_models_organ.R day5 full
     needs: [data_process]
     outputs:
-      highly_sensitive:
-        data: output/tables/cox_models_day5_full_organ_new.rds
       moderately_sensitive:
         figure1: output/figs/*_full_overlap_plot_day5_before_restriction_organ_new.png
         figure2: output/figs/*_full_overlap_plot_day5_after_restriction_organ_new.png
@@ -212,8 +210,6 @@ actions:
     run: r:latest analysis/cox_models_organ.R day5 agesex
     needs: [data_process]
     outputs:
-      highly_sensitive:
-        data: output/tables/cox_models_day5_agesex_organ_new.rds
       moderately_sensitive:
         figure1: output/figs/*_agesex_overlap_plot_day5_before_restriction_organ_new.png
         figure2: output/figs/*_agesex_overlap_plot_day5_after_restriction_organ_new.png
@@ -226,8 +222,6 @@ actions:
     run: r:latest analysis/cox_models_organ.R day5 crude
     needs: [data_process]
     outputs:
-      highly_sensitive:
-        data: output/tables/cox_models_day5_crude_organ_new.rds
       moderately_sensitive:
         table1: output/tables/cox_models_day5_crude_organ_new.csv
         table2: output/tables/log_cox_models_day5_crude_organ_new.csv
@@ -236,8 +230,6 @@ actions:
     run: r:latest analysis/cox_models_organ_ba2.R day5 full
     needs: [data_process_ba2]
     outputs:
-      highly_sensitive:
-        data: output/tables/cox_models_day5_full_ba2_organ_new.rds
       moderately_sensitive:
         figure1: output/figs/*_full_overlap_plot_day5_before_restriction_ba2_organ_new.png
         figure2: output/figs/*_full_overlap_plot_day5_after_restriction_ba2_organ_new.png
@@ -250,8 +242,6 @@ actions:
     run: r:latest analysis/cox_models_organ_ba2.R day5 agesex
     needs: [data_process_ba2]
     outputs:
-      highly_sensitive:
-        data: output/tables/cox_models_day5_agesex_ba2_organ_new.rds
       moderately_sensitive:
         figure1: output/figs/*_agesex_overlap_plot_day5_before_restriction_ba2_organ_new.png
         figure2: output/figs/*_agesex_overlap_plot_day5_after_restriction_ba2_organ_new.png
@@ -264,8 +254,6 @@ actions:
     run: r:latest analysis/cox_models_organ_ba2.R day5 crude
     needs: [data_process_ba2]
     outputs:
-      highly_sensitive:
-        data: output/tables/cox_models_day5_crude_ba2_organ_new.rds
       moderately_sensitive:
         table1: output/tables/cox_models_day5_crude_ba2_organ_new.csv
         table2: output/tables/log_cox_models_day5_crude_ba2_organ_new.csv
