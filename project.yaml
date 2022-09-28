@@ -125,8 +125,6 @@ actions:
     run: r:latest analysis/cox_models_ba2.R day5 full
     needs: [data_process_ba2]
     outputs:
-      highly_sensitive:
-        data: output/tables/cox_models_day5_full_ba2_new.rds
       moderately_sensitive:
         figure1: output/figs/*_full_overlap_plot_day5_before_restriction_ba2_new.png
         figure2: output/figs/*_full_overlap_plot_day5_after_restriction_ba2_new.png
