@@ -1,7 +1,7 @@
 ################################################################################
 #
 # Cox models (propensity score analysis) // BA.2 period
-# SUBGROUP: HAEM MALIGNANCIES
+# SUBGROUP: HAEM DISEASE
 #
 # This script can be run via an action in project.yaml using two arguments:
 # - 'day_label' /in {day5, day0} (--> day5 or day0 analysis)
