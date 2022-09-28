@@ -506,7 +506,7 @@ for(i in seq_along(trt_grp)) {
         ci <- (est + c(-1, 1) * qnorm(0.975) * se) %>% exp()
         estimates[k, "HR"] <- est %>% exp()
         estimates[k, c("LowerCI", "UpperCI")] <- ci
-      } else log[k, "error"] <- model()$messages # end pull from model_Psw
+      } else log[k, "error"] <- model()$messages # end pull from model
     } # end loop through outcomes
   } # end PART B
 } # end loop through treatments
