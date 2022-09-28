@@ -497,13 +497,13 @@ for(i in seq_along(trt_grp)) {
           log[k, "warning"] <- paste(model()$warnings, collapse = '; ')
         } else log[k, "warning"] <- NA_character_
         # save coefficients of model and CIs in estimates
-        result <- model_PSw()$result
+        result <- model()$result
         result_summary <- result %>% summary()
         # estimated treatment effect + robust se
         est <- result_summary$coefficients[, "coef"]
-        se_robust <- result_summary$coefficients[, "robust se"]
+        se <- result_summary$coefficients[, "se(coef)"]
         # construct robust confidence intervals
-        ci <- (est + c(-1, 1) * qnorm(0.975) * se_robust) %>% exp()
+        ci <- (est + c(-1, 1) * qnorm(0.975) * se) %>% exp()
         estimates[k, "HR"] <- est %>% exp()
         estimates[k, c("LowerCI", "UpperCI")] <- ci
       } else log[k, "error"] <- model()$messages # end pull from model_Psw
