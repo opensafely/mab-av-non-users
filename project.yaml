@@ -115,6 +115,7 @@ actions:
         figure1: output/figs/*_full_overlap_plot_day5_before_restriction_new.png
         figure2: output/figs/*_full_overlap_plot_day5_after_restriction_new.png
         figure3: output/figs/*_full_cumInc_day5_new.png
+        csvfigure3: output/figs/*_full_cumInc_day5_new.cvs
         table1: output/tables/cox_models_day5_full_new.csv
         table2: output/tables/log_cox_models_day5_full_new.csv
         model1: output/data_models/*_full_psModelFit_new.rds
@@ -127,6 +128,7 @@ actions:
         figure1: output/figs/*_full_overlap_plot_day5_before_restriction_ba2_new.png
         figure2: output/figs/*_full_overlap_plot_day5_after_restriction_ba2_new.png
         figure3: output/figs/*_full_cumInc_day5_ba2_new.png
+        csvfigure3: output/figs/*_full_cumInc_day5_ba2_new.cvs
         table1: output/tables/cox_models_day5_full_ba2_new.csv
         table2: output/tables/log_cox_models_day5_full_ba2_new.csv
         model1: output/data_models/*_full_psModelFit_ba2_new.rds
@@ -139,6 +141,7 @@ actions:
         figure1: output/figs/*_agesex_overlap_plot_day5_before_restriction_new.png
         figure2: output/figs/*_agesex_overlap_plot_day5_after_restriction_new.png
         figure3: output/figs/*_agesex_cumInc_day5_new.png
+        csvfigure3: output/figs/*_agesex_cumInc_day5_new.cvs
         table1: output/tables/cox_models_day5_agesex_new.csv
         table2: output/tables/log_cox_models_day5_agesex_new.csv
         model1: output/data_models/*_agesex_psModelFit_new.rds
@@ -151,6 +154,7 @@ actions:
         figure1: output/figs/*_agesex_overlap_plot_day5_before_restriction_ba2_new.png
         figure2: output/figs/*_agesex_overlap_plot_day5_after_restriction_ba2_new.png
         figure3: output/figs/*_agesex_cumInc_day5_ba2_new.png
+        csvfigure3: output/figs/*_agesex_cumInc_day5_ba2_new.cvs
         table1: output/tables/cox_models_day5_agesex_ba2_new.csv
         table2: output/tables/log_cox_models_day5_agesex_ba2_new.csv
         model1: output/data_models/*_agesex_psModelFit_ba2_new.rds

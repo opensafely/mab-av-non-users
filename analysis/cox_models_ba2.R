@@ -16,6 +16,7 @@
 # - 'trt_grp'_'outcomes'_'adjustment_set'_cumInc_day5_ba2_new.png
 # [note, if script is run for day5 and day0, file with cumInc plots will be 
 # overwritten (and named 'day5' in both instances)]
+# - 'trt_grp'_'outcomes'_'adjustment_set'_cumInc_'data_label'_ba2_new.csv
 # 3. Tables with effect estimates in ./output/tables:
 # - cox_models_'data_label'_'adjustment_set'_ba2_new.csv
 # 4. Log file with errors and warnings in ./output/tables:
@@ -403,31 +404,51 @@ for(i in seq_along(trt_grp)) {
         # Untreated
         survdata0 <- 
           survfit(result,
+                  data = data_cohort_sub_trimmed,
                   newdata = mutate(data_cohort_sub_trimmed,
-                                   treatment = "Untreated"))
-      
+                                   treatment = "Untreated"),
+                  conf.type = "plain")
         estimates0 <- data.frame(time = survdata0$time, 
                                  estimate = 1 - rowMeans(survdata0$surv),
+                                 lower = 1 - rowMeans(survdata0$upper),
+                                 upper = 1 - rowMeans(survdata0$lower),
                                  Treatment = "Untreated")
-        
         # Treated
         survdata1 <- 
           survfit(result,
                   newdata = mutate(data_cohort_sub_trimmed,
-                                   treatment = "Treated"))
-        
+                                   treatment = "Treated"),
+                  conf.type = "plain")
         estimates1 <- data.frame(time = survdata1$time, 
                                  estimate = 1 - rowMeans(survdata1$surv),
+                                 lower = 1 - rowMeans(survdata1$upper),
+                                 upper = 1 - rowMeans(survdata1$lower),
                                  Treatment = "Treated")
         # Combine estimates in 1 data.frame
-        tidy <- data.frame(rbind(estimates0, estimates1)) 
+        tidy <- data.frame(rbind(estimates0, estimates1))
+        # save estimates and cis if replotting needed outside server
+        write_csv(tidy,
+                  here("output", 
+                       "figs", 
+                       paste0(trt_grp[i],
+                              "_",
+                              outcomes[j],
+                              "_",
+                              adjustment_set,
+                              "_cumInc_",
+                              data_label,
+                              "_ba2_new.csv")))
         # Plot cumulative incidence percentage
         plot <- ggplot(tidy, 
                        aes(x = time,
-                           y = 100*estimate,
-                           fill = Treatment,
+                           y = 100 * estimate,
                            color = Treatment)) +
           geom_line(size = 1) + 
+          geom_ribbon(aes(ymin = lower * 100,
+                          ymax = upper * 100,
+                          fill = Treatment,
+                          color = NULL),
+                      alpha = .15) +
           xlab("Time (Days)") +
           ylab("Cumulative Incidence (%)") +
           theme_classic() + 
