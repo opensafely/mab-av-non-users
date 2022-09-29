@@ -25,6 +25,8 @@
 # - 'trt_grp'_'adjustment_set'_psModelFit_ba2_haem_malig_new.rds
 # [note, if script is run for day5 and day0, file with ps model will be 
 # overwritten]
+# 6. CSV files with counts (redacted)
+# - counts_'data_label'_'adjustment_set'_ba2_haem_malig.csv
 # 
 # where 'trt_grp' /in {All, Sotrovimab, Molnupiravir}, and
 #       'outcomes' /in {primary, secondary}
@@ -53,6 +55,8 @@ fs::dir_create(here::here("output", "figs"))
 fs::dir_create(here::here("output", "tables"))
 # Create data_models directory (where ps models are saved)
 fs::dir_create(here::here("output", "data_models"))
+# Folder to save counts
+fs::dir_create(here::here("output", "counts"))
 
 ################################################################################
 # 0.2 Import command-line arguments
@@ -99,7 +103,7 @@ data_cohort <-
   filter(haematological_disease_nhsd == 1)
 
 ################################################################################
-# 0.4 Create data.frame for output (estimates + log file)
+# 0.4 Create data.frame for output (estimates + log file + counts)
 ################################################################################
 # create data.frame 'estimates' where output is saved 
 # 'estimates' has 7 columns:
@@ -122,6 +126,31 @@ log <- matrix(nrow = 6, ncol = 4) %>% as.data.frame()
 # provide column names
 colnames(log) <- 
   c("comparison", "outcome", "warning", "error")
+  # create data.frame 'counts' used to save number of patients / outcomes before 
+# and after ps trimming (stratified by mol or sot)
+# 'outcomes' has 2 + 16 columns: 
+# - comparison; outcome
+# - n_treated; n_mol; n_sot; n_untreated; 
+#   n_outcome_treated; n_outcome_mol; n_outcome_sot; n_outcome_untreated
+#
+# - n_treated_restr; n_mol_restr; n_sot_restr; n_untreated_restr; 
+#   n_outcome_treated_restr; n_outcome_mol_restr;
+#   n_outcome_sot_restr; n_outcome_untreated_restr
+# 'outcomes' has 6 rows (like 'estimates'):
+# primary outcome x 3 (mol + sot vs none; sot vs none; mol vs none) plus
+# secondary outcome x 3 (idem)
+counts <- matrix(nrow = 6, ncol = 18) %>% as.data.frame()
+# provide column names
+colnames(counts) <- 
+  c("comparison", "outcome",
+    "n_treated", "n_mol", "n_sot",
+    "n_untreated",
+    "n_outcome_treated", "n_outcome_mol", "n_outcome_sot",
+    "n_outcome_untreated",
+    "n_treated_restr", "n_mol_restr", "n_sot_restr",
+    "n_untreated_restr",
+    "n_outcome_treated_restr", "n_outcome_mol_restr", "n_outcome_sot_restr",
+    "n_outcome_untreated_restr")
 
 ################################################################################
 # 1.0 Create vectors for treatments and outcomes used in analysis
@@ -156,18 +185,26 @@ for(i in seq_along(trt_grp)) {
   if (i == 1) {
     print("All Treated versus Untreated Comparison")
     data_cohort_sub <- 
-      data_cohort 
-    estimates[c(1, 4), "n"] <-
-      nrow(data_cohort_sub) %>% plyr::round_any(5)
+      data_cohort
   } else {
     print(paste0(trt_grp[i], " versus Untreated Comparison"))
     # Drop patients treated with molnupiravir or sotrovimab
     data_cohort_sub <- 
       data_cohort %>% 
       filter(treatment_strategy_cat %in% c("Untreated", trt_grp[i]))
-    estimates[c(1 + (i - 1), 4 + (i - 1)), "n"] <-
-      nrow(data_cohort_sub) %>% plyr::round_any(5)
   }
+    # Fill n in estimates
+  estimates[c(1 + (i - 1), 4 + (i - 1)), "n"] <- 
+    nrow(data_cohort_sub) %>% plyr::round_any(5)
+  # Fill counts
+  counts[c(1 + (i - 1), 4 + (i - 1)), "n_treated"] <-
+    data_cohort_sub %>% filter(treatment == "Treated") %>% nrow()
+  counts[c(1 + (i - 1), 4 + (i - 1)), "n_mol"] <- 
+    data_cohort_sub %>% filter(treatment_strategy_cat == "Molnupiravir") %>% nrow()
+  counts[c(1 + (i - 1), 4 + (i - 1)), "n_sot"] <-
+    data_cohort_sub %>% filter(treatment_strategy_cat == "Sotrovimab") %>% nrow()
+  counts[c(1 + (i - 1), 4 + (i - 1)), "n_untreated"] <-
+    data_cohort_sub %>% filter(treatment == "Untreated") %>% nrow()
   
   if (adjustment_set != "crude") {
     ############################################################################
@@ -305,6 +342,15 @@ for(i in seq_along(trt_grp)) {
     # Save n in 'estimates' after trimming
     estimates[c(1 + (i - 1), 4 + (i - 1)), "n_after_restriction"] <-
       nrow(data_cohort_sub_trimmed) %>% plyr::round_any(5)
+        # Fill counts after trimming
+    counts[c(1 + (i - 1), 4 + (i - 1)), "n_treated_restr"] <-
+      data_cohort_sub_trimmed %>% filter(treatment == "Treated") %>% nrow()
+    counts[c(1 + (i - 1), 4 + (i - 1)), "n_mol_restr"] <- 
+      data_cohort_sub_trimmed %>% filter(treatment_strategy_cat == "Molnupiravir") %>% nrow()
+    counts[c(1 + (i - 1), 4 + (i - 1)), "n_sot_restr"] <-
+      data_cohort_sub_trimmed %>% filter(treatment_strategy_cat == "Sotrovimab") %>% nrow()
+    counts[c(1 + (i - 1), 4 + (i - 1)), "n_untreated_restr"] <-
+      data_cohort_sub_trimmed %>% filter(treatment == "Untreated") %>% nrow()
     # Make plot of trimmed propensity scores and save
     # Overlap plot 
     overlapPlot2 <- data_cohort_sub_trimmed %>% 
@@ -360,17 +406,87 @@ for(i in seq_along(trt_grp)) {
       estimates[k, "outcome"] <- outcome_event
       log[k, "comparison"] <- t
       log[k, "outcome"] <- outcome_event
+      counts[k, "comparison"] <- t
+      counts[k, "outcome"] <- outcome_event
       # create formula for primary and secondary analysis
       if (outcome_event == "primary"){
         formula <- 
           as.formula(
             Surv(fu_primary, status_primary == "covid_hosp_death") ~ 
               treatment)
+        # Fill counts before trimming
+        counts[k, "n_outcome_treated"] <-
+          data_cohort_sub %>% 
+          filter(treatment == "Treated",
+                 status_primary == "covid_hosp_death") %>% nrow()
+        counts[k, "n_outcome_mol"] <- 
+          data_cohort_sub %>%
+          filter(treatment_strategy_cat == "Molnupiravir",
+                 status_primary == "covid_hosp_death") %>% nrow()
+        counts[k, "n_outcome_sot"] <-
+          data_cohort_sub %>%
+          filter(treatment_strategy_cat == "Sotrovimab",
+                 status_primary == "covid_hosp_death") %>% nrow()
+        counts[k, "n_outcome_untreated"] <-
+          data_cohort_sub %>%
+          filter(treatment == "Untreated",
+                 status_primary == "covid_hosp_death") %>% nrow()
+        # Fill counts after trimming
+        counts[k, "n_outcome_treated_restr"] <-
+          data_cohort_sub_trimmed %>% 
+          filter(treatment == "Treated",
+                 status_primary == "covid_hosp_death") %>% nrow()
+        counts[k, "n_outcome_mol_restr"] <- 
+          data_cohort_sub_trimmed %>%
+          filter(treatment_strategy_cat == "Molnupiravir",
+                 status_primary == "covid_hosp_death") %>% nrow()
+        counts[k, "n_outcome_sot_restr"] <-
+          data_cohort_sub_trimmed %>%
+          filter(treatment_strategy_cat == "Sotrovimab",
+                 status_primary == "covid_hosp_death") %>% nrow()
+        counts[k, "n_outcome_untreated_restr"] <-
+          data_cohort_sub_trimmed %>%
+          filter(treatment == "Untreated",
+                 status_primary == "covid_hosp_death") %>% nrow()
       } else if (outcome_event == "secondary"){
         formula <- 
           as.formula(
             Surv(fu_secondary, status_secondary == "allcause_hosp_death") ~ 
               treatment)
+        # Fill counts before trimming
+        counts[k, "n_outcome_treated"] <-
+          data_cohort_sub %>% 
+          filter(treatment == "Treated",
+                 status_secondary == "allcause_hosp_death") %>% nrow()
+        counts[k, "n_outcome_mol"] <- 
+          data_cohort_sub %>%
+          filter(treatment_strategy_cat == "Molnupiravir",
+                 status_secondary == "allcause_hosp_death") %>% nrow()
+        counts[k, "n_outcome_sot"] <-
+          data_cohort_sub %>%
+          filter(treatment_strategy_cat == "Sotrovimab",
+                 status_secondary == "allcause_hosp_death") %>% nrow()
+        counts[k, "n_outcome_untreated"] <-
+          data_cohort_sub %>%
+          filter(treatment == "Untreated",
+                 status_secondary == "allcause_hosp_death") %>% nrow()
+        # Fill counts after trimming
+        counts[k, "n_outcome_treated_restr"] <-
+          data_cohort_sub_trimmed %>% 
+          filter(treatment == "Treated",
+                 status_secondary == "allcause_hosp_death") %>% nrow()
+        counts[k, "n_outcome_mol_restr"] <- 
+          data_cohort_sub_trimmed %>%
+          filter(treatment_strategy_cat == "Molnupiravir",
+                 status_secondary == "allcause_hosp_death") %>% nrow()
+        counts[k, "n_outcome_sot_restr"] <-
+          data_cohort_sub_trimmed %>%
+          filter(treatment_strategy_cat == "Sotrovimab",
+                 status_secondary == "allcause_hosp_death") %>% nrow()
+        counts[k, "n_outcome_untreated_restr"] <-
+          data_cohort_sub_trimmed %>%
+          filter(treatment == "Untreated",
+                 status_secondary == "allcause_hosp_death") %>% nrow()
       }
       # Cox regression
       # returns function model_PSw() with components result, output, messages, 
@@ -429,8 +545,7 @@ for(i in seq_along(trt_grp)) {
         # Plot cumulative incidence percentage
         plot <- ggplot(tidy, 
                        aes(x = time,
-                           y = 100*estimate,
-                           fill = Treatment,
+                           y = 100 * estimate,
                            color = Treatment)) +
           geom_line(size = 1) + 
           xlab("Time (Days)") +
@@ -465,24 +580,60 @@ for(i in seq_along(trt_grp)) {
       ##########################################################################
       outcome_event <- outcomes[j]
       print(outcome_event)
-      # because we need to know where in 'estimates' and 'log' output should be
-      # saved
+      # because we need to know where in 'estimates', 'log' and 'counts' output
+      # should be saved
       k <- i + ((j - 1) * 3)
       estimates[k, "comparison"] <- t
       estimates[k, "outcome"] <- outcome_event
       log[k, "comparison"] <- t
       log[k, "outcome"] <- outcome_event
+      counts[k, "comparison"] <- t
+      counts[k, "outcome"] <- outcome_event
       # create formula for primary and secondary analysis
       if (outcome_event == "primary"){
         formula <- 
           as.formula(
             Surv(fu_primary, status_primary == "covid_hosp_death") ~ 
               treatment)
+        # Fill counts
+        counts[k, "n_outcome_treated"] <-
+          data_cohort_sub %>% 
+          filter(treatment == "Treated",
+                 status_primary == "covid_hosp_death") %>% nrow()
+        counts[k, "n_outcome_mol"] <- 
+          data_cohort_sub %>%
+          filter(treatment_strategy_cat == "Molnupiravir",
+                 status_primary == "covid_hosp_death") %>% nrow()
+        counts[k, "n_outcome_sot"] <-
+          data_cohort_sub %>%
+          filter(treatment_strategy_cat == "Sotrovimab",
+                 status_primary == "covid_hosp_death") %>% nrow()
+        counts[k, "n_outcome_untreated"] <-
+          data_cohort_sub %>%
+          filter(treatment == "Untreated",
+                 status_primary == "covid_hosp_death") %>% nrow()
       } else if (outcome_event == "secondary"){
         formula <- 
           as.formula(
             Surv(fu_secondary, status_secondary == "allcause_hosp_death") ~ 
               treatment)
+                # Fill counts
+        counts[k, "n_outcome_treated"] <-
+          data_cohort_sub %>% 
+          filter(treatment == "Treated",
+                 status_secondary == "allcause_hosp_death") %>% nrow()
+        counts[k, "n_outcome_mol"] <- 
+          data_cohort_sub %>%
+          filter(treatment_strategy_cat == "Molnupiravir",
+                 status_secondary == "allcause_hosp_death") %>% nrow()
+        counts[k, "n_outcome_sot"] <-
+          data_cohort_sub %>%
+          filter(treatment_strategy_cat == "Sotrovimab",
+                 status_secondary == "allcause_hosp_death") %>% nrow()
+        counts[k, "n_outcome_untreated"] <-
+          data_cohort_sub %>%
+          filter(treatment == "Untreated",
+                 status_secondary == "allcause_hosp_death") %>% nrow()
       }
       # Cox regression
       # returns function model with components result, output, messages, 
@@ -519,7 +670,16 @@ for(i in seq_along(trt_grp)) {
 } # end loop through treatments
 
 ################################################################################
-# 3.0 Save output
+# 3.0 Redact output
+################################################################################
+counts_redacted <-
+  counts %>%
+  mutate(across(where(is.integer),
+                ~ case_when(.x <= 7 ~ "[<=7, REDACTED]",
+                            TRUE ~ plyr::round_any(.x, 5) %>% as.character())))
+
+################################################################################
+# 4.0 Save output
 ################################################################################
 write_csv(estimates,
           here("output", 
@@ -537,4 +697,11 @@ write_csv(log,
                       "_",
                       adjustment_set,
                       "_ba2_haem_malig_new.csv")))
-
+write_csv(counts_redacted,
+          here("output",
+               "counts",
+               paste0("counts_",
+                      data_label,
+                      "_",
+                      adjustment_set,
+                      "ba2_haem_malig.csv")))
