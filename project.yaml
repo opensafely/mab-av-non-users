@@ -118,6 +118,7 @@ actions:
         csvfigure3: output/figs/*_full_cumInc_day5_new.csv
         table1: output/tables/cox_models_day5_full_new.csv
         table2: output/tables/log_cox_models_day5_full_new.csv
+        table3: output/counts/counts_day5_full.csv
         model1: output/data_models/*_full_psModelFit_new.rds
 
   cox_day5_full_ba2:
