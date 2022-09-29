@@ -152,14 +152,16 @@ for(i in seq_along(trt_grp)) {
     print("All Treated versus Untreated Comparison")
     data_cohort_sub <- 
       data_cohort 
-    estimates[c(1, 4), "n"] <- nrow(data_cohort_sub)
+    estimates[c(1, 4), "n"] <- 
+      nrow(data_cohort_sub) %>% plyr::round_any(5)
   } else {
     print(paste0(trt_grp[i], " versus Untreated Comparison"))
     # Drop patients treated with molnupiravir or sotrovimab
     data_cohort_sub <- 
       data_cohort %>% 
       filter(treatment_strategy_cat %in% c("Untreated", trt_grp[i]))
-    estimates[c(1 + (i - 1), 4 + (i - 1)), "n"] <- nrow(data_cohort_sub)
+    estimates[c(1 + (i - 1), 4 + (i - 1)), "n"] <- 
+      nrow(data_cohort_sub) %>% plyr::round_any(5)
   }
   
   if (adjustment_set != "crude") {
@@ -297,7 +299,7 @@ for(i in seq_along(trt_grp)) {
     print(dim(data_cohort_sub_trimmed))
     # Save n in 'estimates' after trimming
     estimates[c(1 + (i - 1), 4 + (i - 1)), "n_after_restriction"] <-
-      nrow(data_cohort_sub_trimmed)
+      nrow(data_cohort_sub_trimmed) %>% plyr::round_any(5)
     # Make plot of trimmed propensity scores and save
     # Overlap plot 
     overlapPlot2 <- data_cohort_sub_trimmed %>% 
