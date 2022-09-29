@@ -401,29 +401,42 @@ for(i in seq_along(trt_grp)) {
         # Untreated
         survdata0 <- 
           survfit(result,
+                  data = data_cohort_sub_trimmed,
                   newdata = mutate(data_cohort_sub_trimmed,
-                                   treatment = "Untreated"))
+                                   treatment = "Untreated"),
+                  conf.type = "plain")
         
         estimates0 <- data.frame(time = survdata0$time, 
                                  estimate = 1 - rowMeans(survdata0$surv),
+                                 lower = 1 - rowMeans(survdata0$upper),
+                                 upper = 1 - rowMeans(survdata0$lower),
                                  Treatment = "Untreated")
         
         # Treated
         survdata1 <- 
           survfit(result,
                   newdata = mutate(data_cohort_sub_trimmed,
-                                   treatment = "Treated"))
-        
+                                   treatment = "Treated"),
+                  conf.type = "plain")
         estimates1 <- data.frame(time = survdata1$time, 
                                  estimate = 1 - rowMeans(survdata1$surv),
+                                 lower = 1 - rowMeans(survdata1$upper),
+                                 upper = 1 - rowMeans(survdata1$lower),
                                  Treatment = "Treated")
         # Combine estimates in 1 data.frame
-        tidy <- data.frame(rbind(estimates0, estimates1)) 
+        tidy <- data.frame(rbind(estimates0, estimates1))
+        write_csv(tidy,
+                  here("output", 
+                       "data_models", 
+                       paste0("cum_inc",
+                              data_label,
+                              "_",
+                              adjustment_set,
+                              ".csv")))
         # Plot cumulative incidence percentage
         plot <- ggplot(tidy, 
                        aes(x = time,
-                           y = 100*estimate,
-                           fill = Treatment,
+                           y = 100 * estimate,
                            color = Treatment)) +
           geom_line(size = 1) + 
           xlab("Time (Days)") +
@@ -432,6 +445,8 @@ for(i in seq_along(trt_grp)) {
           scale_x_continuous(breaks = c(0, 5, 10, 15, 20), 
                              labels = c("5", "10", "15", "20", "25"))
         # Save plot
+        ggsurvplot(survdata0, 
+                   conf.int = TRUE)
         ggsave(plot, 
                filename = 
                  here("output", "figs", 
