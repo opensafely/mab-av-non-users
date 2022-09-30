@@ -704,4 +704,4 @@ write_csv(counts_redacted,
                       data_label,
                       "_",
                       adjustment_set,
-                      "ba2_haem_malig.csv")))
+                      "_ba2_haem_malig.csv")))
