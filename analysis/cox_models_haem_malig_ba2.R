@@ -689,23 +689,28 @@ counts_redacted <-
                                    TRUE ~ n_outcome_mol),
          n_outcome_sot = case_when(comparison == "Molnupiravir" ~ NA_integer_,
                                    (comparison == "All" & n_outcome_mol <= 7 & n_outcome_sot > 7) ~ NA_integer_,
-                                   TRUE ~ n_outcome_sot),
-         n_mol_restr = case_when(comparison == "Sotrovimab" ~ NA_integer_,
-                                 (comparison == "All" & n_sot_restr <= 7 & n_mol_restr > 7) ~ NA_integer_,
-                                 TRUE ~ n_mol_restr),
-         n_sot_restr = case_when(comparison == "Molnupiravir" ~ NA_integer_,
-                                 (comparison == "All" & n_mol_restr <= 7 & n_sot_restr > 7) ~ NA_integer_,
-                                 TRUE ~ n_sot_restr),
-         n_outcome_mol_restr = case_when(comparison == "Sotrovimab" ~ NA_integer_,
-                                         (comparison == "All" & n_outcome_sot_restr <= 7 & n_outcome_mol_restr > 7) ~ NA_integer_,
-                                         TRUE ~ n_outcome_mol_restr),
-         n_outcome_sot_restr = case_when(comparison == "Molnupiravir" ~ NA_integer_,
-                                         (comparison == "All" & n_outcome_mol_restr <= 7 & n_outcome_sot_restr > 7) ~ NA_integer_,
-                                         TRUE ~ n_outcome_sot_restr)
-  ) %>% 
+                                   TRUE ~ n_outcome_sot))
+if (adjustment_set != "crude") {
+  counts_redacted <- 
+    counts_redacted %>%
+    mutate(n_mol_restr = case_when(comparison == "Sotrovimab" ~ NA_integer_,
+                                   (comparison == "All" & n_sot_restr <= 7 & n_mol_restr > 7) ~ NA_integer_,
+                                   TRUE ~ n_mol_restr),
+           n_sot_restr = case_when(comparison == "Molnupiravir" ~ NA_integer_,
+                                   (comparison == "All" & n_mol_restr <= 7 & n_sot_restr > 7) ~ NA_integer_,
+                                   TRUE ~ n_sot_restr),
+           n_outcome_mol_restr = case_when(comparison == "Sotrovimab" ~ NA_integer_,
+                                           (comparison == "All" & n_outcome_sot_restr <= 7 & n_outcome_mol_restr > 7) ~ NA_integer_,
+                                           TRUE ~ n_outcome_mol_restr),
+           n_outcome_sot_restr = case_when(comparison == "Molnupiravir" ~ NA_integer_,
+                                           (comparison == "All" & n_outcome_mol_restr <= 7 & n_outcome_sot_restr > 7) ~ NA_integer_,
+                                           TRUE ~ n_outcome_sot_restr))
+}
+counts_redacted <-
+  counts_redacted %>%
   mutate(across(where(is.integer),
-         ~ case_when(.x <= 7 ~ "[<=7, REDACTED]",
-                     TRUE ~ plyr::round_any(.x, 5) %>% as.character())))
+                ~ case_when(.x <= 7 ~ "[<=7, REDACTED]",
+                            TRUE ~ plyr::round_any(.x, 5) %>% as.character())))
 
 ################################################################################
 # 4.0 Save output
