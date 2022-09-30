@@ -672,11 +672,40 @@ for(i in seq_along(trt_grp)) {
 ################################################################################
 # 3.0 Redact output
 ################################################################################
+# make structural nulls NA_integer (if comparison is sot than n_mol is 
+# automatically 0)
+# if comparison is all, and count of n_sot is lower or equal to 7, n_mol needs 
+# to be redacted as well if greater than 7
 counts_redacted <-
   counts %>%
+  mutate(n_mol = case_when(comparison == "Sotrovimab" ~ NA_integer_,
+                           (comparison == "All" & n_sot <= 7 & n_mol > 7) ~ NA_integer_,
+                           TRUE ~ n_mol),
+         n_sot = case_when(comparison == "Molnupiravir" ~ NA_integer_,
+                           (comparison == "All" & n_mol <= 7 & n_sot > 7) ~ NA_integer_,
+                           TRUE ~ n_sot),
+         n_outcome_mol = case_when(comparison == "Sotrovimab" ~ NA_integer_,
+                                   (comparison == "All" & n_outcome_sot <= 7 & n_outcome_mol > 7) ~ NA_integer_,
+                                   TRUE ~ n_outcome_mol),
+         n_outcome_sot = case_when(comparison == "Molnupiravir" ~ NA_integer_,
+                                   (comparison == "All" & n_outcome_mol <= 7 & n_outcome_sot > 7) ~ NA_integer_,
+                                   TRUE ~ n_outcome_sot),
+         n_mol_restr = case_when(comparison == "Sotrovimab" ~ NA_integer_,
+                                 (comparison == "All" & n_sot_restr <= 7 & n_mol_restr > 7) ~ NA_integer_,
+                                 TRUE ~ n_mol_restr),
+         n_sot_restr = case_when(comparison == "Molnupiravir" ~ NA_integer_,
+                                 (comparison == "All" & n_mol_restr <= 7 & n_sot_restr > 7) ~ NA_integer_,
+                                 TRUE ~ n_sot_restr),
+         n_outcome_mol_restr = case_when(comparison == "Sotrovimab" ~ NA_integer_,
+                                         (comparison == "All" & n_outcome_sot_restr <= 7 & n_outcome_mol_restr > 7) ~ NA_integer_,
+                                         TRUE ~ n_outcome_mol_restr),
+         n_outcome_sot_restr = case_when(comparison == "Molnupiravir" ~ NA_integer_,
+                                         (comparison == "All" & n_outcome_mol_restr <= 7 & n_outcome_sot_restr > 7) ~ NA_integer_,
+                                         TRUE ~ n_outcome_sot_restr)
+  ) %>% 
   mutate(across(where(is.integer),
-                ~ case_when(.x <= 7 ~ "[<=7, REDACTED]",
-                            TRUE ~ plyr::round_any(.x, 5) %>% as.character())))
+         ~ case_when(.x <= 7 ~ "[<=7, REDACTED]",
+                     TRUE ~ plyr::round_any(.x, 5) %>% as.character())))
 
 ################################################################################
 # 4.0 Save output
