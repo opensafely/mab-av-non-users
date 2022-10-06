@@ -16,6 +16,7 @@
 library(here)
 library(dplyr)
 library(purrr)
+library(readr)
 
 ################################################################################
 # 0.1 Create directories for output
@@ -24,31 +25,43 @@ library(purrr)
 fs::dir_create(here("output", "tables_joined"))
 
 ################################################################################
-# 0.2 Prepare string with file names
+# 0.2 Create string with file names cox models
 ################################################################################
 data_label <- "day5"
 # where can input be found?
 folder_with_tables <- 
   here("output", "tables")
 adjustment_set <- c("crude", "agesex", "full")
-names_prefix <- 
+cox_prefix <- 
   paste0("cox_models_",
          data_label,
          "_",
          adjustment_set)
 # ba.1 / ba.2 all + haem malig
-names_ba1 <- 
-  paste0(names_prefix,
+names_cox_ba1 <- 
+  paste0(cox_prefix,
          "_new.csv")
-names_ba2 <-
-  paste0(names_prefix,
+names_cox_ba2 <-
+  paste0(cox_prefix,
          "_ba2_new.csv")
-names_ba1_haem <- 
-  paste0(names_prefix,
+names_cox_ba1_haem <- 
+  paste0(cox_prefix,
          "_haem_malig_new.csv")
-names_ba2_haem <-
-  paste0(names_prefix,
+names_cox_ba2_haem <-
+  paste0(cox_prefix,
          "_ba2_haem_malig_new.csv")
+
+################################################################################
+# 0.3 Create string with file names counts
+################################################################################
+# the crude file will not be released as the numbers of the crude analysis are 
+# reported in the agesex/ fully adjusted tables (before restriction)
+counts_prefix <-
+  paste0("counts_",
+         data_label,
+         "_",
+         adjustment_set[which(adjustment_set != "crude")])
+names_counts_ba1 <- paste0("counts_", counts_prefix)
 
 ################################################################################
 # 1. Define functions
@@ -92,9 +105,9 @@ table_period <- function(folder_with_tables,
 # 2. BA.1 and BA.2 (no subgroup)
 ################################################################################
 table_ba1 <- table_period(folder_with_tables,
-                          names_ba1)
+                          names_cox_ba1)
 table_ba2 <- table_period(folder_with_tables,
-                          names_ba2)
+                          names_cox_ba2)
 table_joined <-
   table_ba1 %>% left_join(table_ba2,
                           by = c("comparison", "adjustment_set"),
@@ -105,9 +118,9 @@ table_joined <-
 # 2. BA.1 and BA.2 (haem_malig)
 ################################################################################
 table_ba1_haem <- table_period(folder_with_tables,
-                               names_ba1_haem)
+                               names_cox_ba1_haem)
 table_ba2_haem <- table_period(folder_with_tables,
-                               names_ba2_haem)
+                               names_cox_ba2_haem)
 table_joined_haem <-
   table_ba1_haem %>% left_join(table_ba2_haem,
                                by = c("comparison", "adjustment_set"),
