@@ -22,32 +22,7 @@ dir_create(here("output", "data_properties"))
 dir_create(here("output", "tables"))
 
 # function used to summarise outcomes
-summarise_outcomes <- function(data, 
-                               fu, 
-                               status,
-                               filename){
-  fu <- enquo(fu)
-  status <- enquo(status)
-  data %>%
-    select(treatment_strategy_cat, !!fu, !!status) %>%
-    group_by(!!status, treatment_strategy_cat) %>%
-    summarise(n = n(),
-              fu_median = median(!!fu),
-              fu_q1 = quantile(!!fu, p = 0.25, na.rm = TRUE),
-              fu_q3 = quantile(!!fu, p = 0.75, na.rm = TRUE),
-              .groups = "keep") %>%
-    mutate(n_redacted = case_when(n <= 5 ~ "<5",
-                                  TRUE ~ n %>% as.character()),
-           fu_median_redacted = case_when(n <= 10 ~ "[REDACTED]",
-                                          TRUE ~ fu_median %>% as.character()),
-           fu_q1_redacted = case_when(n <= 10 ~ "[REDACTED]",
-                                      TRUE ~ fu_q1 %>% as.character()),
-           fu_q3_redacted = case_when(n <= 10 ~ "[REDACTED]",
-                                      TRUE ~ fu_q3 %>% as.character())) %>%
-    select(-c(n, fu_median, fu_q1, fu_q3)) %>%
-    write_csv(., 
-              path(here("output", "data_properties"), filename))
-}
+source(here("lib", "functions", "summarise_outcomes.R"))
 
 # pt treated with sotrovimab whose first outcome is not counted as the outcome
 cat("#### Sotrovimab recipients whose first outcome is not counted day 0 ####\n")
