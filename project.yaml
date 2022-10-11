@@ -338,4 +338,12 @@ actions:
         table2: output/tables/log_cox_models_day5_crude_ba2_haem_malig_new.csv
         table3: output/counts/counts_day5_crude_ba2_haem_malig.csv
 
-        
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## Tables
+  ## # # # # # # # # # # # # # # # # # # # 
+  table_S2:
+    run: r:latest analysis/output_wrangling/tableS2.R
+    needs: [crosstab_trt_outcomes, crosstab_trt_outcomes_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/tables_joined/tableS2.csv
