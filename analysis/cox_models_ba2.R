@@ -26,10 +26,10 @@
 # [note, if script is run for day5 and day0, file with ps model will be 
 # overwritten]
 # 6. CSV files with counts (redacted) [currently only deployed for primary outcome]
-# - counts_n_'data_label'_crude.csv
-# - counts_n_outcome_'data_label'_crude.csv
-# - counts_n_restr_'data_label'_'adjustment_set'.csv 
-# - counts_n_outcome_restr_'data_label'_'adjustment_set'.csv
+# - counts_n_'data_label'_crude_ba2.csv
+# - counts_n_outcome_'data_label'_crude_ba2.csv
+# - counts_n_restr_'data_label'_'adjustment_set'_ba2.csv 
+# - counts_n_outcome_restr_'data_label'_'adjustment_set'_ba2.csv
 # (adjustment_set /in {agesex, full})
 # where 'trt_grp' /in {All, Sotrovimab, Molnupiravir}, and
 #       'outcomes' /in {primary, secondary}

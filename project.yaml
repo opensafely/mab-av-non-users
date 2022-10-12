@@ -118,7 +118,8 @@ actions:
         csvfigure3: output/figs/*_full_cumInc_day5_new.csv
         table1: output/tables/cox_models_day5_full_new.csv
         table2: output/tables/log_cox_models_day5_full_new.csv
-        table3: output/counts/counts_day5_full.csv
+        table3: output/counts/counts_n_restr_day5_full.csv
+        table4: output/counts/counts_n_outcome_restr_day5_full.csv
         model1: output/data_models/*_full_psModelFit_new.rds
 
   cox_day5_full_ba2:
@@ -132,7 +133,8 @@ actions:
         csvfigure3: output/figs/*_full_cumInc_day5_ba2_new.csv
         table1: output/tables/cox_models_day5_full_ba2_new.csv
         table2: output/tables/log_cox_models_day5_full_ba2_new.csv
-        table3: output/counts/counts_day5_full_ba2.csv
+        table3: output/counts/counts_n_restr_day5_full_ba2.csv
+        table4: output/counts/counts_n_outcome_restr_day5_full_ba2.csv
         model1: output/data_models/*_full_psModelFit_ba2_new.rds
 
   cox_day5_age_sex:
@@ -146,7 +148,8 @@ actions:
         csvfigure3: output/figs/*_agesex_cumInc_day5_new.csv
         table1: output/tables/cox_models_day5_agesex_new.csv
         table2: output/tables/log_cox_models_day5_agesex_new.csv
-        table3: output/counts/counts_day5_agesex.csv
+        table3: output/counts/counts_n_restr_day5_agesex.csv
+        table4: output/counts/counts_n_outcome_restr_day5_agesex.csv
         model1: output/data_models/*_agesex_psModelFit_new.rds
 
   cox_day5_age_sex_ba2:
@@ -160,7 +163,8 @@ actions:
         csvfigure3: output/figs/*_agesex_cumInc_day5_ba2_new.csv
         table1: output/tables/cox_models_day5_agesex_ba2_new.csv
         table2: output/tables/log_cox_models_day5_agesex_ba2_new.csv
-        table3: output/counts/counts_day5_agesex_ba2.csv
+        table3: output/counts/counts_n_restr_day5_agesex_ba2.csv
+        table4: output/counts/counts_n_outcome_restr_day5_agesex_ba2.csv
         model1: output/data_models/*_agesex_psModelFit_ba2_new.rds
   
   cox_day5_crude:
@@ -170,7 +174,8 @@ actions:
       moderately_sensitive:
         table1: output/tables/cox_models_day5_crude_new.csv
         table2: output/tables/log_cox_models_day5_crude_new.csv
-        table3: output/counts/counts_day5_crude.csv
+        table3: output/counts/counts_n_day5_crude.csv
+        table4: output/counts/counts_n_outcome_day5_crude.csv
 
   cox_day5_crude_ba2:
     run: r:latest analysis/cox_models_ba2.R day5 crude
@@ -179,7 +184,8 @@ actions:
       moderately_sensitive:
         table1: output/tables/cox_models_day5_crude_ba2_new.csv
         table2: output/tables/log_cox_models_day5_crude_ba2_new.csv
-        table3: output/counts/counts_day5_crude_ba2.csv
+        table3: output/counts/counts_n_day5_crude_ba2.csv
+        table4: output/counts/counts_n_outcome_day5_crude_ba2.csv
         
   trt_pat_day5:
     run: r:latest analysis/treatment_distributions.R day5
@@ -278,7 +284,8 @@ actions:
         figure3: output/figs/*_full_cumInc_day5_haem_malig_new.png
         table1: output/tables/cox_models_day5_full_haem_malig_new.csv
         table2: output/tables/log_cox_models_day5_full_haem_malig_new.csv
-        table3: output/counts/counts_day5_full_haem_malig.csv
+        table3: output/counts/counts_n_restr_day5_full_haem_malig.csv
+        table4: output/counts/counts_n_outcome_restr_day5_full_haem_malig.csv
         model1: output/data_models/*_full_psModelFit_haem_malig_new.rds
 
   cox_day5_age_sex_haem_malig:
@@ -291,7 +298,8 @@ actions:
         figure3: output/figs/*_agesex_cumInc_day5_haem_malig_new.png
         table1: output/tables/cox_models_day5_agesex_haem_malig_new.csv
         table2: output/tables/log_cox_models_day5_agesex_haem_malig_new.csv
-        table3: output/counts/counts_day5_agesex_haem_malig.csv
+        table3: output/counts/counts_n_restr_day5_agesex_haem_malig.csv
+        table4: output/counts/counts_n_outcome_restr_day5_agesex_haem_malig.csv
         model1: output/data_models/*_agesex_psModelFit_haem_malig_new.rds
 
   cox_day5_crude_haem_malig:
@@ -301,7 +309,8 @@ actions:
       moderately_sensitive:
         table1: output/tables/cox_models_day5_crude_haem_malig_new.csv
         table2: output/tables/log_cox_models_day5_crude_haem_malig_new.csv
-        table3: output/counts/counts_day5_crude_haem_malig.csv
+        table3: output/counts/counts_n_day5_crude_haem_malig.csv
+        table4: output/counts/counts_n_outcome_day5_crude_haem_malig.csv
 
   cox_day5_full_haem_malig_ba2:
     run: r:latest analysis/cox_models_haem_malig_ba2.R day5 full
@@ -313,7 +322,8 @@ actions:
         figure3: output/figs/*_full_cumInc_day5_ba2_haem_malig_new.png
         table1: output/tables/cox_models_day5_full_ba2_haem_malig_new.csv
         table2: output/tables/log_cox_models_day5_full_ba2_haem_malig_new.csv
-        table3: output/counts/counts_day5_full_ba2_haem_malig.csv
+        table3: output/counts/counts_n_restr_day5_full_haem_malig_ba2.csv
+        table4: output/counts/counts_n_outcome_restr_day5_full_haem_malig_ba2.csv
         model1: output/data_models/*_full_psModelFit_ba2_haem_malig_new.rds
 
   cox_day5_age_sex_haem_malig_ba2:
@@ -326,7 +336,8 @@ actions:
         figure3: output/figs/*_agesex_cumInc_day5_ba2_haem_malig_new.png
         table1: output/tables/cox_models_day5_agesex_ba2_haem_malig_new.csv
         table2: output/tables/log_cox_models_day5_agesex_ba2_haem_malig_new.csv
-        table3: output/counts/counts_day5_agesex_ba2_haem_malig.csv
+        table3: output/counts/counts_n_restr_day5_agesex_haem_malig_ba2.csv
+        table4: output/counts/counts_n_outcome_restr_day5_agesex_haem_malig_ba2.csv
         model1: output/data_models/*_agesex_psModelFit_ba2_haem_malig_new.rds
 
   cox_day5_crude_haem_malig_ba2:
@@ -336,7 +347,8 @@ actions:
       moderately_sensitive:
         table1: output/tables/cox_models_day5_crude_ba2_haem_malig_new.csv
         table2: output/tables/log_cox_models_day5_crude_ba2_haem_malig_new.csv
-        table3: output/counts/counts_day5_crude_ba2_haem_malig.csv
+        table3: output/counts/counts_n_day5_crude_haem_malig_ba2.csv
+        table4: output/counts/counts_n_outcome_day5_crude_haem_malig_ba2.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Tables
