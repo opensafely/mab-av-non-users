@@ -341,6 +341,17 @@ actions:
   ## # # # # # # # # # # # # # # # # # # # 
   ## Tables
   ## # # # # # # # # # # # # # # # # # # # 
+  table_3:
+    run: r:latest analysis/output_wrangling/table3.R
+    needs: [cox_day5_crude, cox_day5_age_sex, cox_day5_full,
+            cox_day5_crude_ba2, cox_day5_age_sex_ba2, cox_day5_full_ba2,
+            cox_day5_crude_haem_malig, cox_day5_age_sex_haem_malig, cox_day5_full_haem_malig,
+            cox_day5_crude_haem_malig_ba2, cox_day5_age_sex_haem_malig_ba2, cox_day5_full_haem_malig_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/tables_joined/table3.csv
+        table2: output/tables_joined/table3_haem.csv
+
   table_S2:
     run: r:latest analysis/output_wrangling/tableS2.R
     needs: [crosstab_trt_outcomes, crosstab_trt_outcomes_ba2]
