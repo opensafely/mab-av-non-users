@@ -322,8 +322,8 @@ actions:
         figure3: output/figs/*_full_cumInc_day5_ba2_haem_malig_new.png
         table1: output/tables/cox_models_day5_full_ba2_haem_malig_new.csv
         table2: output/tables/log_cox_models_day5_full_ba2_haem_malig_new.csv
-        table3: output/counts/counts_n_restr_day5_full_haem_malig_ba2.csv
-        table4: output/counts/counts_n_outcome_restr_day5_full_haem_malig_ba2.csv
+        table3: output/counts/counts_n_restr_day5_full_ba2_haem_malig.csv
+        table4: output/counts/counts_n_outcome_restr_day5_full_ba2_haem_malig.csv
         model1: output/data_models/*_full_psModelFit_ba2_haem_malig_new.rds
 
   cox_day5_age_sex_haem_malig_ba2:
@@ -336,8 +336,8 @@ actions:
         figure3: output/figs/*_agesex_cumInc_day5_ba2_haem_malig_new.png
         table1: output/tables/cox_models_day5_agesex_ba2_haem_malig_new.csv
         table2: output/tables/log_cox_models_day5_agesex_ba2_haem_malig_new.csv
-        table3: output/counts/counts_n_restr_day5_agesex_haem_malig_ba2.csv
-        table4: output/counts/counts_n_outcome_restr_day5_agesex_haem_malig_ba2.csv
+        table3: output/counts/counts_n_restr_day5_agesex_ba2_haem_malig.csv
+        table4: output/counts/counts_n_outcome_restr_day5_agesex_ba2_haem_malig.csv
         model1: output/data_models/*_agesex_psModelFit_ba2_haem_malig_new.rds
 
   cox_day5_crude_haem_malig_ba2:
@@ -347,8 +347,8 @@ actions:
       moderately_sensitive:
         table1: output/tables/cox_models_day5_crude_ba2_haem_malig_new.csv
         table2: output/tables/log_cox_models_day5_crude_ba2_haem_malig_new.csv
-        table3: output/counts/counts_n_day5_crude_haem_malig_ba2.csv
-        table4: output/counts/counts_n_outcome_day5_crude_haem_malig_ba2.csv
+        table3: output/counts/counts_n_day5_crude_ba2_haem_malig.csv
+        table4: output/counts/counts_n_outcome_day5_crude_ba2_haem_malig.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Tables
