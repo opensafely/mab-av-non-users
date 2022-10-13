@@ -27,7 +27,7 @@ fs::dir_create(here("output", "tables_joined"))
 # 0.2 Load data
 ################################################################################
 ba1_flowchart <- read_csv(here::here("output", "tables", "flowchart_redacted.csv"))
-ba2_flowchart <- read_csv(here::here("output", "tables", "flowchart_redacted.csv"))
+ba2_flowchart <- read_csv(here::here("output", "tables", "flowchart_redacted_ba2.csv"))
 ba1_day0_4 <- read_csv(here::here("output", "data_properties", "day0_4_all.csv"))
 ba2_day0_4 <- read_csv(here::here("output", "data_properties", "ba2_day0_4_all.csv"))
 
