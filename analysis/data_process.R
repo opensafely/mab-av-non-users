@@ -99,6 +99,11 @@ data_extract <- read_csv(
     cancer = col_logical(),
     lung_cancer = col_logical(),
     haem_cancer = col_logical(),
+    autism_nhsd = col_logical(),
+    care_home_primis = col_logical(),
+    dementia_nhsd = col_logical(),
+    housebound_opensafely = col_logical(),
+    serious_mental_illness_nhsd = col_logical(),
     
     # VACCINATION ----
     vaccination_status = col_factor(),
