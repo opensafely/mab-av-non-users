@@ -40,6 +40,11 @@ clean_table_names = function(input_table) {
   input_table$Group[input_table$Group=="haematological_disease_nhsd"] = "Haematological diseases"
   input_table$Group[input_table$Group=="non_haem_cancer_new"] = "Solid cancer"
   input_table$Group[input_table$Group=="downs_syndrome_nhsd"] = "Down's syndrome"
+  input_table$Group[input_table$Group=="autism_nhsd"] = "Autism"
+  input_table$Group[input_table$Group=="care_home_primis"] = "Care home"
+  input_table$Group[input_table$Group=="dementia_nhsd"] = "Dementia"
+  input_table$Group[input_table$Group=="housebound_opensafely"] = "Housebound"
+  input_table$Group[input_table$Group=="serious_mental_illness_nhsd"] = "Severe mental illness"
   input_table$Group[input_table$Variable=="N"] = "N"
   return(input_table)
 }

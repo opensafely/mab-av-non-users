@@ -29,10 +29,14 @@ fs::dir_create(here("output", "tables_joined"))
 # 0.2 Load data
 ################################################################################
 # where can counts be found?
-ba1_n_outcome <- read_csv(here::here("output", "counts", "counts_n_outcome_day5_crude.csv"))
-ba2_n_outcome <- read_csv(here::here("output", "counts", "counts_n_outcome_day5_crude_ba2.csv"))
-ba1_day5_all <- read_csv(here::here("output", "data_properties", "day5_all.csv"))
-ba2_day5_all <- read_csv(here::here("output", "data_properties", "ba2_day5_all.csv"))
+ba1_n_outcome <- 
+  read_csv(here::here("output", "counts", "counts_n_outcome_day5_crude.csv"))
+ba2_n_outcome <- 
+  read_csv(here::here("output", "counts", "counts_n_outcome_day5_crude_ba2.csv"))
+ba1_day5_all <- 
+  read_csv(here::here("output", "data_properties", "day5_all.csv"))
+ba2_day5_all <- 
+  read_csv(here::here("output", "data_properties", "ba2_day5_all.csv"))
 
 ################################################################################
 # 0.3 Functions needed for reformatting
