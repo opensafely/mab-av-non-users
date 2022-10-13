@@ -25,8 +25,12 @@
 # - 'trt_grp'_'adjustment_set'_psModelFit_new.rds
 # [note, if script is run for day5 and day0, file with ps model will be 
 # overwritten]
-# 6. CSV files with counts (redacted)
-# - counts_'data_label'_'adjustment_set'.csv
+# 6. CSV files with counts (redacted) [currently only deployed for primary outcome]
+# - counts_n_'data_label'_crude.csv
+# - counts_n_outcome_'data_label'_crude.csv
+# - counts_n_restr_'data_label'_'adjustment_set'.csv 
+# - counts_n_outcome_restr_'data_label'_'adjustment_set'.csv
+# (adjustment_set /in {agesex, full})
 #
 # where 'trt_grp' /in {All, Sotrovimab, Molnupiravir}, and
 #       'outcomes' /in {primary, secondary}
@@ -44,7 +48,8 @@ library(splines)
 library(survey)
 library(here)
 # Load functions (wrapper catching and saving errors/warning messages)
-source(here("lib", "functions", "safely_n_quietly.R"))
+source(here::here("lib", "functions", "safely_n_quietly.R"))
+source(here::here("lib", "functions", "fill_counts.R"))
 
 ################################################################################
 # 0.1 Create directories for output
@@ -122,31 +127,29 @@ log <- matrix(nrow = 6, ncol = 4) %>% as.data.frame()
 # provide column names
 colnames(log) <- 
   c("comparison", "outcome", "warning", "error")
-# create data.frame 'counts' used to save number of patients / outcomes before 
-# and after ps trimming (stratified by mol or sot)
-# 'outcomes' has 2 + 16 columns: 
-# - comparison; outcome
-# - n_treated; n_mol; n_sot; n_untreated; 
-#   n_outcome_treated; n_outcome_mol; n_outcome_sot; n_outcome_untreated
-#
-# - n_treated_restr; n_mol_restr; n_sot_restr; n_untreated_restr; 
-#   n_outcome_treated_restr; n_outcome_mol_restr;
-#   n_outcome_sot_restr; n_outcome_untreated_restr
-# 'outcomes' has 6 rows (like 'estimates'):
-# primary outcome x 3 (mol + sot vs none; sot vs none; mol vs none) plus
-# secondary outcome x 3 (idem)
-counts <- matrix(nrow = 6, ncol = 18) %>% as.data.frame()
-# provide column names
-colnames(counts) <- 
-  c("comparison", "outcome",
-    "n_treated", "n_mol", "n_sot",
-    "n_untreated",
-    "n_outcome_treated", "n_outcome_mol", "n_outcome_sot",
-    "n_outcome_untreated",
-    "n_treated_restr", "n_mol_restr", "n_sot_restr",
-    "n_untreated_restr",
-    "n_outcome_treated_restr", "n_outcome_mol_restr", "n_outcome_sot_restr",
-    "n_outcome_untreated_restr")
+# create data.frame 'counts' used to save number of patients / outcomes before
+# ps trimming
+# total subtotal1 subtotal2 subtotal21 subtotal22
+counts_n <- matrix(nrow = 3, ncol = 6) %>% as.data.frame()
+colnames(counts_n) <-
+  c("comparison", "n", "n_untreated", "n_treated", "n_mol", "n_sot")
+# for the agesex and fully adjusted analyses, some people are excluded from the
+# analysis --> we like to know n in restricted analyses
+counts_n_restr <- matrix(nrow = 3, ncol = 6) %>% as.data.frame()
+colnames(counts_n_restr) <-
+  c("comparison", "n", "n_untreated", "n_treated", "n_mol", "n_sot")
+# total subtotal1 subtotal2 subtotal21 subtotal22
+# outcome: primary/ secondary (primary only used for now)
+counts_n_outcome <- matrix(nrow = 3, ncol = 7) %>% as.data.frame()
+colnames(counts_n_outcome) <-
+  c("comparison", "outcome", "n_outcome", "n_outcome_untreated",
+    "n_outcome_treated", "n_outcome_mol", "n_outcome_sot")
+# for the agesex and fully adjusted analyses, some people are excluded from the
+# analysis --> we like to know number of outcomes in restricted analyses
+counts_n_outcome_restr <- matrix(nrow = 3, ncol = 7) %>% as.data.frame()
+colnames(counts_n_outcome_restr) <-
+  c("comparison", "outcome", "n_outcome", "n_outcome_untreated",
+    "n_outcome_treated", "n_outcome_mol", "n_outcome_sot")
 
 ################################################################################
 # 1.0 Create vectors for treatments and outcomes used in analysis
@@ -170,6 +173,7 @@ outcomes <- c("primary", "secondary")
 # Sotrovimab   secondary -  -       -       - -
 # Molnupiravir secondary -  -       -       - -
 # Loop over analysis for each treatment comparison 
+
 for(i in seq_along(trt_grp)) {
   ##############################################################################
   # 2.1 Select data
@@ -192,16 +196,6 @@ for(i in seq_along(trt_grp)) {
   # Fill n in estimates
   estimates[c(1 + (i - 1), 4 + (i - 1)), "n"] <- 
     nrow(data_cohort_sub) %>% plyr::round_any(5)
-  # Fill counts
-  counts[c(1 + (i - 1), 4 + (i - 1)), "n_treated"] <-
-    data_cohort_sub %>% filter(treatment == "Treated") %>% nrow()
-  counts[c(1 + (i - 1), 4 + (i - 1)), "n_mol"] <- 
-    data_cohort_sub %>% filter(treatment_strategy_cat == "Molnupiravir") %>% nrow()
-  counts[c(1 + (i - 1), 4 + (i - 1)), "n_sot"] <-
-    data_cohort_sub %>% filter(treatment_strategy_cat == "Sotrovimab") %>% nrow()
-  counts[c(1 + (i - 1), 4 + (i - 1)), "n_untreated"] <-
-    data_cohort_sub %>% filter(treatment == "Untreated") %>% nrow()
-  
   if (adjustment_set != "crude") {
     ############################################################################
     # PART A: Perform analysis with full and agesex adjustment
@@ -339,14 +333,8 @@ for(i in seq_along(trt_grp)) {
     estimates[c(1 + (i - 1), 4 + (i - 1)), "n_after_restriction"] <-
       nrow(data_cohort_sub_trimmed) %>% plyr::round_any(5)
     # Fill counts after trimming
-    counts[c(1 + (i - 1), 4 + (i - 1)), "n_treated_restr"] <-
-      data_cohort_sub_trimmed %>% filter(treatment == "Treated") %>% nrow()
-    counts[c(1 + (i - 1), 4 + (i - 1)), "n_mol_restr"] <- 
-      data_cohort_sub_trimmed %>% filter(treatment_strategy_cat == "Molnupiravir") %>% nrow()
-    counts[c(1 + (i - 1), 4 + (i - 1)), "n_sot_restr"] <-
-      data_cohort_sub_trimmed %>% filter(treatment_strategy_cat == "Sotrovimab") %>% nrow()
-    counts[c(1 + (i - 1), 4 + (i - 1)), "n_untreated_restr"] <-
-      data_cohort_sub_trimmed %>% filter(treatment == "Untreated") %>% nrow()
+    counts_n_restr[i, "comparison"] <- t
+    counts_n_restr[i, ] <- fill_counts_n(counts_n_restr[i, ], data_cohort_sub_trimmed)
     # Make plot of trimmed propensity scores and save
     # Overlap plot 
     overlapPlot2 <- data_cohort_sub_trimmed %>% 
@@ -402,87 +390,22 @@ for(i in seq_along(trt_grp)) {
       estimates[k, "outcome"] <- outcome_event
       log[k, "comparison"] <- t
       log[k, "outcome"] <- outcome_event
-      counts[k, "comparison"] <- t
-      counts[k, "outcome"] <- outcome_event
       # create formula for primary and secondary analysis
       if (outcome_event == "primary"){
         formula <- 
           as.formula(
             Surv(fu_primary, status_primary == "covid_hosp_death") ~ 
               treatment)
-        # Fill counts before trimming
-        counts[k, "n_outcome_treated"] <-
-          data_cohort_sub %>% 
-          filter(treatment == "Treated",
-                 status_primary == "covid_hosp_death") %>% nrow()
-        counts[k, "n_outcome_mol"] <- 
-          data_cohort_sub %>%
-          filter(treatment_strategy_cat == "Molnupiravir",
-                 status_primary == "covid_hosp_death") %>% nrow()
-        counts[k, "n_outcome_sot"] <-
-          data_cohort_sub %>%
-          filter(treatment_strategy_cat == "Sotrovimab",
-                 status_primary == "covid_hosp_death") %>% nrow()
-        counts[k, "n_outcome_untreated"] <-
-          data_cohort_sub %>%
-          filter(treatment == "Untreated",
-                 status_primary == "covid_hosp_death") %>% nrow()
-        # Fill counts after trimming
-        counts[k, "n_outcome_treated_restr"] <-
-          data_cohort_sub_trimmed %>% 
-          filter(treatment == "Treated",
-                 status_primary == "covid_hosp_death") %>% nrow()
-        counts[k, "n_outcome_mol_restr"] <- 
-          data_cohort_sub_trimmed %>%
-          filter(treatment_strategy_cat == "Molnupiravir",
-                 status_primary == "covid_hosp_death") %>% nrow()
-        counts[k, "n_outcome_sot_restr"] <-
-          data_cohort_sub_trimmed %>%
-          filter(treatment_strategy_cat == "Sotrovimab",
-                 status_primary == "covid_hosp_death") %>% nrow()
-        counts[k, "n_outcome_untreated_restr"] <-
-          data_cohort_sub_trimmed %>%
-          filter(treatment == "Untreated",
-                 status_primary == "covid_hosp_death") %>% nrow()
+        # Fill counts of outcomes after trimming (only for primary outcome)
+        counts_n_outcome_restr[i, "comparison"] <- t
+        counts_n_outcome_restr[i, "outcome"] <- "primary"
+        counts_n_outcome_restr[i, ] <- 
+          fill_counts_n_outcome_primary(counts_n_outcome_restr[i, ], data_cohort_sub_trimmed)
       } else if (outcome_event == "secondary"){
         formula <- 
           as.formula(
             Surv(fu_secondary, status_secondary == "allcause_hosp_death") ~ 
               treatment)
-        # Fill counts before trimming
-        counts[k, "n_outcome_treated"] <-
-          data_cohort_sub %>% 
-          filter(treatment == "Treated",
-                 status_secondary == "allcause_hosp_death") %>% nrow()
-        counts[k, "n_outcome_mol"] <- 
-          data_cohort_sub %>%
-          filter(treatment_strategy_cat == "Molnupiravir",
-                 status_secondary == "allcause_hosp_death") %>% nrow()
-        counts[k, "n_outcome_sot"] <-
-          data_cohort_sub %>%
-          filter(treatment_strategy_cat == "Sotrovimab",
-                 status_secondary == "allcause_hosp_death") %>% nrow()
-        counts[k, "n_outcome_untreated"] <-
-          data_cohort_sub %>%
-          filter(treatment == "Untreated",
-                 status_secondary == "allcause_hosp_death") %>% nrow()
-        # Fill counts after trimming
-        counts[k, "n_outcome_treated_restr"] <-
-          data_cohort_sub_trimmed %>% 
-          filter(treatment == "Treated",
-                 status_secondary == "allcause_hosp_death") %>% nrow()
-        counts[k, "n_outcome_mol_restr"] <- 
-          data_cohort_sub_trimmed %>%
-          filter(treatment_strategy_cat == "Molnupiravir",
-                 status_secondary == "allcause_hosp_death") %>% nrow()
-        counts[k, "n_outcome_sot_restr"] <-
-          data_cohort_sub_trimmed %>%
-          filter(treatment_strategy_cat == "Sotrovimab",
-                 status_secondary == "allcause_hosp_death") %>% nrow()
-        counts[k, "n_outcome_untreated_restr"] <-
-          data_cohort_sub_trimmed %>%
-          filter(treatment == "Untreated",
-                 status_secondary == "allcause_hosp_death") %>% nrow()
       }
       # Cox regression
       # returns function model_PSw() with components result, output, messages, 
@@ -586,6 +509,9 @@ for(i in seq_along(trt_grp)) {
     ############################################################################
     # PART B: Perform analysis with NO adjustment
     ############################################################################
+    # Fill counts (n in data)
+    counts_n[i, "comparison"] <- t
+    counts_n[i, ] <- fill_counts_n(counts_n[i, ], data_cohort_sub)
     ############################################################################
     # B.2.6 Outcome model (no ps needed)
     ############################################################################
@@ -596,60 +522,29 @@ for(i in seq_along(trt_grp)) {
       ##########################################################################
       outcome_event <- outcomes[j]
       print(outcome_event)
-      # because we need to know where in 'estimates', 'log' and 'counts' output
+      # because we need to know where in 'estimates', 'log' output
       # should be saved
       k <- i + ((j - 1) * 3)
       estimates[k, "comparison"] <- t
       estimates[k, "outcome"] <- outcome_event
       log[k, "comparison"] <- t
       log[k, "outcome"] <- outcome_event
-      counts[k, "comparison"] <- t
-      counts[k, "outcome"] <- outcome_event
       # create formula for primary and secondary analysis
       if (outcome_event == "primary"){
         formula <- 
           as.formula(
             Surv(fu_primary, status_primary == "covid_hosp_death") ~ 
               treatment)
-        # Fill counts
-        counts[k, "n_outcome_treated"] <-
-          data_cohort_sub %>% 
-          filter(treatment == "Treated",
-                 status_primary == "covid_hosp_death") %>% nrow()
-        counts[k, "n_outcome_mol"] <- 
-          data_cohort_sub %>%
-          filter(treatment_strategy_cat == "Molnupiravir",
-                 status_primary == "covid_hosp_death") %>% nrow()
-        counts[k, "n_outcome_sot"] <-
-          data_cohort_sub %>%
-          filter(treatment_strategy_cat == "Sotrovimab",
-                 status_primary == "covid_hosp_death") %>% nrow()
-        counts[k, "n_outcome_untreated"] <-
-          data_cohort_sub %>%
-          filter(treatment == "Untreated",
-                 status_primary == "covid_hosp_death") %>% nrow()
+        # Fill counts of outcomes before trimming (only for primary outcome)
+        counts_n_outcome[i, "comparison"] <- t
+        counts_n_outcome[i, "outcome"] <- "primary"
+        counts_n_outcome[i, ] <- 
+          fill_counts_n_outcome_primary(counts_n_outcome[i, ], data_cohort_sub)
       } else if (outcome_event == "secondary"){
         formula <- 
           as.formula(
             Surv(fu_secondary, status_secondary == "allcause_hosp_death") ~ 
               treatment)
-        # Fill counts
-        counts[k, "n_outcome_treated"] <-
-          data_cohort_sub %>% 
-          filter(treatment == "Treated",
-                 status_secondary == "allcause_hosp_death") %>% nrow()
-        counts[k, "n_outcome_mol"] <- 
-          data_cohort_sub %>%
-          filter(treatment_strategy_cat == "Molnupiravir",
-                 status_secondary == "allcause_hosp_death") %>% nrow()
-        counts[k, "n_outcome_sot"] <-
-          data_cohort_sub %>%
-          filter(treatment_strategy_cat == "Sotrovimab",
-                 status_secondary == "allcause_hosp_death") %>% nrow()
-        counts[k, "n_outcome_untreated"] <-
-          data_cohort_sub %>%
-          filter(treatment == "Untreated",
-                 status_secondary == "allcause_hosp_death") %>% nrow()
       }
       # Cox regression
       # returns function model with components result, output, messages, 
@@ -685,48 +580,23 @@ for(i in seq_along(trt_grp)) {
   } # end PART B
 } # end loop through treatments
 
-################################################################################
-# 3.0 Redact output
-################################################################################
-# make structural nulls NA_integer (if comparison is sot than n_mol is 
-# automatically 0)
-# if comparison is all, and count of n_sot is lower or equal to 7, n_mol needs 
-# to be redacted as well if greater than 7
-counts_redacted <-
-  counts %>%
-  mutate(n_mol = case_when(comparison == "Sotrovimab" ~ NA_integer_,
-                           (comparison == "All" & n_sot <= 7 & n_mol > 7) ~ NA_integer_,
-                           TRUE ~ n_mol),
-         n_sot = case_when(comparison == "Molnupiravir" ~ NA_integer_,
-                           (comparison == "All" & n_mol <= 7 & n_sot > 7) ~ NA_integer_,
-                           TRUE ~ n_sot),
-         n_outcome_mol = case_when(comparison == "Sotrovimab" ~ NA_integer_,
-                                   (comparison == "All" & n_outcome_sot <= 7 & n_outcome_mol > 7) ~ NA_integer_,
-                                   TRUE ~ n_outcome_mol),
-         n_outcome_sot = case_when(comparison == "Molnupiravir" ~ NA_integer_,
-                                   (comparison == "All" & n_outcome_mol <= 7 & n_outcome_sot > 7) ~ NA_integer_,
-                                   TRUE ~ n_outcome_sot))
-if (adjustment_set != "crude") {
-  counts_redacted <- 
-    counts_redacted %>%
-    mutate(n_mol_restr = case_when(comparison == "Sotrovimab" ~ NA_integer_,
-                                   (comparison == "All" & n_sot_restr <= 7 & n_mol_restr > 7) ~ NA_integer_,
-                                   TRUE ~ n_mol_restr),
-           n_sot_restr = case_when(comparison == "Molnupiravir" ~ NA_integer_,
-                                   (comparison == "All" & n_mol_restr <= 7 & n_sot_restr > 7) ~ NA_integer_,
-                                   TRUE ~ n_sot_restr),
-           n_outcome_mol_restr = case_when(comparison == "Sotrovimab" ~ NA_integer_,
-                                           (comparison == "All" & n_outcome_sot_restr <= 7 & n_outcome_mol_restr > 7) ~ NA_integer_,
-                                           TRUE ~ n_outcome_mol_restr),
-           n_outcome_sot_restr = case_when(comparison == "Molnupiravir" ~ NA_integer_,
-                                           (comparison == "All" & n_outcome_mol_restr <= 7 & n_outcome_sot_restr > 7) ~ NA_integer_,
-                                           TRUE ~ n_outcome_sot_restr))
+# Make sure that in the sot vs non and mol vs non analysis, counts (n and 
+# number of outcomes) is 0 (it may not be if total is e.g. redacted it'll 
+# automatically redact subtotals as well)
+if (adjustment_set != "crude"){
+  counts_n_restr <- 
+    counts_n_restr %>%
+    mutate(n_mol = case_when(comparison == "Sotrovimab" ~ "0",
+                             TRUE ~ n_mol),
+           n_sot = case_when(comparison == "Molnupiravir" ~ "0",
+                             TRUE ~ n_sot))
+  counts_n_outcome_restr <- 
+    counts_n_outcome_restr %>%
+    mutate(n_outcome_mol = case_when(comparison == "Sotrovimab" ~ "0",
+                                     TRUE ~ n_outcome_mol),
+           n_outcome_sot = case_when(comparison == "Molnupiravir" ~ "0",
+                                     TRUE ~ n_outcome_sot))
 }
-counts_redacted <-
-  counts_redacted %>%
-  mutate(across(where(is.integer),
-                ~ case_when(.x <= 7 ~ "[<=7, REDACTED]",
-                            TRUE ~ plyr::round_any(.x, 5) %>% as.character())))
 
 ################################################################################
 # 4.0 Save output
@@ -747,11 +617,40 @@ write_csv(log,
                       "_",
                       adjustment_set,
                       "_new.csv")))
-write_csv(counts_redacted,
-          here("output",
-               "counts",
-               paste0("counts_",
-                      data_label,
-                      "_",
-                      adjustment_set,
-                      ".csv")))
+# restricted counts only of use for fully or agesex adjusted analysis (crude
+# analysis is not trimmed)
+if (adjustment_set != "crude"){
+  write_csv(counts_n_restr,
+            here("output",
+                 "counts",
+                 paste0("counts_n_restr_",
+                        data_label,
+                        "_",
+                        adjustment_set,
+                        ".csv")))
+  write_csv(counts_n_outcome_restr,
+            here("output",
+                 "counts",
+                 paste0("counts_n_outcome_restr_",
+                        data_label,
+                        "_",
+                        adjustment_set,
+                        ".csv")))
+} else{
+  write_csv(counts_n,
+            here("output",
+                 "counts",
+                 paste0("counts_n_",
+                        data_label,
+                        "_",
+                        adjustment_set,
+                        ".csv")))
+  write_csv(counts_n_outcome,
+            here("output",
+                 "counts",
+                 paste0("counts_n_outcome_",
+                        data_label,
+                        "_",
+                        adjustment_set,
+                        ".csv")))
+}
