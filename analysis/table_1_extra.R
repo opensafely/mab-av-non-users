@@ -135,11 +135,12 @@ for (i in 1:length(pop_levels)) {
 fs::dir_create(here::here("output", "tables"))
 
 ## Save as html/rds
-file_name <- paste0("table1_extra_redacted_", data_label)
+file_name <- paste0("table1_extra_redacted_", data_label,
+                    ifelse(period == "ba1", "", "_ba2"))
 
 
 gtsave(gt(collated_table), 
-       filename = here::here("output", "tables", paste0(period, "_", file_name, ".html")))
+       filename = here::here("output", "tables", paste0(file_name, ".html")))
 write_rds(collated_table,
           compress = "gz",
-          path("output", "tables", paste0(period, "_", file_name, ".rds")))
+          path("output", "tables", paste0(file_name, ".rds")))
