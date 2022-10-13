@@ -16,6 +16,7 @@ library(here)
 library(dplyr)
 library(purrr)
 library(readr)
+library(tibble)
 
 ################################################################################
 # 0.1 Create directories for output
@@ -59,7 +60,6 @@ counts_n_outcome_prefix <-
          data_label,
          "_",
          adjustment_set)
-
 
 names_counts_n_ba1 <- paste0(counts_n_prefix, ".csv")
 names_counts_n_ba2 <- paste0(counts_n_prefix, "_ba2.csv")
