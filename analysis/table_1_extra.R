@@ -38,9 +38,9 @@ if (length(args) == 0){
 ## Set input and output pathways for matched/unmatched data - default is unmatched
 if (length(args) == 0){
   period = "ba1"
-} else if (args[[1]]=="ba1") {
+} else if (args[[2]]=="ba1") {
   period = "ba1"
-} else if (args[[1]]=="ba2") {
+} else if (args[[2]]=="ba2") {
   period = "ba2"
 } else {
   # Print error if no argument specified
