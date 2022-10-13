@@ -371,7 +371,7 @@ actions:
       moderately_sensitive:
         table1: output/tables_joined/tableS2.csv
 
-  table_S2:
+  table_S3:
     run: r:latest analysis/output_wrangling/tableS3.R
     needs: [cox_day5_crude, cox_day5_crude_ba2, crosstab_trt_outcomes, crosstab_trt_outcomes_ba2]
     outputs:
