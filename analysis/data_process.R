@@ -496,10 +496,17 @@ data_processed_eligible_list <-
 ################################################################################
 # data_processed_eligible_day0 and data_processed_eligible_day2,3,4,5 are saved
 write_rds(data_processed_eligible_day0, 
-          here::here("output", "data", "data_processed_day0.rds"))
+          here::here("output", "data", 
+                     paste0(
+                       period[!period == "ba1"], "_"[!period == "ba1"],
+                       "data_processed_day0.rds")
+                     )
+          )
 iwalk(.x = data_processed_eligible_list,
       .f = ~ write_rds(.x,
                        here::here("output", "data",
-                                  paste0("data_processed_", .y, ".rds"))
+                                  paste0(
+                                    period[!period == "ba1"], "_"[!period == "ba1"],
+                                    "data_processed_", .y, ".rds"))
                        )
       )
