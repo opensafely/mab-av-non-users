@@ -10,7 +10,7 @@
 ################################################################################
 
 ################################################################################
-# 00. Import libraries + functions
+# 0.0 Import libraries + functions
 ################################################################################
 library(here)
 library(dplyr)
@@ -25,9 +25,43 @@ library(tibble)
 fs::dir_create(here("output", "tables_joined"))
 
 ################################################################################
+# 0.2 Import command-line arguments
+################################################################################
+# Set input data to day5-2 or day0 data, default is day5
+if (length(args) == 0){
+  data_label = "day5"
+} else if (args[[1]] == "day0") {
+  data_label = "day0"
+} else if (args[[1]] == "day5") {
+  data_label = "day5"
+} else if (args[[1]] == "day4") {
+  data_label = "day4"
+} else if (args[[1]] == "day3") {
+  data_label = "day3"
+} else if (args[[1]] == "day2") {
+  data_label = "day2"
+} else {
+  # Print error if no argument specified
+  stop("No outcome specified")
+}
+# --> subanalysis?
+if (length(args) == 0){
+  sub_analysis = ""
+} else if (length(args) != 0 & length(args[[2]]) == 0){
+  sub_analysis = ""
+} else if (args[[2]] == "haem") {
+  sub_analysis = "haem_malig"
+  haem_filename_suffix = "haem"
+  data_label = "day5"
+  warning("Sub-analyis haem, data_label defaults to day5")
+} else {
+  # Print error if no argument specified
+  stop("No subanalysis specified")
+}
+
+################################################################################
 # 0.2 Create string with file names cox models
 ################################################################################
-data_label <- "day5"
 # where can input be found?
 folder_with_tables <- 
   here("output", "tables")
@@ -38,10 +72,17 @@ cox_prefix <-
          "_",
          adjustment_set)
 # ba.1 / ba.2 all + haem malig
-names_cox_ba1 <- paste0(cox_prefix, "_new.csv")
-names_cox_ba2 <- paste0(cox_prefix, "_ba2_new.csv")
-names_cox_ba1_haem <- paste0(cox_prefix, "_haem_malig_new.csv")
-names_cox_ba2_haem <- paste0(cox_prefix, "_ba2_haem_malig_new.csv")
+names_cox_ba1 <- paste0(cox_prefix, 
+                        "_",
+                        sub_analysis,
+                        "_"[sub_analysis != ""],
+                        "new.csv")
+names_cox_ba2 <- paste0(cox_prefix,
+                        "_",
+                        "ba2_",
+                        sub_analysis,
+                        "_"[sub_analysis != ""],
+                        "new.csv")
 
 ################################################################################
 # 0.3 Create string with file names counts
@@ -61,15 +102,23 @@ counts_n_outcome_prefix <-
          "_",
          adjustment_set)
 
-names_counts_n_ba1 <- paste0(counts_n_prefix, ".csv")
-names_counts_n_ba2 <- paste0(counts_n_prefix, "_ba2.csv")
-names_counts_n_ba1_haem <- paste0(counts_n_prefix, "_haem_malig.csv")
-names_counts_n_ba2_haem <- paste0(counts_n_prefix, "_ba2_haem_malig.csv")
+names_counts_n_ba1 <- paste0(counts_n_prefix,
+                             "_"[sub_analysis != ""],
+                             sub_analysis,
+                             ".csv")
+names_counts_n_ba2 <- paste0(counts_n_prefix,
+                             "_"[sub_analysis != ""],
+                             sub_analysis,
+                             "_ba2.csv")
 
-names_counts_n_outcome_ba1 <- paste0(counts_n_outcome_prefix, ".csv")
-names_counts_n_outcome_ba2 <- paste0(counts_n_outcome_prefix, "_ba2.csv")
-names_counts_n_outcome_ba1_haem <- paste0(counts_n_outcome_prefix, "_haem_malig.csv")
-names_counts_n_outcome_ba2_haem <- paste0(counts_n_outcome_prefix, "_ba2_haem_malig.csv")
+names_counts_n_outcome_ba1 <- paste0(counts_n_outcome_prefix,
+                                     "_"[sub_analysis != ""],
+                                     sub_analysis,
+                                     ".csv")
+names_counts_n_outcome_ba2 <- paste0(counts_n_outcome_prefix,
+                                     "_"[sub_analysis != ""],
+                                     sub_analysis,
+                                     "_ba2.csv")
 
 ################################################################################
 # 1. Define functions
@@ -189,35 +238,13 @@ table3 <-
             suffix = c(".ba1", ".ba2"))
 
 ################################################################################
-# 2. BA.1 and BA.2 (haem_malig)
-################################################################################
-# ba1_haem
-cox_ba1_haem <- table_period(folder_with_tables,
-                             names_cox_ba1_haem)
-counts_ba1_haem <- counts_period(folder_with_counts,
-                                 names_counts_n_ba1_haem,
-                                 names_counts_n_outcome_ba1_haem)
-table_ba1_haem <- combine_cox_counts(cox_ba1_haem,
-                                     counts_ba1_haem)
-# ba2_haem
-cox_ba2_haem <- table_period(folder_with_tables,
-                        names_cox_ba2_haem)
-counts_ba2_haem <- counts_period(folder_with_counts,
-                                 names_counts_n_ba2_haem,
-                                 names_counts_n_outcome_ba2_haem)
-table_ba2_haem <- combine_cox_counts(cox_ba2_haem,
-                                     counts_ba2_haem)
-# table 3
-table3_haem <- 
-  table_ba1_haem %>%
-  left_join(table_ba2_haem,
-            by = c("comparison", "adjustment_set"),
-            suffix = c(".ba1", ".ba2"))
-
-################################################################################
 # 3. Save output
 ################################################################################
 write_csv(table3,
-          here("output", "tables_joined", "table3.csv"))
-write_csv(table3_haem,
-          here("output", "tables_joined", "table3_haem.csv"))
+          here("output", "tables_joined", 
+               paste0("table3", 
+                      "_"[data_label != "day5"], 
+                      data_label[data_label != "day5"],
+                      "_"[sub_analysis != ""],
+                      haem_filename_suffix[sub_analysis != ""],
+                      ".csv")))

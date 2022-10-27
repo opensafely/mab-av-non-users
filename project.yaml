@@ -623,15 +623,44 @@ actions:
   ## Tables
   ## # # # # # # # # # # # # # # # # # # # 
   table_3:
-    run: r:latest analysis/output_wrangling/table3.R
+    run: r:latest analysis/output_wrangling/table3.R day5
     needs: [cox_day5_crude, cox_day5_age_sex, cox_day5_full,
-            cox_day5_crude_ba2, cox_day5_age_sex_ba2, cox_day5_full_ba2,
-            cox_day5_crude_haem_malig, cox_day5_age_sex_haem_malig, cox_day5_full_haem_malig,
-            cox_day5_crude_haem_malig_ba2, cox_day5_age_sex_haem_malig_ba2, cox_day5_full_haem_malig_ba2]
+            cox_day5_crude_ba2, cox_day5_age_sex_ba2, cox_day5_full_ba2]
     outputs:
       moderately_sensitive:
         table1: output/tables_joined/table3.csv
-        table2: output/tables_joined/table3_haem.csv
+  
+  table_3_day4:
+    run: r:latest analysis/output_wrangling/table3.R day4
+    needs: [cox_day4_crude, cox_day4_age_sex, cox_day4_full,
+            cox_day4_crude_ba2, cox_day4_age_sex_ba2, cox_day4_full_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/tables_joined/table3_day4.csv
+  
+  table_3_day3:
+    run: r:latest analysis/output_wrangling/table3.R day3
+    needs: [cox_day3_crude, cox_day3_age_sex, cox_day3_full,
+            cox_day3_crude_ba2, cox_day3_age_sex_ba2, cox_day3_full_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/tables_joined/table3_day3.csv
+
+  table_3_day2:
+    run: r:latest analysis/output_wrangling/table3.R day2
+    needs: [cox_day2_crude, cox_day2_age_sex, cox_day2_full,
+            cox_day2_crude_ba2, cox_day2_age_sex_ba2, cox_day2_full_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/tables_joined/table3_day2.csv
+  
+  table_3_haem: day5 haem
+    run: r:latest analysis/output_wrangling/table3.R day5
+    needs: [cox_day5_crude_haem_malig, cox_day5_age_sex_haem_malig, cox_day5_full_haem_malig,
+            cox_day5_crude_haem_malig_ba2, cox_day5_age_sex_haem_malig_ba2, cox_day5_full_haem_malig_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/tables_joined/table3_haem.csv
 
   table_S2:
     run: r:latest analysis/output_wrangling/tableS2.R
