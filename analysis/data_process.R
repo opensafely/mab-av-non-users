@@ -53,7 +53,7 @@ fs::dir_create(here::here("output", "data"))
 # 0.2 Import command-line arguments
 ################################################################################
 args <- commandArgs(trailingOnly=TRUE)
-# Set input data to day5 or day0 data, default is day5
+# Set input data to ba1 or ba2 data, default is ba1
 if (length(args) == 0){
   period = "ba1"
 } else if (args[[1]] == "ba1") {
