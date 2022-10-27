@@ -23,7 +23,7 @@
 # 4. Log file with errors and warnings in ./output/tables:
 # - log_cox_models_'data_label'_'adjustment_set'_'period'_new.csv
 # 5. PS models in ./output/data_models:
-# - 'trt_grp'_'adjustment_set'_psModelFit_'period'_new.rds
+# - 'trt_grp'_'adjustment_set'_psModelFit_'data_label'_'period'_new.rds
 # [note, if script is run for day5 and day0, file with ps model will be 
 # overwritten]
 # 6. CSV files with counts (redacted) [currently only deployed for primary outcome]
@@ -88,6 +88,12 @@ if (length(args) == 0){
   data_label = "day0"
 } else if (args[[2]] == "day5") {
   data_label = "day5"
+} else if (args[[2]] == "day4") {
+  data_label = "day4"
+} else if (args[[2]] == "day3") {
+  data_label = "day3"
+} else if (args[[2]] == "day2") {
+  data_label = "day2"
 } else {
   # Print error if no argument specified
   stop("No outcome specified")
@@ -273,6 +279,8 @@ for(i in seq_along(trt_grp)) {
                         "_",
                         adjustment_set,
                         "_psModelFit_",
+                        data_label,
+                        "_",
                         period[!period == "ba1"], "_"[!period == "ba1"],
                         "new.rds")
             )
