@@ -2,38 +2,41 @@
 #
 # Cox models (propensity score analysis) // BA.1 period
 #
-# This script can be run via an action in project.yaml using two arguments:
+# This script can be run via an action in project.yaml using three arguments:
+# - 'period' /in {ba1, ba2} (--> ba1 or ba2 analysis)
 # - 'day_label' /in {day5, day0} (--> day5 or day0 analysis)
 # - 'adjustment_set' /in {full, agesex, crude} (--> adjustment set used)
 #
 # Depending on 'day_label' and 'adjustment_set' the output of this script is:
 # 1. Propensity score plots in ./output/figs:
-# - 'trt_grp'_'adjustment_set'_overlap_plot_day5_before_restriction_new.png
-# - 'trt_grp'_'adjustment_set'_overlap_plot_day5_after_restriction_new.png
-# [note, if script is run for day5 and day0, file with ps plots will be 
+# - 'trt_grp'_'adjustment_set'_overlap_plot_'day_label'_before_restriction_'period'_new.png
+# - 'trt_grp'_'adjustment_set'_overlap_plot_'day_label'_after_restriction_'period'_new.png
+# [note, in previous versions, if script was run for day5 and day0, file with ps plots was 
 # overwritten (and named 'day5' in both instances)]
 # 2. Survival curves in ./output/figs:
-# - 'trt_grp'_'outcomes'_'adjustment_set'_cumInc_day5_new.png
-# [note, if script is run for day5 and day0, file with cumInc plots will be 
+# - 'trt_grp'_'outcomes'_'adjustment_set'_cumInc_'day_label'_'period'_new.png
+# [note, in previous versions, if script was run for day5 and day0, file with cumInc plots was 
 # overwritten (and named 'day5' in both instances)]
-# - 'trt_grp'_'outcomes'_'adjustment_set'_cumInc_'data_label'_new.csv
+# - 'trt_grp'_'outcomes'_'adjustment_set'_cumInc_'data_label'_'period'_new.csv
 # 3. Tables with effect estimates in ./output/tables:
-# - cox_models_'data_label'_'adjustment_set'_new.csv
+# - cox_models_'data_label'_'adjustment_set'_'period'_new.csv
 # 4. Log file with errors and warnings in ./output/tables:
-# - log_cox_models_'data_label'_'adjustment_set'_new.csv
+# - log_cox_models_'data_label'_'adjustment_set'_'period'_new.csv
 # 5. PS models in ./output/data_models:
-# - 'trt_grp'_'adjustment_set'_psModelFit_new.rds
+# - 'trt_grp'_'adjustment_set'_psModelFit_'period'_new.rds
 # [note, if script is run for day5 and day0, file with ps model will be 
 # overwritten]
 # 6. CSV files with counts (redacted) [currently only deployed for primary outcome]
-# - counts_n_'data_label'_crude.csv
-# - counts_n_outcome_'data_label'_crude.csv
-# - counts_n_restr_'data_label'_'adjustment_set'.csv 
-# - counts_n_outcome_restr_'data_label'_'adjustment_set'.csv
+#    in ./output/counts:
+# - counts_n_'data_label'_crude_'period'.csv
+# - counts_n_outcome_'data_label'_crude_'period'.csv
+# - counts_n_restr_'data_label'_'adjustment_set'_'period'.csv 
+# - counts_n_outcome_restr_'data_label'_'adjustment_set'_'period'.csv
 # (adjustment_set /in {agesex, full})
 #
 # where 'trt_grp' /in {All, Sotrovimab, Molnupiravir}, and
 #       'outcomes' /in {primary, secondary}
+# NOTE: the suffix 'period' is not used if period == 'ba1'.
 ################################################################################
 
 ################################################################################
@@ -67,12 +70,23 @@ fs::dir_create(here::here("output", "counts"))
 # 0.2 Import command-line arguments
 ################################################################################
 args <- commandArgs(trailingOnly=TRUE)
+# Set input data to ba1 or ba2 data, default is ba1
+if (length(args) == 0){
+  period = "ba1"
+} else if (args[[1]] == "ba1") {
+  period = "ba1"
+} else if (args[[1]] == "ba2") {
+  period = "ba2"
+} else {
+  # Print error if no argument specified
+  stop("No period specified")
+}
 # Set input data to day5 or day0 data, default is day5
 if (length(args) == 0){
   data_label = "day5"
-} else if (args[[1]] == "day0") {
+} else if (args[[2]] == "day0") {
   data_label = "day0"
-} else if (args[[1]] == "day5") {
+} else if (args[[2]] == "day5") {
   data_label = "day5"
 } else {
   # Print error if no argument specified
@@ -81,11 +95,11 @@ if (length(args) == 0){
 # Adjustment set
 if (length(args) == 0){
   adjustment_set = "full"
-} else if (args[[2]] == "full") {
+} else if (args[[3]] == "full") {
   adjustment_set = "full"
-} else if (args[[2]] == "agesex") {
+} else if (args[[3]] == "agesex") {
   adjustment_set = "agesex"
-} else if (args[[2]] == "crude") {
+} else if (args[[3]] == "crude") {
   adjustment_set = "crude"
 } else {
   # Print error if no argument specified
@@ -95,13 +109,11 @@ if (length(args) == 0){
 ################################################################################
 # 0.3 Import data
 ################################################################################
-if (data_label == "day5") {
-  data_cohort <- 
-    read_rds(here::here("output", "data", "data_processed_day5.rds"))
-} else if (data_label == "day0") {
-  data_cohort <-
-    read_rds(here::here("output", "data", "data_processed_day0.rds"))
-}
+data_filename <-
+    paste0(period[!period == "ba1"], "_"[!period == "ba1"],
+           "data_processed_", data_label, ".rds")
+data_cohort <-
+  read_rds(here::here("output", "data", data_filename))
 
 ################################################################################
 # 0.4 Create data.frame for output (estimates + log file + counts)
@@ -249,8 +261,6 @@ for(i in seq_along(trt_grp)) {
       paste("treatment", 
             paste(vars, collapse = " + "), 
             sep = " ~ "))
-    # Check your model
-    print(psModelFunction)
     # Fit PS model
     psModel <- glm(psModelFunction,
                    family = binomial(link = "logit"),
@@ -262,7 +272,9 @@ for(i in seq_along(trt_grp)) {
                  paste0(trt_grp[i],
                         "_",
                         adjustment_set,
-                        "_psModelFit_new.rds")
+                        "_psModelFit_",
+                        period[!period == "ba1"], "_"[!period == "ba1"],
+                        "new.rds")
             )
     )
     # Append patient-level predicted probability of being assigned to cohort
@@ -298,7 +310,11 @@ for(i in seq_along(trt_grp)) {
                   paste0(trt_grp[i],
                          "_",
                          adjustment_set,
-                         "_overlap_plot_day5_before_restriction_new.png")),
+                         "_overlap_plot_",
+                         data_label,
+                         "_before_restriction_",
+                         period[!period == "ba1"], "_"[!period == "ba1"],
+                         "new.png")),
            width = 20, height = 14, units = "cm")
     ############################################################################
     # A.2.3 Derive inverse probability of treatment weights (IPTW)
@@ -323,12 +339,8 @@ for(i in seq_along(trt_grp)) {
     # untreated persons—
     # (i.e. exclude all patients in the non-overlapping parts of the PS 
     # distribution)
-    cat("#### Patients before restriction ####\n")
-    print(dim(data_cohort_sub))  
     data_cohort_sub_trimmed <- data_cohort_sub %>% 
       filter(pscore >= ps_trim$min[1] & pscore <= ps_trim$max[1])
-    cat("#### Patients after restriction ####\n")
-    print(dim(data_cohort_sub_trimmed))
     # Save n in 'estimates' after trimming
     estimates[c(1 + (i - 1), 4 + (i - 1)), "n_after_restriction"] <-
       nrow(data_cohort_sub_trimmed) %>% plyr::round_any(5)
@@ -366,7 +378,11 @@ for(i in seq_along(trt_grp)) {
                   paste0(trt_grp[i],
                          "_",
                          adjustment_set,
-                         "_overlap_plot_day5_after_restriction_new.png")),
+                         "_overlap_plot_",
+                         data_label,
+                         "_after_restriction_",
+                         period[!period == "ba1"], "_"[!period == "ba1"],
+                         "new.png")),
            width = 20, height = 14, units = "cm")
     ############################################################################
     # A.2.5 Outcome model
@@ -475,7 +491,9 @@ for(i in seq_along(trt_grp)) {
                               adjustment_set,
                               "_cumInc_",
                               data_label,
-                              "_new.csv")))
+                              "_",
+                              period[!period == "ba1"], "_"[!period == "ba1"],
+                              "new.csv")))
         # Plot cumulative incidence percentage
         plot <- ggplot(tidy, 
                        aes(x = time,
@@ -501,7 +519,11 @@ for(i in seq_along(trt_grp)) {
                              outcomes[j],
                              "_",
                              adjustment_set,
-                             "_cumInc_day5_new.png")),
+                             "_cumInc_",
+                             data_label,
+                             "_",
+                             period[!period == "ba1"], "_"[!period == "ba1"],
+                             "new.png")),
                width = 20, height = 14, units = "cm")
       } else log[k, "error"] <- model_PSw()$messages # end pull from model_Psw
     } # end of loop through outcomes
@@ -608,7 +630,9 @@ write_csv(estimates,
                       data_label,
                       "_",
                       adjustment_set,
-                      "_new.csv")))
+                      "_",
+                      period[!period == "ba1"], "_"[!period == "ba1"],
+                      "new.csv")))
 write_csv(log,
           here("output", 
                "tables", 
@@ -616,7 +640,9 @@ write_csv(log,
                       data_label,
                       "_",
                       adjustment_set,
-                      "_new.csv")))
+                      "_",
+                      period[!period == "ba1"], "_"[!period == "ba1"],
+                      "new.csv")))
 # restricted counts only of use for fully or agesex adjusted analysis (crude
 # analysis is not trimmed)
 if (adjustment_set != "crude"){
@@ -627,6 +653,8 @@ if (adjustment_set != "crude"){
                         data_label,
                         "_",
                         adjustment_set,
+                        "_"[!period == "ba1"],
+                        period[!period == "ba1"],
                         ".csv")))
   write_csv(counts_n_outcome_restr,
             here("output",
@@ -635,6 +663,8 @@ if (adjustment_set != "crude"){
                         data_label,
                         "_",
                         adjustment_set,
+                        "_"[!period == "ba1"],
+                        period[!period == "ba1"],
                         ".csv")))
 } else{
   write_csv(counts_n,
@@ -644,6 +674,8 @@ if (adjustment_set != "crude"){
                         data_label,
                         "_",
                         adjustment_set,
+                        "_"[!period == "ba1"],
+                        period[!period == "ba1"],
                         ".csv")))
   write_csv(counts_n_outcome,
             here("output",
@@ -652,5 +684,7 @@ if (adjustment_set != "crude"){
                         data_label,
                         "_",
                         adjustment_set,
+                        "_"[!period == "ba1"],
+                        period[!period == "ba1"],
                         ".csv")))
 }

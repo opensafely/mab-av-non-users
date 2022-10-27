@@ -124,7 +124,7 @@ actions:
         table: output/tables/table1_extra_redacted_day5_ba2.html
 
   cox_day5_full:
-    run: r:latest analysis/cox_models.R day5 full
+    run: r:latest analysis/cox_models.R ba1 day5 full
     needs: [data_process]
     outputs:
       moderately_sensitive:
@@ -138,23 +138,8 @@ actions:
         table4: output/counts/counts_n_outcome_restr_day5_full.csv
         model1: output/data_models/*_full_psModelFit_new.rds
 
-  cox_day5_full_ba2:
-    run: r:latest analysis/cox_models_ba2.R day5 full
-    needs: [data_process_ba2]
-    outputs:
-      moderately_sensitive:
-        figure1: output/figs/*_full_overlap_plot_day5_before_restriction_ba2_new.png
-        figure2: output/figs/*_full_overlap_plot_day5_after_restriction_ba2_new.png
-        figure3: output/figs/*_full_cumInc_day5_ba2_new.png
-        csvfigure3: output/figs/*_full_cumInc_day5_ba2_new.csv
-        table1: output/tables/cox_models_day5_full_ba2_new.csv
-        table2: output/tables/log_cox_models_day5_full_ba2_new.csv
-        table3: output/counts/counts_n_restr_day5_full_ba2.csv
-        table4: output/counts/counts_n_outcome_restr_day5_full_ba2.csv
-        model1: output/data_models/*_full_psModelFit_ba2_new.rds
-
   cox_day5_age_sex:
-    run: r:latest analysis/cox_models.R day5 agesex
+    run: r:latest analysis/cox_models.R ba1 day5 agesex
     needs: [data_process]
     outputs:
       moderately_sensitive:
@@ -168,8 +153,33 @@ actions:
         table4: output/counts/counts_n_outcome_restr_day5_agesex.csv
         model1: output/data_models/*_agesex_psModelFit_new.rds
 
+  cox_day5_crude:
+    run: r:latest analysis/cox_models.R ba1 day5 crude
+    needs: [data_process]
+    outputs:
+      moderately_sensitive:
+        table1: output/tables/cox_models_day5_crude_new.csv
+        table2: output/tables/log_cox_models_day5_crude_new.csv
+        table3: output/counts/counts_n_day5_crude.csv
+        table4: output/counts/counts_n_outcome_day5_crude.csv
+
+  cox_day5_full_ba2:
+    run: r:latest analysis/cox_models.R ba2 day5 full
+    needs: [data_process_ba2]
+    outputs:
+      moderately_sensitive:
+        figure1: output/figs/*_full_overlap_plot_day5_before_restriction_ba2_new.png
+        figure2: output/figs/*_full_overlap_plot_day5_after_restriction_ba2_new.png
+        figure3: output/figs/*_full_cumInc_day5_ba2_new.png
+        csvfigure3: output/figs/*_full_cumInc_day5_ba2_new.csv
+        table1: output/tables/cox_models_day5_full_ba2_new.csv
+        table2: output/tables/log_cox_models_day5_full_ba2_new.csv
+        table3: output/counts/counts_n_restr_day5_full_ba2.csv
+        table4: output/counts/counts_n_outcome_restr_day5_full_ba2.csv
+        model1: output/data_models/*_full_psModelFit_ba2_new.rds
+
   cox_day5_age_sex_ba2:
-    run: r:latest analysis/cox_models_ba2.R day5 agesex
+    run: r:latest analysis/cox_models.R ba2 day5 agesex
     needs: [data_process_ba2]
     outputs:
       moderately_sensitive:
@@ -182,19 +192,9 @@ actions:
         table3: output/counts/counts_n_restr_day5_agesex_ba2.csv
         table4: output/counts/counts_n_outcome_restr_day5_agesex_ba2.csv
         model1: output/data_models/*_agesex_psModelFit_ba2_new.rds
-  
-  cox_day5_crude:
-    run: r:latest analysis/cox_models.R day5 crude
-    needs: [data_process]
-    outputs:
-      moderately_sensitive:
-        table1: output/tables/cox_models_day5_crude_new.csv
-        table2: output/tables/log_cox_models_day5_crude_new.csv
-        table3: output/counts/counts_n_day5_crude.csv
-        table4: output/counts/counts_n_outcome_day5_crude.csv
 
   cox_day5_crude_ba2:
-    run: r:latest analysis/cox_models_ba2.R day5 crude
+    run: r:latest analysis/cox_models.R ba2 day5 crude
     needs: [data_process_ba2]
     outputs:
       moderately_sensitive:
