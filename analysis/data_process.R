@@ -1,9 +1,29 @@
-######################################
+################################################################################
+#
+# Processing data
+# 
+# This script can be run via an action in project.yaml using one argument:
+# - 'period' /in {ba1, ba2} --> period 
+#
+# Depending on 'period' the output of this script is:
+# 5 .rds files named:
+# -./output/data/'period'_data_processed_day0.rds
+# -./output/data/'period'_data_processed_day2.rds
+# -./output/data/'period'_data_processed_day3.rds
+# -./output/data/'period'_data_processed_day4.rds
+# -./output/data/'period'_data_processed_day5.rds
+# (if period == ba1, no prefix is used)
+#
+# in the _day2-5 files, patients are classified as treated if they are treated
+# within 2-5 days, respectively; and excluded if they experience an outcome in
+# days 2-5, respectively (outcome = all cause death/ hosp or dereg)
+# in the day0 file, patients are classified as treated if they are treated within
+# 5 days and never excluded
+################################################################################
 
-# Processes data from cohort extract
-######################################
-
-## Packages
+################################################################################
+# 0.0 Import libraries + functions
+################################################################################
 library('tidyverse')
 library('lubridate')
 library('here')
@@ -11,7 +31,6 @@ library('gt')
 library('gtsummary')
 library('arrow')
 library('reshape2')
-
 ## Import custom user functions
 source(here::here("lib", "functions", "fct_case_when.R"))
 source(here::here("lib", "functions", "define_covid_hosp_admissions.R"))
@@ -20,22 +39,45 @@ source(here::here("lib", "functions", "define_allcause_hosp_admissions.R"))
 source(here::here("lib", "functions", "define_status_and_fu_all.R"))
 source(here::here("lib", "functions", "define_status_and_fu_primary.R"))
 source(here::here("lib", "functions", "define_status_and_fu_secondary.R"))
-
 # import globally defined study dates and convert to "Date"
 study_dates <-
   jsonlite::read_json(path=here("lib", "design", "study-dates.json")) %>%
   map(as.Date)
 
-## Print session info to metadata log file
-sessionInfo()
+################################################################################
+# 0.1 Create directories for output
+################################################################################
+fs::dir_create(here::here("output", "data"))
 
-## Print variable names
-cat("#### read in data extract ####\n")
+################################################################################
+# 0.2 Import command-line arguments
+################################################################################
+args <- commandArgs(trailingOnly=TRUE)
+# Set input data to day5 or day0 data, default is day5
+if (length(args) == 0){
+  period = "ba1"
+} else if (args[[1]] == "ba1") {
+  period = "ba1"
+} else if (args[[1]] == "ba2") {
+  period = "ba2"
+} else {
+  # Print error if no argument specified
+  stop("No period specified")
+}
 
+################################################################################
+# 1 Import data
+################################################################################
+input_filename <- 
+  if (period == "ba1"){
+    "input.csv.gz"
+  } else if (period == "ba2"){
+    "input_ba2.csv.gz"
+  }
 data_extract <- read_csv(
-  here::here("output", "input.csv.gz"),
+  here::here("output", input_filename),
   col_types = cols_only(
-   
+    
     # Identifier
     patient_id = col_integer(),
     
@@ -149,14 +191,14 @@ data_extract <- read_csv(
     #allcause_hosp_admission_diagnosis6 = col_character(),
     #allcause_hosp_admission_first_diagnosis7_27 = col_character(),
     # death
-    died_ons_covid_any_date = col_date(format = "%Y-%m-%d"),
-    death_cause = col_factor()
+    died_ons_covid_any_date = col_date(format = "%Y-%m-%d")
+    #death_cause = col_factor()
   ),
 )
 
-# data cleaning
-cat("#### data cleaning ####\n")
-
+################################################################################
+# 2 Clean data
+################################################################################
 ## Format columns (i.e, set factor levels)
 data_processed <- data_extract %>%
   mutate(
@@ -241,7 +283,7 @@ data_processed <- data_extract %>%
     stp = as.factor(stp), 
     
     # SGTF
-   sgtf = fct_case_when(
+    sgtf = fct_case_when(
      is.na(sgtf) | sgtf == "" ~ "Unknown",
       sgtf == 1  ~ "Isolate with confirmed SGTF",
       sgtf == 0  ~ "S gene detected",
@@ -251,9 +293,12 @@ data_processed <- data_extract %>%
     ),
   
     # Time-between positive test and last vaccination
-    tb_postest_vacc = ifelse(!is.na(date_most_recent_cov_vac),
-                             difftime(covid_test_positive_date, date_most_recent_cov_vac, units = "days") %>% as.numeric(), 
-                             NA_integer_),
+    tb_postest_vacc = 
+      ifelse(!is.na(date_most_recent_cov_vac),
+             difftime(covid_test_positive_date,
+                      date_most_recent_cov_vac, units = "days") %>%
+               as.numeric(),
+             NA_integer_),
     
     tb_postest_vacc_cat = fct_case_when(
       is.na(tb_postest_vacc) ~ "Unknown",
@@ -262,174 +307,199 @@ data_processed <- data_extract %>%
       tb_postest_vacc >= 28 & tb_postest_vacc <84 ~ "28-83 days",
       tb_postest_vacc >= 84 ~ ">= 84 days"
       ),
-    
-    # NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----
-    # Treatment assignment window 'treated within 5 days -> <= 4 days'
-    treat_window = covid_test_positive_date + days(4),
-    
-    # Time-between positive test and day of treatment
-    tb_postest_treat = ifelse(!is.na(date_treated), 
-                              difftime(date_treated, covid_test_positive_date, units = "days") %>% as.numeric(), 
-                              NA_integer_),
-    
-    # Flag records where treatment date falls in treatment assignment window
-    treat_check = ifelse(date_treated >= covid_test_positive_date & 
-                           date_treated <= treat_window, 
-                         1, 
-                         0),
-    
-    # Treatment strategy categories
-    treatment_strategy_cat = case_when(
-      date_treated == sotrovimab_covid_therapeutics & 
-        treat_check == 1 ~ "Sotrovimab",
-      date_treated == molnupiravir_covid_therapeutics & 
-        treat_check == 1 ~ "Molnupiravir",
-      TRUE ~ "Untreated"
-    ) %>% factor(levels = c("Untreated", "Sotrovimab", "Molnupiravir")),
-    
-    # Treatment strategy overall
-    treatment = case_when(
-      (date_treated == sotrovimab_covid_therapeutics & 
-         treat_check == 1) | 
-        (date_treated == molnupiravir_covid_therapeutics & 
-           treat_check == 1)  ~ "Treated",
-      TRUE ~ "Untreated"
-    ) %>% factor(levels = c("Untreated", "Treated")),
-    
-    # Treatment date
-    treatment_date = ifelse(treatment == "Treated", date_treated, NA_Date_),
-    
-    # Identify patients treated with sot and mol on same day
-    treated_sot_mol_same_day = 
-      case_when(is.na(sotrovimab_covid_therapeutics) ~ 0,
-                is.na(molnupiravir_covid_therapeutics) ~ 0,
-                sotrovimab_covid_therapeutics == 
-                  molnupiravir_covid_therapeutics ~ 1,
-                TRUE ~ 0),
-    
-    # Time-between symptom onset and treatment in those treatead
-    tb_symponset_treat = 
-      case_when(is.na(date_treated) ~ NA_real_,
-                symptomatic_covid_test == "Y" ~ min(covid_test_positive_date,
-                                                    covid_symptoms_snomed) %>%
-                                                difftime(., date_treated, units = "days") %>%
-                                                as.numeric()
-                ),
-  ) %>%
-  # because makes logic better readable
-  rename(covid_death_date = died_ons_covid_any_date) %>%
-  # add columns first admission in day 0-6, second admission etc. to be used
-  # to define hospital admissions (hosp admissions for sotro treated are
-  # different from the rest as sometimes their admission is just an admission
-  # to get the sotro infusion)
-  summarise_covid_admissions() %>%
-  # adds column covid_hosp_admission_date
-  add_covid_hosp_admission_outcome() %>%
-  # idem as explained above for all cause hospitalisation
-  summarise_allcause_admissions() %>%
-  # adds column allcause_hosp_admission_date
-  add_allcause_hosp_admission_outcome() %>%
-  # add column allcause_hosp_diagnosis
-  #add_allcause_hosp_diagnosis() %>%
-  mutate(
-    # Outcome prep --> outcomes are added in add_*_outcome() functions below
-    study_window = covid_test_positive_date + days(27),
-    # make distinction between noncovid death and covid death, since noncovid
-    # death is a censoring event and covid death is an outcome
-    noncovid_death_date = case_when(
-      !is.na(death_date) & is.na(covid_death_date) ~ death_date,
-      TRUE ~ NA_Date_
-    ),
-    # make distinction between noncovid hosp admission and covid hosp
-    # admission, non covid hosp admission is not used as a censoring event in
-    # our study, but we'd like to report how many pt were admitted to the 
-    # hospital for a noncovid-y reason before one of the other events
-    noncovid_hosp_admission_date = case_when(
-      !is.na(allcause_hosp_admission_date) & 
-        is.na(covid_hosp_admission_date) ~ allcause_hosp_admission_date,
-      (!is.na(allcause_hosp_admission_date) &
-        !is.na(covid_hosp_admission_date)) &
-        allcause_hosp_admission_date < covid_hosp_admission_date ~
-        allcause_hosp_admission_date,
-      TRUE ~ NA_Date_
-    ),
-  ) %>%
-  # adds column status_all and fu_all 
-  add_status_and_fu_all() %>%
-  # adds column status_primary and fu_primary
-  add_status_and_fu_primary() %>%
-  # adds column status_secondary and fu_secondary
-  add_status_and_fu_secondary() %>%
-  # add treatment allocation for day 0 analysis 
-  # for more info, see 
-  # https://docs.google.com/document/d/1ZPLQ34C0SrXsIrBXy3j9iIlRCfnEEYbEUmgMBx6mv8U/edit#heading=h.sncyl4m0nk5s
-  mutate(
-    ## PRIMARY ##
-    # Treatment strategy categories
-    treatment_strategy_cat_day0_prim = case_when(
-      covid_hosp_admission_date < date_treated ~ "Untreated",
-      TRUE ~ treatment_strategy_cat %>% as.character()) %>% 
-      factor(levels = c("Untreated",  "Sotrovimab", "Molnupiravir")),
-    # Treatment strategy overall
-    treatment_day0_prim = case_when(
-      covid_hosp_admission_date < date_treated ~ "Untreated",
-      TRUE ~ treatment %>% as.character()) %>% 
-      factor(levels = c("Untreated", "Treated")),
-    # Treatment date
-    treatment_date_day0_prim = 
-      ifelse(treatment_day0_prim == "Treated", date_treated, NA_Date_),
-    ## SECONDARY ##
-    # Treatment strategy categories
-    treatment_strategy_cat_day0_sec = case_when(
-      allcause_hosp_admission_date < date_treated ~ "Untreated",
-      TRUE ~ treatment_strategy_cat %>% as.character()) %>% 
-      factor(levels = c("Untreated", "Sotrovimab", "Molnupiravir")),
-    # Treatment strategy overall
-    treatment_day0_sec = case_when(
-      allcause_hosp_admission_date < date_treated ~ "Untreated",
-      TRUE ~ treatment %>% as.character()) %>% 
-      factor(levels = c("Untreated", "Treated")),
-    # Treatment date
-    treatment_date_day0_sec = 
-      ifelse(treatment_day0_sec == "Treated", date_treated, NA_Date_),
   )
 
-## Apply additional eligibility and exclusion criteria
-data_processed_eligible <- data_processed %>%
-  filter(
-    # Exclude patients treated with both sotrovimab and molnupiravir on the same
-    # day 
-    treated_sot_mol_same_day  == 0,
+################################################################################
+# 3 Add exposure variables and outcomes
+################################################################################
+# Make list of 4 different data_processed; depending on when data analysis is
+# started
+# Treatment assignment window 'treated within 5 days -> <= 4 days' etc
+treat_windows <- c(1, 2, 3, 4)
+# List of processed data of all days
+data_processed_list <- 
+  map(treat_windows,
+      .f = ~ mutate(data_processed,
+                    treat_window = 
+                      covid_test_positive_date + days(treat_windows)))
+names(data_processed_list) <- paste0("day", treat_windows + 1)
+
+# Add treatment variables and outcomes
+data_processed_list <-
+  map(data_processed_list,
+      .f = ~ mutate(
+        .x,
+        # NEUTRALISING MONOCLONAL ANTIBODIES OR ANTIVIRALS ----              
+        # Time-between positive test and day of treatment
+        tb_postest_treat = 
+          ifelse(!is.na(date_treated), 
+                 difftime(date_treated, 
+                          covid_test_positive_date,
+                          units = "days") %>% as.numeric(),
+                 NA_integer_),
+        
+        # Flag records where treatment date falls in treatment assignment window
+        treat_check = 
+          ifelse(date_treated >= covid_test_positive_date & 
+                   date_treated <= treat_window,
+                 1,
+                 0),
+        
+        # Treatment strategy categories
+        treatment_strategy_cat = 
+          case_when(date_treated == sotrovimab_covid_therapeutics & 
+                      treat_check == 1 ~ "Sotrovimab",
+                    date_treated == molnupiravir_covid_therapeutics & 
+                      treat_check == 1 ~ "Molnupiravir",
+                    TRUE ~ "Untreated") %>% 
+          factor(levels = c("Untreated", "Sotrovimab", "Molnupiravir")),
+        
+        # Treatment strategy overall
+        treatment = 
+          case_when((date_treated == sotrovimab_covid_therapeutics & 
+                       treat_check == 1) |
+                      (date_treated == molnupiravir_covid_therapeutics & 
+                         treat_check == 1)  ~ "Treated",
+                    TRUE ~ "Untreated") %>%
+          factor(levels = c("Untreated", "Treated")),
+        
+        # Treatment date
+        treatment_date = 
+          ifelse(treatment == "Treated", date_treated, NA_Date_),
+        
+        # Identify patients treated with sot and mol on same day
+        treated_sot_mol_same_day = 
+          case_when(is.na(sotrovimab_covid_therapeutics) ~ 0,
+                    is.na(molnupiravir_covid_therapeutics) ~ 0,
+                    sotrovimab_covid_therapeutics == 
+                      molnupiravir_covid_therapeutics ~ 1,
+                    TRUE ~ 0),
+        
+        # Time-between symptom onset and treatment in those treated
+        tb_symponset_treat = 
+          case_when(is.na(date_treated) ~ NA_real_,
+                    symptomatic_covid_test == "Y" ~ 
+                      min(covid_test_positive_date,
+                      covid_symptoms_snomed) %>%
+                      difftime(., date_treated, units = "days") %>%
+                      as.numeric()),
+        ) %>%
+        # because makes logic better readable
+        rename(covid_death_date = died_ons_covid_any_date) %>%
+        # add columns first admission in day 0-6, second admission etc. to be used
+        # to define hospital admissions (hosp admissions for sotro treated are
+        # different from the rest as sometimes their admission is just an admission
+        # to get the sotro infusion)
+        summarise_covid_admissions() %>%
+        # adds column covid_hosp_admission_date
+        add_covid_hosp_admission_outcome() %>%
+        # idem as explained above for all cause hospitalisation
+        summarise_allcause_admissions() %>%
+        # adds column allcause_hosp_admission_date
+        add_allcause_hosp_admission_outcome() %>%
+        # add column allcause_hosp_diagnosis
+        #add_allcause_hosp_diagnosis() %>%
+        mutate(
+          # Outcome prep --> outcomes are added in add_*_outcome() functions below
+          study_window = covid_test_positive_date + days(27),
+          # make distinction between noncovid death and covid death, since noncovid
+          # death is a censoring event and covid death is an outcome
+          noncovid_death_date = 
+            case_when(!is.na(death_date) & is.na(covid_death_date) ~ death_date,
+                      TRUE ~ NA_Date_
+          ),
+          # make distinction between noncovid hosp admission and covid hosp
+          # admission, non covid hosp admission is not used as a censoring event in
+          # our study, but we'd like to report how many pt were admitted to the 
+          # hospital for a noncovid-y reason before one of the other events
+          noncovid_hosp_admission_date =
+            case_when(!is.na(allcause_hosp_admission_date) &
+                        is.na(covid_hosp_admission_date) ~
+                        allcause_hosp_admission_date,
+                      (!is.na(allcause_hosp_admission_date) &
+                         !is.na(covid_hosp_admission_date)) &
+                        allcause_hosp_admission_date < covid_hosp_admission_date ~
+                        allcause_hosp_admission_date,
+                      TRUE ~ NA_Date_),
+        ) %>%
+        # adds column status_all and fu_all 
+        add_status_and_fu_all() %>%
+        # adds column status_primary and fu_primary
+        add_status_and_fu_primary() %>%
+        # adds column status_secondary and fu_secondary
+        add_status_and_fu_secondary() %>%
+        # add treatment allocation for day 0 analysis 
+        # for more info, see 
+        # https://docs.google.com/document/d/1ZPLQ34C0SrXsIrBXy3j9iIlRCfnEEYbEUmgMBx6mv8U/edit#heading=h.sncyl4m0nk5s
+        mutate(
+          ## PRIMARY ##
+          # Treatment strategy categories
+          treatment_strategy_cat_day0_prim = case_when(
+            covid_hosp_admission_date < date_treated ~ "Untreated",
+            TRUE ~ treatment_strategy_cat %>% as.character()) %>% 
+            factor(levels = c("Untreated",  "Sotrovimab", "Molnupiravir")),
+          # Treatment strategy overall
+          treatment_day0_prim = case_when(
+            covid_hosp_admission_date < date_treated ~ "Untreated",
+            TRUE ~ treatment %>% as.character()) %>% 
+            factor(levels = c("Untreated", "Treated")),
+          # Treatment date
+          treatment_date_day0_prim = 
+            ifelse(treatment_day0_prim == "Treated", date_treated, NA_Date_),
+          ## SECONDARY ##
+          # Treatment strategy categories
+          treatment_strategy_cat_day0_sec = case_when(
+            allcause_hosp_admission_date < date_treated ~ "Untreated",
+            TRUE ~ treatment_strategy_cat %>% as.character()) %>% 
+            factor(levels = c("Untreated", "Sotrovimab", "Molnupiravir")),
+          # Treatment strategy overall
+          treatment_day0_sec = case_when(
+            allcause_hosp_admission_date < date_treated ~ "Untreated",
+            TRUE ~ treatment %>% as.character()) %>% 
+            factor(levels = c("Untreated", "Treated")),
+          # Treatment date
+          treatment_date_day0_sec = 
+            ifelse(treatment_day0_sec == "Treated", date_treated, NA_Date_),
+        )
+      )
+################################################################################
+# 4 Apply additional eligibility and exclusion criteria
+################################################################################
+data_processed_eligible_list <- 
+  data_processed_list %>%
+  map(.x, 
+      .f = ~ filter(
+        .x,
+        # Exclude patients treated with both sotrovimab and molnupiravir on the
+        # same day 
+        treated_sot_mol_same_day  == 0,
+      )
   )
 
-cat("#### data_processed ####\n")
-print(dim(data_processed))
-
-cat("#### data_processed_eligible ####\n")
-print(dim(data_processed_eligible))
-
-data_processed_eligible_day0 <- data_processed_eligible
+data_processed_eligible_day0 <- 
+  data_processed_eligible_list$day5
 
 # in the initial analysis, all patients with an outcome on day 0, 1, 2, 3, or 4,
-# are excluded. [FYI, secondary outcomes are 'dereg', 'allcause_hosp' or
-# 'allcause_death']
-data_processed_eligible_day5 <- 
-  data_processed_eligible %>%
-  filter(fu_secondary > 4) %>% 
-  mutate(fu_primary = fu_primary - 5, 
-         fu_secondary = fu_secondary - 5) # Because starting at day 5
+# are excluded. 
+# [FYI, secondary outcomes are 'dereg', 'allcause_hosp' or'allcause_death']
+data_processed_eligible_list <-
+  map2(.x = data_processed_eligible_list,
+      .y = treat_windows,
+      .f = ~ .x %>%
+        filter(fu_secondary > .y) %>%
+        mutate(fu_primary = fu_primary - {.y + 1},
+               fu_secondary = fu_secondary - {.y + 1})) 
+               # because starting at day .y + 1 (e.g. 5, 4, 3, 2)
 
-cat("#### data_processed_eligible day 0 ####\n")
-print(dim(data_processed_eligible_day0))
-
-cat("#### data_processed_eligible day 5 ####\n")
-print(dim(data_processed_eligible_day5))
-
-# save data
-# data_processed_eligible_day0 and data_processed_eligible_day5 are saved
-# and data_processed with all patients is not saved to save memory
-fs::dir_create(here::here("output", "data"))
+################################################################################
+# 5 Save data
+################################################################################
+# data_processed_eligible_day0 and data_processed_eligible_day2,3,4,5 are saved
 write_rds(data_processed_eligible_day0, 
           here::here("output", "data", "data_processed_day0.rds"))
-write_rds(data_processed_eligible_day5, 
-          here::here("output", "data", "data_processed_day5.rds"))
+iwalk(.x = data_processed_eligible_list,
+      .f = ~ write_rds(.x,
+                       here::here("output", "data",
+                                  paste0("data_processed_", .y, ".rds"))
+                       )
+      )
