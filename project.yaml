@@ -654,8 +654,8 @@ actions:
       moderately_sensitive:
         table1: output/tables_joined/table3_day2.csv
   
-  table_3_haem: day5 haem
-    run: r:latest analysis/output_wrangling/table3.R day5
+  table_3_haem:
+    run: r:latest analysis/output_wrangling/table3.R day5 haem
     needs: [cox_day5_crude_haem_malig, cox_day5_age_sex_haem_malig, cox_day5_full_haem_malig,
             cox_day5_crude_haem_malig_ba2, cox_day5_age_sex_haem_malig_ba2, cox_day5_full_haem_malig_ba2]
     outputs:
