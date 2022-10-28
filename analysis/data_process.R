@@ -345,6 +345,13 @@ data_processed_list <-
                  1,
                  0),
         
+        # Flag records where treatment date falls after treat_windos
+        treat_after_treat_window = 
+          ifelse(date_treated >= covid_test_positive_date &
+                   date_treated > treat_window,
+                 1,
+                 0),
+        
         # Treatment strategy categories
         treatment_strategy_cat = 
           case_when(date_treated == sotrovimab_covid_therapeutics & 

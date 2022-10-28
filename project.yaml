@@ -74,8 +74,6 @@ actions:
       moderately_sensitive:
         csvsday5: output/data_properties/day5_*.csv 
         csvsday0: output/data_properties/day0_*.csv
-        csvflowchart: output/data_properties/flowchart.csv
-        csvflowchartrdctd: output/tables/flowchart_redacted.csv
 
   crosstab_trt_outcomes_ba2:
     run: r:latest analysis/crosstab_trt_outcomes_ba2.R
@@ -84,6 +82,20 @@ actions:
       moderately_sensitive:
         csvsday5: output/data_properties/ba2_day5_*.csv 
         csvsday0: output/data_properties/ba2_day0_*.csv
+
+  flowchart:
+    run: r:latest analysis/flowchart.R ba1
+    needs: [data_process]
+    outputs:
+      moderately_sensitive:
+        csvflowchart: output/data_properties/flowchart.csv
+        csvflowchartrdctd: output/tables/flowchart_redacted.csv
+
+  flowchart_ba2:
+    run: r:latest analysis/flowchart.R ba2
+    needs: [data_process_ba2]
+    outputs:
+      moderately_sensitive:
         csvflowchart: output/data_properties/flowchart_ba2.csv
         csvflowchartrdctd: output/tables/flowchart_redacted_ba2.csv
 
