@@ -50,7 +50,11 @@ data_cohort_day5 %>%
   filter(treatment_strategy_cat == "Sotrovimab" &
            is.na(covid_hosp_admission_date) & !is.na(covid_hosp_admission_first_date0_6)) %>%
   nrow() %>% print()
-
+# All cause hosp and covid hosp on same date?
+cat("\n#### All cause hosp and covid hosp on same date? ####\n")
+data_cohort_day5 %>% 
+  filter(allcause_hosp_admission_date == covid_hosp_admission_date) %>%
+  nrow() %>% print()
 
 # pt hospitalised before treatment
 cat("\n#### Treated individuals whose date of treatment is after covid hospital admission ####\n")
@@ -159,68 +163,5 @@ summarise_outcomes(data_cohort_day0_4,
                    status_all,
                    "ba2_day0_4_all.csv")
 
-
-# flowchart
-n_total <- data_cohort_day0 %>% nrow()
-n_treated <- data_cohort_day0 %>%
-  filter(treatment == "Treated") %>%
-  nrow()
-n_treated_sot <- data_cohort_day0 %>%
-  filter(treatment == "Treated" & treatment_strategy_cat == "Sotrovimab") %>%
-  nrow()
-n_treated_mol <- data_cohort_day0 %>%
-  filter(treatment == "Treated" & treatment_strategy_cat == "Molnupiravir") %>%
-  nrow()
-n_untreated <- data_cohort_day0 %>%
-  filter(treatment == "Untreated") %>%
-  nrow()
-n_hosp_death_treated <- data_cohort_day0 %>%
-  filter(treatment == "Treated" & fu_secondary <= 4) %>%
-  nrow()
-n_hosp_death_treated_sot <- data_cohort_day0 %>%
-  filter(treatment == "Treated" & fu_secondary <= 4 & treatment_strategy_cat == "Sotrovimab") %>%
-  nrow()
-n_hosp_death_treated_mol <- data_cohort_day0 %>%
-  filter(treatment == "Treated" & fu_secondary <= 4 & treatment_strategy_cat == "Molnupiravir") %>%
-  nrow()
-n_hosp_death_untreated <- data_cohort_day0 %>%
-  filter(treatment == "Untreated" & fu_secondary <= 4) %>%
-  nrow
 cat("#####check for any na's in fu_secondary (should be FALSE)#####\n")
 print(any(is.na(data_cohort_day0$fu_secondary)))
-n_treated_day5 <- data_cohort_day5 %>%
-  filter(treatment == "Treated") %>%
-  nrow()
-n_treated_day5_sot <- data_cohort_day5 %>%
-  filter(treatment == "Treated" & treatment_strategy_cat == "Sotrovimab") %>%
-  nrow()
-n_treated_day5_mol <- data_cohort_day5 %>%
-  filter(treatment == "Treated" & treatment_strategy_cat == "Molnupiravir") %>%
-  nrow()
-n_untreated_day5 <- data_cohort_day5 %>%
-  filter(treatment == "Untreated") %>%
-  nrow()
-# combine in one table
-flowchart <-
-  tibble(
-    total = n_total,
-    treated = n_treated,
-    treated_sot = n_treated_sot,
-    treated_mol = n_treated_mol,
-    untreated = n_untreated,
-    hosp_death_treated = n_hosp_death_treated,
-    hosp_death_treated_sot = n_hosp_death_treated_sot,
-    hosp_death_treated_mol = n_hosp_death_treated_mol,
-    hosp_death_untreated = n_hosp_death_untreated,
-    treated_day5 = n_treated_day5,
-    treated_day5_sot = n_treated_day5_sot,
-    treated_day5_mol = n_treated_day5_mol,
-    untreated_day5 = n_untreated_day5
-  )
-# redact (simple redaction, round all to nearest 5)
-flowchart_redacted <- 
-  flowchart %>%
-    mutate(across(where(is.integer), ~ plyr::round_any(.x, 5)))
-# Save flowcharts
-write_csv(flowchart, path(here("output", "data_properties", "flowchart_ba2.csv")))
-write_csv(flowchart_redacted, path(here("output", "tables", "flowchart_redacted_ba2.csv")))
