@@ -27,6 +27,7 @@ fs::dir_create(here("output", "tables_joined"))
 ################################################################################
 # 0.2 Import command-line arguments
 ################################################################################
+args <- commandArgs(trailingOnly=TRUE)
 # Set input data to day5-2 or day0 data, default is day5
 if (length(args) == 0){
   data_label = "day5"
@@ -47,11 +48,10 @@ if (length(args) == 0){
 # --> subanalysis?
 if (length(args) == 0){
   sub_analysis = ""
-} else if (length(args) != 0 & length(args[[2]]) == 0){
+} else if (length(args) == 1) {
   sub_analysis = ""
 } else if (args[[2]] == "haem") {
   sub_analysis = "haem_malig"
-  haem_filename_suffix = "haem"
   data_label = "day5"
   warning("Sub-analyis haem, data_label defaults to day5")
 } else {
@@ -246,5 +246,5 @@ write_csv(table3,
                       "_"[data_label != "day5"], 
                       data_label[data_label != "day5"],
                       "_"[sub_analysis != ""],
-                      haem_filename_suffix[sub_analysis != ""],
+                      sub("\\_.*", "", sub_analysis)[sub_analysis != ""],
                       ".csv")))
