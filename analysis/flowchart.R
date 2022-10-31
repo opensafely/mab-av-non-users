@@ -6,7 +6,7 @@
 # - 'period' /in {ba1, ba2} --> period 
 #
 # Depending on 'period' the output of this script is:
-# 5 .rds files named:
+# 2 .rds files named:
 # -./output/tables/flowchart_redacted_'period'.csv
 # -./output/data_properties/'flowchart_'period'.csv
 # (if period == ba1, no sufffix is used)
