@@ -2,6 +2,9 @@
 #
 # TABLE 3
 #
+# This script can be run via an action in project.yaml using one argument:
+# - 'data_label' /in {day0, day2, day4, day4, day5} --> day
+#
 # This script can be run via an action in project.yaml
 # It combines tables to Table 3/ 3 (haem_malig) in the manuscript
 # saved in:
@@ -43,7 +46,7 @@ if (length(args) == 0){
   data_label = "day2"
 } else {
   # Print error if no argument specified
-  stop("No outcome specified")
+  stop("No day specified")
 }
 # --> subanalysis?
 if (length(args) == 0){
@@ -107,18 +110,20 @@ names_counts_n_ba1 <- paste0(counts_n_prefix,
                              sub_analysis,
                              ".csv")
 names_counts_n_ba2 <- paste0(counts_n_prefix,
+                             "_ba2",
                              "_"[sub_analysis != ""],
                              sub_analysis,
-                             "_ba2.csv")
+                             ".csv")
 
 names_counts_n_outcome_ba1 <- paste0(counts_n_outcome_prefix,
                                      "_"[sub_analysis != ""],
                                      sub_analysis,
                                      ".csv")
 names_counts_n_outcome_ba2 <- paste0(counts_n_outcome_prefix,
+                                     "_ba2",
                                      "_"[sub_analysis != ""],
                                      sub_analysis,
-                                     "_ba2.csv")
+                                     ".csv")
 
 ################################################################################
 # 1. Define functions
