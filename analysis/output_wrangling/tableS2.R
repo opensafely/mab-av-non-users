@@ -61,9 +61,11 @@ reformat_outcomes <- function(outcomes_day0_4){
 ################################################################################
 # 1. Create table S2
 ################################################################################
-ba1_tableS2 <- reformat_total(ba1_flowchart) %>%
+ba1_flowchart_day5 <- ba1_flowchart %>% filter(treat_window == "day5")
+ba2_flowchart_day5 <- ba2_flowchart %>% filter(treat_window == "day5")
+ba1_tableS2 <- reformat_total(ba1_flowchart_day5) %>%
   left_join(reformat_outcomes(ba1_day0_4), by = "treatment_strategy_cat")
-ba2_tableS2 <- reformat_total(ba2_flowchart) %>%
+ba2_tableS2 <- reformat_total(ba2_flowchart_day5) %>%
   left_join(reformat_outcomes(ba2_day0_4), by = "treatment_strategy_cat")
 # join 2 together
 tableS2 <- 

@@ -4,10 +4,13 @@
 # primary outcome is covid hosp or death, this table provides a breakdown in 
 # hosp and death
 #
+# This script can be run via an action in project.yaml using one argument:
+# - 'data_label' /in {day0, day2, day4, day4, day5} --> day
+#
 # This script can be run via an action in project.yaml
 # It combines various tables to table S3 in the supplements
 # saved in:
-# ./output/tables_joined/tableS3.csv
+# ./output/tables_joined/tableS3_'data_label'.csv
 ################################################################################
 
 ################################################################################
@@ -26,17 +29,43 @@ library(tidyr)
 fs::dir_create(here("output", "tables_joined"))
 
 ################################################################################
-# 0.2 Load data
+# 0.2 Import command-line arguments
+################################################################################
+args <- commandArgs(trailingOnly=TRUE)
+# Set input data to day5-2 or day0 data, default is day5
+if (length(args) == 0){
+  data_label = "day5"
+} else if (args[[1]] == "day0") {
+  data_label = "day0"
+} else if (args[[1]] == "day5") {
+  data_label = "day5"
+} else if (args[[1]] == "day4") {
+  data_label = "day4"
+} else if (args[[1]] == "day3") {
+  data_label = "day3"
+} else if (args[[1]] == "day2") {
+  data_label = "day2"
+} else {
+  # Print error if no argument specified
+  stop("No day specified")
+}
+
+################################################################################
+# 0.3 Load data
 ################################################################################
 # where can counts be found?
-ba1_n_outcome <- 
-  read_csv(here::here("output", "counts", "counts_n_outcome_day5_crude.csv"))
-ba2_n_outcome <- 
-  read_csv(here::here("output", "counts", "counts_n_outcome_day5_crude_ba2.csv"))
-ba1_day5_all <- 
-  read_csv(here::here("output", "data_properties", "day5_all.csv"))
-ba2_day5_all <- 
-  read_csv(here::here("output", "data_properties", "ba2_day5_all.csv"))
+ba1_n_outcome_dayx <- 
+  read_csv(here::here("output", "counts", 
+                      paste0("counts_n_outcome_", data_label, "_crude.csv")))
+ba2_n_outcome_dayx <- 
+  read_csv(here::here("output", "counts",
+                      paste0("counts_n_outcome_", data_label, "_crude_ba2.csv")))
+ba1_dayx_all <- 
+  read_csv(here::here("output", "data_properties",
+                      paste0(data_label, "_all.csv")))
+ba2_dayx_all <- 
+  read_csv(here::here("output", "data_properties",
+                      paste0("ba2_", data_label, "_all.csv")))
 
 ################################################################################
 # 0.3 Functions needed for reformatting
@@ -74,10 +103,10 @@ outcomes_period <- function(count_n_outcome_crude,
 ################################################################################
 # 1. Create table S3
 ################################################################################
-ba1_tableS3 <- outcomes_period(ba1_n_outcome,
-                               ba1_day5_all)
-ba2_tableS3 <- outcomes_period(ba2_n_outcome,
-                               ba2_day5_all)
+ba1_tableS3 <- outcomes_period(ba1_n_outcome_dayx,
+                               ba1_dayx_all)
+ba2_tableS3 <- outcomes_period(ba2_n_outcome_dayx,
+                               ba2_dayx_all)
 # join 2 together
 tableS3 <- 
   ba1_tableS3 %>%
@@ -89,4 +118,7 @@ tableS3 <-
 # 2. Save output
 ################################################################################
 write_csv(tableS3,
-          here::here("output", "tables_joined", "tableS3.csv"))
+          here::here("output", "tables_joined", 
+                     paste0("tableS3", 
+                            "_"[data_label != "day5"],
+                            data_label[data_label != "day5"], ".csv")))
