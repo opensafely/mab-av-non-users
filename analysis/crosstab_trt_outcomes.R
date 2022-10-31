@@ -1,29 +1,145 @@
-######################################
+################################################################################
+#
+# Tabularise outcomes in different data files
+# 
+# This script can be run via an action in project.yaml using one argument
+# - 'period' /in {ba1, ba2} --> period 
+#
+# Depending on 'period' the output of this script is:
+# 4 .rds files named:
+# -./output/tables/flowchart_redacted_'period'.csv
+# -./output/data_properties/'flowchart_'period'.csv
+# (if period == ba1, no sufffix is used)
+#
+# in the _day2-5 files, patients are classified as treated if they are treated
+# within 2-5 days, respectively; and excluded if they experience an outcome in
+# days 2-5, respectively (outcome = all cause death/ hosp or dereg)
+# in the day0 file, patients are classified as treated if they are treated within
+# 5 days and never excluded
+################################################################################
 
-# crosstabulates outcomes and trt group
-######################################
-
-# libraries
+################################################################################
+# 0.0 Import libraries + functions
+################################################################################
 library(readr)
 library(dplyr)
 library(fs)
 library(here)
-
-# load data
-data_cohort_day5 <- 
-  read_rds(here("output", "data", "data_processed_day5.rds"))
-data_cohort_day0 <-
-  read_rds(here("output", "data", "data_processed_day0.rds"))
-data_cohort_day0_4 <-
-  data_cohort_day0 %>%
-  filter(fu_secondary <= 4)
-# create output folders
-dir_create(here("output", "data_properties"))
-dir_create(here("output", "tables"))
-
+library(purrr)
 # function used to summarise outcomes
 source(here("lib", "functions", "summarise_outcomes.R"))
 
+################################################################################
+# 0.1 Create directories for output
+################################################################################
+dir_create(here("output", "data_properties"))
+dir_create(here("output", "tables"))
+
+################################################################################
+# 0.2 Import command-line arguments
+################################################################################
+args <- commandArgs(trailingOnly=TRUE)
+# Set input data to ba1 or ba2 data, default is ba1
+if (length(args) == 0){
+  period = "ba1"
+} else if (args[[1]] == "ba1") {
+  period = "ba1"
+} else if (args[[1]] == "ba2") {
+  period = "ba2"
+} else {
+  # Print error if no argument specified
+  stop("No period specified")
+}
+
+################################################################################
+# 0.1 Import data
+################################################################################
+# Treatment assignment window 'treated within 5 days -> <= 4 days' etc
+treat_windows <- c(1, 2, 3, 4)
+data_filename <- paste0(
+  period[period != "ba1"], "_"[period != "ba1"],
+  "data_processed_day", treat_windows + 1, ".rds")
+data_cohort_dayx_list <- 
+  map(.x = data_filename,
+      .f = ~ read_rds(here("output", "data", .x)))
+names(data_cohort_dayx_list) <- paste0("day", treat_windows + 1)
+data_cohort_day0 <-
+  read_rds(here("output", "data", 
+                paste0(period[period != "ba1"], "_"[period != "ba1"],
+                       "data_processed_day0.rds")))
+data_cohort_day0_4 <-
+  data_cohort_day0 %>%
+  filter(fu_secondary <= 4)
+
+################################################################################
+# 1 Crosstabulation trt x outcomes
+################################################################################
+# cohort dayx-27, primary outcome
+imap(.x = data_cohort_dayx_list,
+     .f = ~ summarise_outcomes(.x,
+                               fu_primary,
+                               status_primary,
+                               paste0(period[period != "ba1"],
+                                      "_"[period != "ba1"],
+                                       .y, "_primary.csv")))
+# cohort dayx-27, secondary outcome
+imap(.x = data_cohort_dayx_list,
+     .f = ~ summarise_outcomes(.x,
+                               fu_secondary, 
+                               status_secondary,
+                               paste0(period[period != "ba1"],
+                                      "_"[period != "ba1"],
+                                      .y, "_secondary.csv")))
+# cohort dayx-27, sall outcomes
+imap(.x = data_cohort_dayx_list,
+     .f = ~ summarise_outcomes(.x,
+                               fu_all, 
+                               status_all,
+                               paste0(period[period != "ba1"],
+                                      "_"[period != "ba1"],
+                                      .y, "_all.csv")))
+# day 0 and day 0-4
+summarise_outcomes(data_cohort_day0, 
+                   fu_primary, 
+                   status_primary,
+                   paste0(period[period != "ba1"],
+                          "_"[period != "ba1"],
+                          "day0_primary.csv"))
+summarise_outcomes(data_cohort_day0, 
+                   fu_secondary, 
+                   status_secondary,
+                   paste0(period[period != "ba1"],
+                          "_"[period != "ba1"],
+                          "day0_secondary.csv"))
+summarise_outcomes(data_cohort_day0, 
+                   fu_all, 
+                   status_all,
+                   paste0(period[period != "ba1"],
+                          "_"[period != "ba1"],
+                          "day0_all.csv"))
+summarise_outcomes(data_cohort_day0_4, 
+                   fu_primary, 
+                   status_primary,
+                   paste0(period[period != "ba1"],
+                          "_"[period != "ba1"],
+                          "day0_4_primary.csv"))
+summarise_outcomes(data_cohort_day0_4, 
+                   fu_secondary, 
+                   status_secondary,
+                   paste0(period[period != "ba1"],
+                          "_"[period != "ba1"],
+                          "day0_4_secondary.csv"))
+summarise_outcomes(data_cohort_day0_4, 
+                   fu_all, 
+                   status_all,
+                   paste0(period[period != "ba1"],
+                          "_"[period != "ba1"],
+                          "day0_4_all.csv"))
+
+################################################################################
+# 4 Checks (printed in log file)
+################################################################################
+data_cohort_day5 <- data_cohort_dayx_list$day5
 # pt treated with sotrovimab whose first outcome is not counted as the outcome
 cat("#### Sotrovimab recipients whose first outcome is not counted day 0 ####\n")
 data_cohort_day0 %>%
@@ -116,52 +232,3 @@ data_cohort_day0 %>%
 #   write_csv(path(here("output", "data_properties"), 
 #                  "day5_allcause_hosp_diagnosis.csv"))
 
-# crosstabulation trt x outcomes
-cat("#### cohort day 5-27, primary outcome ####\n")
-summarise_outcomes(data_cohort_day5, 
-                   fu_primary, 
-                   status_primary,
-                   "day5_primary.csv")
-cat("\n#### cohort day 5-27, secondary outcome ####\n")
-summarise_outcomes(data_cohort_day5, 
-                   fu_secondary, 
-                   status_secondary,
-                   "day5_secondary.csv")
-cat("\n#### cohort day 5-27, all outcomes ####\n")
-summarise_outcomes(data_cohort_day5, 
-                   fu_all, 
-                   status_all,
-                   "day5_all.csv")
-cat("\n#### cohort day 0-27, primary outcome ####\n")
-summarise_outcomes(data_cohort_day0, 
-                   fu_primary, 
-                   status_primary,
-                   "day0_primary.csv")
-cat("\n#### cohort day 0-27, secondary outcome ####\n")
-summarise_outcomes(data_cohort_day0, 
-                   fu_secondary, 
-                   status_secondary,
-                   "day0_secondary.csv")
-cat("\n#### cohort day 0-27, all outcomes ####\n")
-summarise_outcomes(data_cohort_day0, 
-                   fu_all, 
-                   status_all,
-                   "day0_all.csv")
-cat("\n#### cohort day 0-4, primary outcome ####\n")
-summarise_outcomes(data_cohort_day0_4, 
-                   fu_primary, 
-                   status_primary,
-                   "day0_4_primary.csv")
-cat("\n#### cohort day 0-4, secondary outcome ####\n")
-summarise_outcomes(data_cohort_day0_4, 
-                   fu_secondary, 
-                   status_secondary,
-                   "day0_4_secondary.csv")
-cat("\n#### cohort day 0-4, all outcomes ####\n")
-summarise_outcomes(data_cohort_day0_4, 
-                   fu_all, 
-                   status_all,
-                   "day0_4_all.csv")
-
-cat("#####check for any na's in fu_secondary (should be FALSE)#####\n")
-print(any(is.na(data_cohort_day0$fu_secondary)))

@@ -68,20 +68,18 @@ actions:
         txt3: output/data_properties/ba2_data_processed_day5_tabulate.txt
 
   crosstab_trt_outcomes:
-    run: r:latest analysis/crosstab_trt_outcomes.R
+    run: r:latest analysis/crosstab_trt_outcomes.R ba1
     needs: [data_process]
     outputs:
       moderately_sensitive:
-        csvsday5: output/data_properties/day5_*.csv 
-        csvsday0: output/data_properties/day0_*.csv
+        csvsdays: output/data_properties/day*.csv
 
   crosstab_trt_outcomes_ba2:
-    run: r:latest analysis/crosstab_trt_outcomes_ba2.R
+    run: r:latest analysis/crosstab_trt_outcomes.R ba2
     needs: [data_process_ba2]
     outputs:
       moderately_sensitive:
-        csvsday5: output/data_properties/ba2_day5_*.csv 
-        csvsday0: output/data_properties/ba2_day0_*.csv
+        csvsdays: output/data_properties/ba2_day*.csv
 
   flowchart:
     run: r:latest analysis/flowchart.R ba1
@@ -676,14 +674,35 @@ actions:
 
   table_S2:
     run: r:latest analysis/output_wrangling/tableS2.R
-    needs: [crosstab_trt_outcomes, crosstab_trt_outcomes_ba2]
+    needs: [crosstab_trt_outcomes, crosstab_trt_outcomes_ba2, flowchart, flowchart_ba2]
     outputs:
       moderately_sensitive:
         table1: output/tables_joined/tableS2.csv
 
   table_S3:
-    run: r:latest analysis/output_wrangling/tableS3.R
+    run: r:latest analysis/output_wrangling/tableS3.R day5
     needs: [cox_day5_crude, cox_day5_crude_ba2, crosstab_trt_outcomes, crosstab_trt_outcomes_ba2]
     outputs:
       moderately_sensitive:
         table1: output/tables_joined/tableS3.csv
+
+  table_S3_day4:
+    run: r:latest analysis/output_wrangling/tableS3.R day4
+    needs: [cox_day4_crude, cox_day4_crude_ba2, crosstab_trt_outcomes, crosstab_trt_outcomes_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/tables_joined/tableS3_day4.csv
+  
+  table_S3_day3:
+    run: r:latest analysis/output_wrangling/tableS3.R day3
+    needs: [cox_day3_crude, cox_day3_crude_ba2, crosstab_trt_outcomes, crosstab_trt_outcomes_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/tables_joined/tableS3_day3.csv
+
+  table_S3_day2:
+    run: r:latest analysis/output_wrangling/tableS3.R day2
+    needs: [cox_day2_crude, cox_day2_crude_ba2, crosstab_trt_outcomes, crosstab_trt_outcomes_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/tables_joined/tableS3_day2.csv
