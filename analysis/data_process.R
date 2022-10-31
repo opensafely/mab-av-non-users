@@ -318,10 +318,10 @@ data_processed <- data_extract %>%
 treat_windows <- c(1, 2, 3, 4)
 # List of processed data of all days
 data_processed_list <- 
-  map(treat_windows,
+  map(.x = treat_windows,
       .f = ~ mutate(data_processed,
                     treat_window = 
-                      covid_test_positive_date + days(treat_windows)))
+                      covid_test_positive_date + days(.x)))
 names(data_processed_list) <- paste0("day", treat_windows + 1)
 
 # Add treatment variables and outcomes
