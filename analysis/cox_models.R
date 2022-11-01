@@ -175,7 +175,7 @@ colnames(counts_n_outcome_restr) <-
 # 1.0 Create vectors for treatments and outcomes used in analysis
 ################################################################################
 # Specify models 
-models <- c("IPTW", "PS-ADJUSTED")
+models <- c("iptw", "ps_adjusted")
 # Specify treated group for comparison (Treated vs Untreated)
 # used to loop trough different analyses
 trt_grp <- c("All", "Sotrovimab", "Molnupiravir")
@@ -590,8 +590,9 @@ for(i in seq_along(trt_grp)) {
       # because we need to know where in 'estimates', 'log' output
       # should be saved
       k <- i + ((j - 1) * 3)
-      estimates[k, "comparison"] <- t
-      estimates[k, "outcome"] <- outcome_event
+      estimates[c(k, k + 6), "comparison"] <- t
+      estimates[c(k, k + 6), "outcome"] <- outcome_event
+      estimates[c(k, k + 6), "model"] <- models
       log[k, "comparison"] <- t
       log[k, "outcome"] <- outcome_event
       # create formula for primary and secondary analysis
@@ -638,8 +639,9 @@ for(i in seq_along(trt_grp)) {
         se <- result_summary$coefficients[, "se(coef)"]
         # construct robust confidence intervals
         ci <- (est + c(-1, 1) * qnorm(0.975) * se) %>% exp()
-        estimates[k, "HR"] <- est %>% exp()
+        estimates[c(k, k + 6), "HR"] <- est %>% exp()
         estimates[k, c("LowerCI", "UpperCI")] <- ci
+        estimates[k + 6, c("LowerCI", "UpperCI")] <- ci
       } else log[k, "error"] <- model()$messages # end pull from model
     } # end loop through outcomes
   } # end PART B
@@ -662,8 +664,6 @@ if (adjustment_set != "crude"){
            n_outcome_sot = case_when(comparison == "Molnupiravir" ~ "0",
                                      TRUE ~ n_outcome_sot))
 } else {
-  estimates <- 
-    estimates[1:6, 2:7]
   log <-
     log[1:6, 2:5]
 }
