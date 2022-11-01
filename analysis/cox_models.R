@@ -125,26 +125,28 @@ data_cohort <-
 # 0.4 Create data.frame for output (estimates + log file + counts)
 ################################################################################
 # create data.frame 'estimates' where output is saved 
-# 'estimates' has 7 columns:
+# 'estimates' has 8 columns:
+# model (iptw / ps_adjusted);
 # comparison (all/ mol/ sot); outcome (primary/secondary); HR; LowerCI; UpperCI;
 # n (number of pt in utilised dataset);
 # n_after_restriction (number of pt after trimming ps).
-# 'estimates' has 6 rows:
+# 'estimates' has 12 rows:
+# model (iptw / ps_adjusted) 2 times
 # primary outcome x 3 (mol + sot vs none; sot vs none; mol vs none) plus
 # secondary outcome x 3 (idem)
-estimates <- matrix(nrow = 6, ncol = 7) %>% as.data.frame()
+estimates <- matrix(nrow = 12, ncol = 8) %>% as.data.frame()
 # provide column names
 colnames(estimates) <- 
-  c("comparison", "outcome",
+  c("model", "comparison", "outcome",
     "HR", "LowerCI", "UpperCI",
     "n", "n_after_restriction")
 # create data.frame 'log' where errors and warnings are saved
-# 'log' has 3 columns: comparison, warning and error
-# 'log' has 6 rows like 'estimates'
-log <- matrix(nrow = 6, ncol = 4) %>% as.data.frame()
+# 'log' has 3 columns: model, comparison, outcome, warning and error
+# 'log' has 12 rows like 'estimates'
+log <- matrix(nrow = 12, ncol = 5) %>% as.data.frame()
 # provide column names
 colnames(log) <- 
-  c("comparison", "outcome", "warning", "error")
+  c("model", "comparison", "outcome", "warning", "error")
 # create data.frame 'counts' used to save number of patients / outcomes before
 # ps trimming
 # total subtotal1 subtotal2 subtotal21 subtotal22
@@ -172,6 +174,8 @@ colnames(counts_n_outcome_restr) <-
 ################################################################################
 # 1.0 Create vectors for treatments and outcomes used in analysis
 ################################################################################
+# Specify models 
+models <- c("IPTW", "PS-ADJUSTED")
 # Specify treated group for comparison (Treated vs Untreated)
 # used to loop trough different analyses
 trt_grp <- c("All", "Sotrovimab", "Molnupiravir")
@@ -212,7 +216,7 @@ for(i in seq_along(trt_grp)) {
       filter(treatment_strategy_cat %in% c("Untreated", trt_grp[i]))
   }
   # Fill n in estimates
-  estimates[c(1 + (i - 1), 4 + (i - 1)), "n"] <- 
+  estimates[c(seq(1, 12, 3) + (i - 1)), "n"] <- 
     nrow(data_cohort_sub) %>% plyr::round_any(5)
   if (adjustment_set != "crude") {
     ############################################################################
@@ -350,7 +354,7 @@ for(i in seq_along(trt_grp)) {
     data_cohort_sub_trimmed <- data_cohort_sub %>% 
       filter(pscore >= ps_trim$min[1] & pscore <= ps_trim$max[1])
     # Save n in 'estimates' after trimming
-    estimates[c(1 + (i - 1), 4 + (i - 1)), "n_after_restriction"] <-
+    estimates[c(seq(1, 12, 3) + (i - 1)), "n_after_restriction"] <-
       nrow(data_cohort_sub_trimmed) %>% plyr::round_any(5)
     # Fill counts after trimming
     counts_n_restr[i, "comparison"] <- t
@@ -410,130 +414,161 @@ for(i in seq_along(trt_grp)) {
       # saved (depending on i, for first outcome,  k = i [--> 1, 2, 3]; 
       #                        for second outcome, k = i + 3 [--> 4, 5, 6])
       k <- i + ((j - 1) * 3)
-      estimates[k, "comparison"] <- t
-      estimates[k, "outcome"] <- outcome_event
-      log[k, "comparison"] <- t
-      log[k, "outcome"] <- outcome_event
+      estimates[c(k, k + 6), "comparison"] <- t
+      estimates[c(k, k + 6), "outcome"] <- outcome_event
+      log[c(k, k + 6), "comparison"] <- t
+      log[c(k, k + 6), "outcome"] <- outcome_event
       # create formula for primary and secondary analysis
       if (outcome_event == "primary"){
+        # iptw analysis
         formula <- 
           as.formula(
             Surv(fu_primary, status_primary == "covid_hosp_death") ~ 
               treatment)
+        # ps adjusted analysis
+        formula_ps_adjusted <- 
+          as.formula(
+            Surv(fu_primary, status_primary == "covid_hosp_death") ~ 
+              treatment + ns(pscore, df = 3))
         # Fill counts of outcomes after trimming (only for primary outcome)
         counts_n_outcome_restr[i, "comparison"] <- t
         counts_n_outcome_restr[i, "outcome"] <- "primary"
         counts_n_outcome_restr[i, ] <- 
           fill_counts_n_outcome_primary(counts_n_outcome_restr[i, ], data_cohort_sub_trimmed)
       } else if (outcome_event == "secondary"){
+        # iptw analysis
         formula <- 
           as.formula(
             Surv(fu_secondary, status_secondary == "allcause_hosp_death") ~ 
               treatment)
+        # ps adjusted analysis
+        formula_ps_adjusted <- 
+          as.formula(
+            Surv(fu_secondary, status_secondary == "allcause_hosp_death") ~ 
+              treatment + ns(pscore, df = 3))
       }
       # Cox regression
       # returns function model_PSw() with components result, output, messages, 
       # warnings and error
+      # fits both iptw and ps adjusted model, and saves in list, estimates are 
+      # then looped through (see beneath)
       model_PSw <- 
         safely_n_quietly(
           .f = ~ svycoxph(formula, 
                           design = iptw, 
                           data = data_cohort_sub_trimmed)
         )
+      model_PSadjusted <- 
+        safely_n_quietly(
+          .f = ~ coxph(formula_ps_adjusted,
+                          data = data_cohort_sub_trimmed)
+        )
+      outcome_models <- list(model_PSw, 
+                             model_PSadjusted)
       ##########################################################################
       # A.2.5.1  Save coefficients
       ##########################################################################
       # save results from model_PSw and save warnings or errors to log file
-      if (is.null(model_PSw()$error)){
-        # no error
-        log[k,"error"] <- NA_character_
-        if (length(model_PSw()$warnings) != 0){
-          # save warning in log
-          log[k, "warning"] <- paste(model_PSw()$warnings, collapse = '; ')
-        } else log[k, "warning"] <- NA_character_
-        # save coefficients of model and CIs in estimates
-        result <- model_PSw()$result
-        result_summary <- result %>% summary()
-        # estimated treatment effect + robust se
-        est <- result_summary$coefficients[, "coef"]
-        se_robust <- result_summary$coefficients[, "robust se"]
-        # construct robust confidence intervals
-        ci <- (est + c(-1, 1) * qnorm(0.975) * se_robust) %>% exp()
-        estimates[k, "HR"] <- est %>% exp()
-        estimates[k, c("LowerCI", "UpperCI")] <- ci
-        ########################################################################
-        # A.2.5.2 Survival curves
-        ########################################################################
-        # Untreated
-        survdata0 <- 
-          survfit(result,
-                  newdata = mutate(data_cohort_sub_trimmed,
-                                   treatment = "Untreated"),
-                  conf.type = "plain")
-        estimates0 <- data.frame(time = survdata0$time, 
-                                 estimate = 1 - rowMeans(survdata0$surv),
-                                 lower = 1 - rowMeans(survdata0$upper),
-                                 upper = 1 - rowMeans(survdata0$lower),
-                                 Treatment = "Untreated")
-        # Treated
-        survdata1 <- 
-          survfit(result,
-                  newdata = mutate(data_cohort_sub_trimmed,
-                                   treatment = "Treated"),
-                  conf.type = "plain")
-        estimates1 <- data.frame(time = survdata1$time, 
-                                 estimate = 1 - rowMeans(survdata1$surv),
-                                 lower = 1 - rowMeans(survdata1$upper),
-                                 upper = 1 - rowMeans(survdata1$lower),
-                                 Treatment = "Treated")
-        # Combine estimates in 1 data.frame
-        tidy <- data.frame(rbind(estimates0, estimates1))
-        # save estimates and cis if replotting needed outside server
-        write_csv(tidy,
-                  here("output", 
-                       "figs", 
-                       paste0(trt_grp[i],
-                              "_",
-                              outcomes[j],
-                              "_",
-                              adjustment_set,
-                              "_cumInc_",
-                              data_label,
-                              "_",
-                              period[!period == "ba1"], "_"[!period == "ba1"],
-                              "new.csv")))
-        # Plot cumulative incidence percentage
-        plot <- ggplot(tidy, 
-                       aes(x = time,
-                           y = 100 * estimate,
-                           color = Treatment)) +
-          geom_line(size = 1) + 
-          geom_ribbon(aes(ymin = lower * 100,
-                          ymax = upper * 100,
-                          fill = Treatment,
-                          color = NULL),
-                      alpha = .15) +
-          xlab("Time (Days)") +
-          ylab("Cumulative Incidence (%)") +
-          theme_classic() + 
-          scale_x_continuous(breaks = c(0, 5, 10, 15, 20), 
-                             labels = c("5", "10", "15", "20", "25"))
-        # Save plot
-        ggsave(plot, 
-               filename = 
-                 here("output", "figs", 
-                      paste0(trt_grp[i],
-                             "_", 
-                             outcomes[j],
-                             "_",
-                             adjustment_set,
-                             "_cumInc_",
-                             data_label,
-                             "_",
-                             period[!period == "ba1"], "_"[!period == "ba1"],
-                             "new.png")),
-               width = 20, height = 14, units = "cm")
-      } else log[k, "error"] <- model_PSw()$messages # end pull from model_Psw
+      for (l in seq_along(models)){
+        mod <- models[l]
+        print(mod)
+        estimates[k + 6 * (l - 1), "model"] <- mod
+        log[k + 6 * (l - 1), "model"] <- mod
+        outcome_model <- outcome_models[[l]]
+        if (is.null(outcome_model()$error)){
+          # no error
+          log[k + 6 * (l - 1),"error"] <- NA_character_
+          if (length(outcome_model()$warnings) != 0){
+            # save warning in log
+            log[k + 6 * (l - 1), "warning"] <- paste(outcome_model()$warnings, collapse = '; ')
+          } else log[k + 6 * (l - 1), "warning"] <- NA_character_
+          # save coefficients of model and CIs in estimates
+          result <- outcome_model()$result
+          result_summary <- result %>% summary()
+          # estimated treatment effect + robust se
+          est <- result_summary$coefficients["treatmentTreated", "coef"]
+          se_loc <- ifelse(mod == "IPTW", "robust se", "se(coef)")
+          se_robust <- result_summary$coefficients["treatmentTreated", se_loc]
+          # construct robust confidence intervals
+          ci <- (est + c(-1, 1) * qnorm(0.975) * se_robust) %>% exp()
+          estimates[k + 6 * (l - 1), "HR"] <- est %>% exp()
+          estimates[k + 6 * (l - 1), c("LowerCI", "UpperCI")] <- ci
+          ######################################################################
+          # A.2.5.2.1 Survival curves (only for iptw analysis)
+          ######################################################################
+          if (mod == "IPTW"){
+            # Untreated
+            survdata0 <- 
+              survfit(result,
+                      newdata = mutate(data_cohort_sub_trimmed,
+                                       treatment = "Untreated"),
+                      conf.type = "plain")
+            estimates0 <- data.frame(time = survdata0$time, 
+                                     estimate = 1 - rowMeans(survdata0$surv),
+                                     lower = 1 - rowMeans(survdata0$upper),
+                                     upper = 1 - rowMeans(survdata0$lower),
+                                     Treatment = "Untreated")
+            # Treated
+            survdata1 <- 
+              survfit(result,
+                      newdata = mutate(data_cohort_sub_trimmed,
+                                       treatment = "Treated"),
+                      conf.type = "plain")
+            estimates1 <- data.frame(time = survdata1$time, 
+                                     estimate = 1 - rowMeans(survdata1$surv),
+                                     lower = 1 - rowMeans(survdata1$upper),
+                                     upper = 1 - rowMeans(survdata1$lower),
+                                     Treatment = "Treated")
+            # Combine estimates in 1 data.frame
+            tidy <- data.frame(rbind(estimates0, estimates1))
+            # save estimates and cis if replotting needed outside server
+            write_csv(tidy,
+                      here("output", 
+                           "figs", 
+                           paste0(trt_grp[i],
+                                  "_",
+                                  outcomes[j],
+                                  "_",
+                                  adjustment_set,
+                                  "_cumInc_",
+                                  data_label,
+                                  "_",
+                                  period[!period == "ba1"], "_"[!period == "ba1"],
+                                  "new.csv")))
+            # Plot cumulative incidence percentage
+            plot <- ggplot(tidy, 
+                           aes(x = time,
+                               y = 100 * estimate,
+                               color = Treatment)) +
+              geom_line(size = 1) + 
+              geom_ribbon(aes(ymin = lower * 100,
+                              ymax = upper * 100,
+                              fill = Treatment,
+                              color = NULL),
+                          alpha = .15) +
+              xlab("Time (Days)") +
+              ylab("Cumulative Incidence (%)") +
+              theme_classic() + 
+              scale_x_continuous(breaks = c(0, 5, 10, 15, 20), 
+                                 labels = c("5", "10", "15", "20", "25"))
+            # Save plot
+            ggsave(plot, 
+                   filename = 
+                     here("output", "figs", 
+                          paste0(trt_grp[i],
+                                 "_", 
+                                 outcomes[j],
+                                 "_",
+                                 adjustment_set,
+                                 "_cumInc_",
+                                 data_label,
+                                 "_",
+                                 period[!period == "ba1"], "_"[!period == "ba1"],
+                                 "new.png")),
+                   width = 20, height = 14, units = "cm")
+          }
+        } else log[k + 6 * (l - 1), "error"] <- outcome_model()$messages # end pull from outcome_model
+      }
     } # end of loop through outcomes
   } else if (adjustment_set == "crude") { # end PART A, start PART B
     ############################################################################
@@ -626,6 +661,11 @@ if (adjustment_set != "crude"){
                                      TRUE ~ n_outcome_mol),
            n_outcome_sot = case_when(comparison == "Molnupiravir" ~ "0",
                                      TRUE ~ n_outcome_sot))
+} else {
+  estimates <- 
+    estimates[1:6, 2:7]
+  log <-
+    log[1:6, 2:5]
 }
 
 ################################################################################
