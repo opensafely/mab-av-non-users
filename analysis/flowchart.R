@@ -102,7 +102,7 @@ n_excluded_dayx <- function(day){
     mutate(treat_window = paste0("day", day),
            .before = hosp_death_treated_sot) %>%
     mutate(hosp_death_treated = data_cohort_day0 %>%
-             filter(treatment == "Treated" & fu_secondary <= day) %>%
+             filter(treatment == "Treated" & fu_secondary <= {day - 1}) %>%
              nrow(), .after = treat_window)
 }
 n_excluded <-
