@@ -89,31 +89,24 @@ n_untreated <- data_cohort_day0 %>%
 # 2. Excluded
 ################################################################################
 # flowchart
-n_excluded_dayx <- function(treat_window){
-  n_hosp_death_treated <- data_cohort_day0 %>%
-    filter(treatment == "Treated" & fu_secondary <= treat_window) %>%
-    nrow()
-  n_hosp_death_treated_sot <- data_cohort_day0 %>%
-    filter(treatment == "Treated" & fu_secondary <= treat_window & 
-             treatment_strategy_cat == "Sotrovimab") %>%
-    nrow()
-  n_hosp_death_treated_mol <- data_cohort_day0 %>%
-    filter(treatment == "Treated" & fu_secondary <= treat_window & 
-             treatment_strategy_cat == "Molnupiravir") %>%
-    nrow()
-  n_hosp_death_untreated <- data_cohort_day0 %>%
-    filter(treatment == "Untreated" & fu_secondary <= treat_window) %>%
-    nrow
-  out <- tibble(
-    treat_window = paste0("day", treat_window + 1),
-    hosp_death_treated = n_hosp_death_treated,
-    hosp_death_treated_sot = n_hosp_death_treated_sot,
-    hosp_death_treated_mol = n_hosp_death_treated_mol,
-    hosp_death_untreated = n_hosp_death_untreated
-  )
+n_excluded_dayx <- function(day){
+  data_cohort_day0 %>%
+    filter(fu_secondary <= {day - 1}) %>%
+    group_by(treatment_strategy_cat, .drop = FALSE) %>%
+    summarise(n = n()) %>%
+    tidyr::pivot_wider(names_from = treatment_strategy_cat,
+                       values_from = n) %>%
+    transmute(hosp_death_treated_sot = Sotrovimab,
+              hosp_death_treated_mol = Molnupiravir,
+              hosp_death_untreated = Untreated) %>%
+    mutate(treat_window = paste0("day", day),
+           .before = hosp_death_treated_sot) %>%
+    mutate(hosp_death_treated = data_cohort_day0 %>%
+             filter(treatment == "Treated" & fu_secondary <= day) %>%
+             nrow(), .after = treat_window)
 }
-n_excluded <- 
-  map_dfr(.x = treat_windows,
+n_excluded <-
+  map_dfr(.x = treat_windows + 1,
           .f = ~ n_excluded_dayx(.x))
 
 ################################################################################
