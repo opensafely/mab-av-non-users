@@ -491,18 +491,18 @@ data_processed_eligible_day0 <-
 # [FYI, secondary outcomes are 'dereg', 'allcause_hosp' or'allcause_death']
 data_processed_eligible_list <-
   map2(.x = data_processed_eligible_list,
-      .y = treat_windows,
-      .f = ~ .x %>%
-        filter(fu_secondary > .y) %>%
-        mutate(fu_primary = fu_primary - {.y + 1},
-               fu_secondary = fu_secondary - {.y + 1})) 
+       .y = treat_windows,
+       .f = ~ .x %>%
+         filter(fu_secondary > .y) %>%
+         mutate(fu_primary = fu_primary - {.y + 1},
+                fu_secondary = fu_secondary - {.y + 1})) 
                # because starting at day .y + 1 (e.g. 5, 4, 3, 2)
 
 ################################################################################
 # 5 Save data
 ################################################################################
 # data_processed_eligible_day0 and data_processed_eligible_day2,3,4,5 are saved
-write_rds(data_processed_eligible_day0, 
+write_rds(data_processed_eligible_day0,
           here::here("output", "data", 
                      paste0(
                        period[!period == "ba1"], "_"[!period == "ba1"],
