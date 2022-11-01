@@ -138,7 +138,9 @@ prepare_table <- function(.x, .y) {
            LowerCI = round(LowerCI, 2),
            UpperCI = round(UpperCI, 2),
            HR_CI = paste0(HR, " (", LowerCI, ";", UpperCI, ")")) %>%
-    select(-c(outcome, HR, LowerCI, UpperCI, n, n_after_restriction))
+    select(-c(outcome, HR, LowerCI, UpperCI, n, n_after_restriction)) %>%
+    pivot_wider(names_from = model,
+                values_from = HR_CI)
 }
 # Combines three tables (three adjustment sets) to one
 table_period <- function(folder_with_tables,
