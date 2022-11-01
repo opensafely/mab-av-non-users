@@ -144,6 +144,7 @@ n_included <-
 flowchart <- 
   cbind(total = n_total, treated = n_treated, 
         treated_sot = n_treated_sot, treated_mol = n_treated_mol,
+        untreated = n_untreated,
         n_excluded) %>%
   left_join(n_included,
             by = "treat_window")
