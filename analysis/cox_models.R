@@ -487,7 +487,7 @@ for(i in seq_along(trt_grp)) {
           result_summary <- result %>% summary()
           # estimated treatment effect + robust se
           est <- result_summary$coefficients["treatmentTreated", "coef"]
-          se_loc <- ifelse(mod == "IPTW", "robust se", "se(coef)")
+          se_loc <- ifelse(mod == "iptw", "robust se", "se(coef)")
           se_robust <- result_summary$coefficients["treatmentTreated", se_loc]
           # construct robust confidence intervals
           ci <- (est + c(-1, 1) * qnorm(0.975) * se_robust) %>% exp()
@@ -496,7 +496,7 @@ for(i in seq_along(trt_grp)) {
           ######################################################################
           # A.2.5.2.1 Survival curves (only for iptw analysis)
           ######################################################################
-          if (mod == "IPTW"){
+          if (mod == "iptw"){
             # Untreated
             survdata0 <- 
               survfit(result,
