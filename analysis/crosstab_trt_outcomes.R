@@ -68,7 +68,6 @@ data_cohort_day0 <-
                 paste0(period[period != "ba1"], "_"[period != "ba1"],
                        "data_processed_day0.rds")))
 
-
 data_cohort_day0_4 <-
   data_cohort_day0 %>%
   filter(fu_secondary <= 4)
@@ -98,6 +97,11 @@ data_cohort_day0 %>%
   tidyr::pivot_wider(names_from = status_all,
                      values_from = n) %>% 
   filter(fu_all %>% between(0, 6)) %>%
+  mutate(treated_bf_outcome = treated_bf_outcome %>% factor(),
+         fu_all = fu_all %>% factor()) %>%
+  mutate(across(where(is.integer), 
+                ~ case_when(between(.x, 1, 7) ~ "[REDACTED]",
+                            TRUE ~ plyr::round_any(.x, 5) %>% as.character()))) %>%
   write_csv(here::here("output", "data_properties", 
                        paste0(period[period != "ba1"], "_"[period != "ba1"],
                               "day0_6_event_trt.csv")))
