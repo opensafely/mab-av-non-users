@@ -139,7 +139,7 @@ prepare_table <- function(.x, .y) {
            UpperCI = round(UpperCI, 2),
            HR_CI = paste0(HR, " (", LowerCI, ";", UpperCI, ")")) %>%
     select(-c(outcome, HR, LowerCI, UpperCI, n, n_after_restriction)) %>%
-    dplyr::pivot_wider(names_from = model,
+    tidyr::pivot_wider(names_from = model,
                 values_from = HR_CI)
 }
 # Combines three tables (three adjustment sets) to one
