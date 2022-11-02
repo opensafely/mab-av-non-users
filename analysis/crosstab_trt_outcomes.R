@@ -67,9 +67,41 @@ data_cohort_day0 <-
   read_rds(here("output", "data", 
                 paste0(period[period != "ba1"], "_"[period != "ba1"],
                        "data_processed_day0.rds")))
+
+
 data_cohort_day0_4 <-
   data_cohort_day0 %>%
   filter(fu_secondary <= 4)
+
+# goal
+#           was untreated         treated before experiencing event
+# day 0     [type of event x 6]   [type of event x 6]
+# day 1     [type of event x 6]   [type of event x 6]
+# day 2     [type of event x 6]   [type of event x 6]
+# day 3     [type of event x 6]   [type of event x 6]
+# day 4     [type of event x 6]   [type of event x 6]
+# day 5     [type of event x 6]   [type of event x 6]
+# day 6     [type of event x 6]   [type of event x 6]
+
+# treated_bf_outcome groups population into two groups:
+# 1 = individual was treated before or on day of experiencing an event
+# 0 = individual was not treated before outcome experiencing an event
+data_cohort_day0 <- 
+  data_cohort_day0 %>%
+  mutate(treated_bf_outcome =
+           case_when(tb_postest_treat <= fu_all ~ 1,
+                     TRUE ~ 0))
+
+data_cohort_day0 %>%
+  group_by(treated_bf_outcome, fu_all, status_all, .drop = F) %>%
+  summarise(n = n(), .groups = "keep") %>% 
+  tidyr::pivot_wider(names_from = status_all,
+                     values_from = n) %>% 
+  filter(fu_all %>% between(0, 6)) %>%
+  write_csv(here::here("output", "data_properties", 
+                       paste0(period[period != "ba1"], "_"[period != "ba1"],
+                              "day0_6_event_trt.csv")))
+
 
 ################################################################################
 # 1 Crosstabulation trt x outcomes
