@@ -132,6 +132,22 @@ actions:
         data: output/tables/table1_extra_redacted_day5_ba2.rds
       moderately_sensitive:
         table: output/tables/table1_extra_redacted_day5_ba2.html
+  
+  trt_pat_day0:
+    run: r:latest analysis/treatment_distributions.R ba1 day0
+    needs: [data_process]
+    outputs:
+      moderately_sensitive:
+        csv: output/data_properties/day0_n_treated_day.csv
+        figure: output/figs/day0_treatment_pattern.png
+  
+  trt_pat_day0_ba2:
+    run: r:latest analysis/treatment_distributions.R ba2 day0
+    needs: [data_process_ba2]
+    outputs:
+      moderately_sensitive:
+        csv: output/data_properties/ba2_day0_n_treated_day.csv
+        figure: output/figs/ba2_day0_treatment_pattern.png
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## COX MODELS - DAY 5
@@ -216,13 +232,6 @@ actions:
         table2: output/tables/log_cox_models_day5_crude_ba2_new.csv
         table3: output/counts/counts_n_day5_crude_ba2.csv
         table4: output/counts/counts_n_outcome_day5_crude_ba2.csv
-
-  trt_pat_day5:
-    run: r:latest analysis/treatment_distributions.R day5
-    needs: [data_process]
-    outputs:
-      moderately_sensitive:
-        figure: output/figs/day5_treatment_pattern.png
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## COX MODELS - DAY 4
