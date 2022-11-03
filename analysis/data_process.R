@@ -338,6 +338,13 @@ data_processed_list <-
                           units = "days") %>% as.numeric(),
                  NA_integer_),
         
+        # Treatment strategy categories (regardless of treatment is in treat window)
+        any_treatment_strategy_cat = 
+          case_when(date_treated == sotrovimab_covid_therapeutics ~ "Sotrovimab",
+                    date_treated == molnupiravir_covid_therapeutics ~ "Molnupiravir",
+                    TRUE ~ "Untreated") %>% 
+          factor(levels = c("Untreated", "Sotrovimab", "Molnupiravir")),
+        
         # Flag records where treatment date falls in treatment assignment window
         treat_check = 
           ifelse(date_treated >= covid_test_positive_date & 

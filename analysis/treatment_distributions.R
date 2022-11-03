@@ -63,9 +63,10 @@ d_trt <- data_cohort %>%
 ################################################################################
 # 1. Make a table with n treated per day
 ################################################################################
-d_trt %>%
-  group_by(tb_postest_treat, treatment_strategy_cat) %>%
-  summarise(n = n()) %>% 
+data_cohort %>%
+  filter(any_treatment_strategy_cat != "Untreated") %>%
+  group_by(tb_postest_treat, any_treatment_strategy_cat) %>%
+  summarise(n = n(), .groups = "keep") %>% 
   write_csv(here::here("output", "data_properties", 
                        paste0(period[!period == "ba1"], "_"[!period == "ba1"],
                               data_label,
