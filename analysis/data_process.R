@@ -35,7 +35,7 @@ library('reshape2')
 source(here::here("lib", "functions", "fct_case_when.R"))
 source(here::here("lib", "functions", "define_covid_hosp_admissions.R"))
 source(here::here("lib", "functions", "define_allcause_hosp_admissions.R"))
-#source(here::here("lib", "functions", "define_allcause_hosp_diagnosis.R"))
+source(here::here("lib", "functions", "define_allcause_hosp_diagnosis.R"))
 source(here::here("lib", "functions", "define_status_and_fu_all.R"))
 source(here::here("lib", "functions", "define_status_and_fu_primary.R"))
 source(here::here("lib", "functions", "define_status_and_fu_secondary.R"))
@@ -182,17 +182,17 @@ data_extract <- read_csv(
     allcause_hosp_discharge_first_date0_7 = col_date(format = "%Y-%m-%d"),
     allcause_hosp_date_mabs_procedure = col_date(format = "%Y-%m-%d"),
     # all cause diagnosis of hosp admission
-    #allcause_hosp_admission_diagnosis0 = col_character(),
-    #allcause_hosp_admission_diagnosis1 = col_character(),
-    #allcause_hosp_admission_diagnosis2 = col_character(),
-    #allcause_hosp_admission_diagnosis4 = col_character(),
-    #allcause_hosp_admission_diagnosis3 = col_character(),
-    #allcause_hosp_admission_diagnosis5 = col_character(),
-    #allcause_hosp_admission_diagnosis6 = col_character(),
-    #allcause_hosp_admission_first_diagnosis7_27 = col_character(),
+    allcause_hosp_admission_diagnosis0 = col_character(),
+    allcause_hosp_admission_diagnosis1 = col_character(),
+    allcause_hosp_admission_diagnosis2 = col_character(),
+    allcause_hosp_admission_diagnosis4 = col_character(),
+    allcause_hosp_admission_diagnosis3 = col_character(),
+    allcause_hosp_admission_diagnosis5 = col_character(),
+    allcause_hosp_admission_diagnosis6 = col_character(),
+    allcause_hosp_admission_first_diagnosis7_27 = col_character(),
     # death
-    died_ons_covid_any_date = col_date(format = "%Y-%m-%d")
-    #death_cause = col_factor()
+    died_ons_covid_any_date = col_date(format = "%Y-%m-%d"),
+    death_cause = col_factor()
   ),
 )
 
@@ -412,7 +412,7 @@ data_processed_list <-
         # adds column allcause_hosp_admission_date
         add_allcause_hosp_admission_outcome() %>%
         # add column allcause_hosp_diagnosis
-        #add_allcause_hosp_diagnosis() %>%
+        add_allcause_hosp_diagnosis() %>%
         mutate(
           # Outcome prep --> outcomes are added in add_*_outcome() functions below
           study_window = covid_test_positive_date + days(27),
@@ -430,6 +430,7 @@ data_processed_list <-
             case_when(!is.na(allcause_hosp_admission_date) &
                         is.na(covid_hosp_admission_date) ~
                         allcause_hosp_admission_date,
+                      # both dates exist but are not the same
                       (!is.na(allcause_hosp_admission_date) &
                          !is.na(covid_hosp_admission_date)) &
                         allcause_hosp_admission_date < covid_hosp_admission_date ~

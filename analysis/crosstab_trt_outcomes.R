@@ -67,11 +67,13 @@ data_cohort_day0 <-
   read_rds(here("output", "data", 
                 paste0(period[period != "ba1"], "_"[period != "ba1"],
                        "data_processed_day0.rds")))
-
 data_cohort_day0_4 <-
   data_cohort_day0 %>%
   filter(fu_secondary <= 4)
 
+################################################################################
+# 1. Outcomes according to treatment
+################################################################################
 # goal
 #           was untreated         treated before experiencing event
 # day 0     [type of event x 6]   [type of event x 6]
@@ -84,12 +86,14 @@ data_cohort_day0_4 <-
 
 # treated_bf_outcome groups population into two groups:
 # 1 = individual was treated before or on day of experiencing an event
-# 0 = individual was not treated before outcome experiencing an event
+# 2 = individual was treated after the outcome
+# 0 = individual was not treated at all
 data_cohort_day0 <- 
   data_cohort_day0 %>%
   mutate(treated_bf_outcome =
            case_when(tb_postest_treat <= fu_all ~ 1,
-                     TRUE ~ 0))
+                     tb_postest_treat > fu_all ~ 2,
+                     any_treatment_strategy_cat == "Untreated" ~ 0))
 
 data_cohort_day0 %>%
   group_by(treated_bf_outcome, fu_all, status_all, .drop = F) %>%
@@ -106,9 +110,8 @@ data_cohort_day0 %>%
                        paste0(period[period != "ba1"], "_"[period != "ba1"],
                               "day0_6_event_trt.csv")))
 
-
 ################################################################################
-# 1 Crosstabulation trt x outcomes
+# 2. Crosstabulation trt x outcomes
 ################################################################################
 # cohort dayx-27, primary outcome
 imap(.x = data_cohort_dayx_list,
@@ -173,67 +176,72 @@ summarise_outcomes(data_cohort_day0_4,
                           "day0_4_all.csv"))
 
 ################################################################################
-# 4 Checks (printed in log file)
+# 3. Diagnosis of all cause hospitalisation
+################################################################################
+data_cohort_day0 %>%
+  filter(!is.na(allcause_hosp_admission_date)) %>%
+  group_by(treatment_strategy_cat, allcause_hosp_diagnosis) %>%
+  summarise(n = n(), .groups = "keep") %>%
+  mutate(n_redacted = case_when(n <= 7 ~ "[REDACTED]",
+                                TRUE ~ n %>% plyr::round_any(5) %>% as.character())) %>%
+  select(-n) %>%
+  write_csv(path(here("output", "data_properties"),
+                 "day0_allcause_hosp_diagnosis.csv"))
+
+################################################################################
+# 4. Checks (printed in log file)
 ################################################################################
 data_cohort_day5 <- data_cohort_dayx_list$day5
-# pt treated with sotrovimab whose first outcome is not counted as the outcome
-cat("#### Sotrovimab recipients whose first outcome is not counted day 0 ####\n")
-data_cohort_day0 %>%
-  filter(treatment_strategy_cat == "Sotrovimab" &
-           covid_hosp_admission_date == covid_hosp_admission_2nd_date0_27) %>%
-  nrow() %>% print()
-# pt treated with sotrovimab whose first outcome is not counted as the outcome
-cat("\n#### Sotrovimab recipients whose first outcome is not counted ####\n")
-data_cohort_day5 %>%
-  filter(treatment_strategy_cat == "Sotrovimab" &
-           covid_hosp_admission_date == covid_hosp_admission_2nd_date0_27) %>%
-  nrow() %>% print()
 # pt treated with sotrovimab who has a first outcome but that outcome is not counted
 # as an outcome
-cat("\n#### Sotrovimab recipients with a first outcome not counted day 0 ####\n")
+cat("\n#### Day 0: Sotrovimab recipients with a first outcome not counted day 0 ####\n")
 data_cohort_day0 %>%
   filter(treatment_strategy_cat == "Sotrovimab" &
            is.na(covid_hosp_admission_date) & !is.na(covid_hosp_admission_first_date0_6)) %>%
   nrow() %>% print()
 # pt treated with sotrovimab who has a first outcome but that outcome is not counted
 # as an outcome
-cat("\n#### Sotrovimab recipients with a first outcome not counted day 5 ####\n")
+cat("\n#### Day 5: Sotrovimab recipients with a first outcome not counted day 5 ####\n")
 data_cohort_day5 %>%
   filter(treatment_strategy_cat == "Sotrovimab" &
            is.na(covid_hosp_admission_date) & !is.na(covid_hosp_admission_first_date0_6)) %>%
   nrow() %>% print()
-# All cause hosp and covid hosp on same date?
-cat("\n#### All cause hosp and covid hosp on same date? ####\n")
-data_cohort_day5 %>% 
-  filter(allcause_hosp_admission_date == covid_hosp_admission_date) %>%
+# pt treated with sotrovimab whose first outcome is not counted as the outcome
+cat("#### Day 0: Sotrovimab recipients whose second outcome is counted ####\n")
+data_cohort_day0 %>%
+  filter(treatment_strategy_cat == "Sotrovimab" &
+           covid_hosp_admission_date == covid_hosp_admission_2nd_date0_27) %>%
   nrow() %>% print()
-
+# pt treated with sotrovimab whose first outcome is not counted as the outcome
+cat("\n#### Day 5: Sotrovimab recipients whose second outcome is counted ####\n")
+data_cohort_day5 %>%
+  filter(treatment_strategy_cat == "Sotrovimab" &
+           covid_hosp_admission_date == covid_hosp_admission_2nd_date0_27) %>%
+  nrow() %>% print()
 # pt hospitalised before treatment
-cat("\n#### Treated individuals whose date of treatment is after covid hospital admission ####\n")
+cat("\n#### Day 0: Treated individuals whose date of treatment is after covid hospital admission ####\n")
 data_cohort_day0 %>%
   filter(treatment == "Treated" &
            covid_hosp_admission_date < date_treated) %>%
   group_by(treatment_strategy_cat) %>%
   summarise(n = n()) %>% print()
-cat("\n#### Treated individuals whose date of treatment is after all-cause hospital admission ####\n")
+cat("\n#### Day 0: Treated individuals whose date of treatment is after all-cause hospital admission ####\n")
 data_cohort_day0 %>%
   filter(treatment == "Treated" &
            allcause_hosp_admission_date < date_treated) %>%
   group_by(treatment_strategy_cat) %>%
   summarise(n = n()) %>% print()
-cat("\n#### Treated individuals whose date of treatment is after non-covid hospital admission ####\n")
+cat("\n#### Day 0: Treated individuals whose date of treatment is after non-covid hospital admission ####\n")
 data_cohort_day0 %>%
   filter(treatment == "Treated" &
            noncovid_hosp_admission_date < date_treated) %>%
   group_by(treatment_strategy_cat) %>%
   summarise(n = n()) %>% print()
-cat("\n#### Treated individuals with non covid and covid hosp on same day ####\n")
+cat("\n#### Day 0: Treated individuals with non covid and covid hosp on same day ####\n")
 data_cohort_day0 %>%
   filter(treatment == "Treated" &
            noncovid_hosp_admission_date == covid_hosp_admission_date) %>%
   summarise(n = n()) %>% print()
-
-
 cat("\n#### Overview of treatment groups in day 5 analysis ####\n")
 data_cohort_day0 %>%
   group_by(treatment_strategy_cat) %>%
@@ -256,15 +264,15 @@ data_cohort_day0 %>%
 data_cohort_day0 %>%
   group_by(treatment_day0_sec) %>%
   summarise(n = n()) %>% print()
-
-# table of diagnoses of all cause hospitalisation
-# data_cohort_day5 %>%
-#   filter(!is.na(allcause_hosp_admission_date)) %>%
-#   group_by(treatment_strategy_cat, allcause_hosp_diagnosis) %>%
-#   summarise(n = n(), .groups = "keep") %>%
-#   mutate(n_redacted = case_when(n <= 5 ~ "<=5",
-#                                 TRUE ~ n %>% as.character())) %>%
-#   select(-n) %>%
-#   write_csv(path(here("output", "data_properties"), 
-#                  "day5_allcause_hosp_diagnosis.csv"))
+cat("\n#### How many people where hosp for non-covid reasons and went on to have our event? ####\n")
+data_cohort_day0 %>%
+  select(noncovid_hosp_admission_date, covid_death_date, covid_hosp_admission_date) %>%
+  filter(noncovid_hosp_admission_date < covid_death_date |
+           noncovid_hosp_admission_date < covid_hosp_admission_date) %>% nrow() %>% print()
+cat("\n#### How many people were treated after experiencing an outcome? ####\n")
+data_cohort_day0 %>%
+  filter(tb_postest_treat < fu_all) %>%
+  select(status_all, any_treatment_strategy_cat) %>%
+  group_by(status_all) %>%
+  summarise(n = n()) %>% print()
 
