@@ -186,7 +186,9 @@ data_cohort_day0 %>%
                                 TRUE ~ n %>% plyr::round_any(5) %>% as.character())) %>%
   select(-n) %>%
   write_csv(path(here("output", "data_properties"),
-                 "day0_allcause_hosp_diagnosis.csv"))
+                 paste0(period[period != "ba1"],
+                 "_"[period != "ba1"],
+                 "day0_allcause_hosp_diagnosis.csv")))
 
 ################################################################################
 # 4. Checks (printed in log file)
