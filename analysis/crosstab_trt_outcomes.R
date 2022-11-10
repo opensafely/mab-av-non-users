@@ -257,14 +257,14 @@ data_cohort_day0 %>%
   group_by(treatment_strategy_cat_day0_prim) %>%
   summarise(n = n()) %>% print()
 data_cohort_day0 %>%
-  group_by(treatment_strategy_cat_day0_sec) %>%
+  group_by(treatment_day0_prim) %>%
   summarise(n = n()) %>% print()
 cat("#### SECONDARY ####")
 data_cohort_day0 %>%
-  group_by(treatment_day0_prim) %>%
+  group_by(treatment_day0_sec) %>%
   summarise(n = n()) %>% print()
 data_cohort_day0 %>%
-  group_by(treatment_day0_sec) %>%
+  group_by(treatment_strategy_cat_day0_sec) %>%
   summarise(n = n()) %>% print()
 cat("\n#### How many people where hosp for non-covid reasons and went on to have our event? ####\n")
 data_cohort_day0 %>%
@@ -273,7 +273,7 @@ data_cohort_day0 %>%
            noncovid_hosp_admission_date < covid_hosp_admission_date) %>% nrow() %>% print()
 cat("\n#### How many people were treated after experiencing an outcome? ####\n")
 data_cohort_day0 %>%
-  filter(tb_postest_treat < fu_all) %>%
+  filter(tb_postest_treat > fu_all) %>%
   select(status_all, any_treatment_strategy_cat) %>%
   group_by(status_all) %>%
   summarise(n = n()) %>% print()
