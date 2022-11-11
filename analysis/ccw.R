@@ -183,8 +183,9 @@ data_control <-
            # Case 2: Patients die or are lost to follow-up within 5 days 
            # addition by LN: without being treated (scenarios K and L)
            # --> we keep their follow-up time but they are uncensored
-           treatment_strategy_cat == "Untreated" &
-             fu_primary <= 4 ~ fu_primary,
+           (any_treatment_strategy_cat == "Untreated" & 
+              tb_postest_treat <= 4 &
+              fu_primary <= 4) ~ fu_primary,
            # Case 3: Patients do not receive treatment within 5 days
            # and are still alive or at risk at 5 days (scenarios F-J and M): 
            # --> they are considered uncensored and their follow-up time is 
