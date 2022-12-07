@@ -22,8 +22,8 @@ library(survival)
 # 5 experience an outcome on day 1, 2, 3, 4, or day 22.
 data <- 
   tibble(pt_id = 1:36,
-         outcome = rep(c(1, 1, 0, 1, 1, 0), 6),
-         fup = rep(c(1, 2, 10, 11, 22, 27), 6),
+         outcome = rep(c(1, 1, 1, 1, 1, 0), 6),
+         fup = rep(c(1, 2, 3, 4, 22, 27), 6),
          treatment = c(rep(0, 6), rep(1, 30)),
          treatment_t = c(rep(NA_real_, 6),
                          rep(0, 6), 
@@ -49,7 +49,14 @@ sfit %>%
 # HR for treatment vs no treatment is 1
 coxph(Surv(fup, outcome) ~ treatment,
       data = data)
-
+# logistic regression
+# 1 / (1 + exp(-intercept)) = 5/6
+# 1 = 5/6 * (1 + exp(-intercept)) =
+# 6/5 - 1 = exp(-intercept) =
+# intercept = log(6/5 - 1) * -1
+glm(outcome ~ treatment,
+    family = binomial(link = "logit"), 
+    data = data) 
 ################################################################################
 # 2. Create tibble with observed data
 ################################################################################
@@ -75,6 +82,12 @@ sfit_obs %>%
 # HR for treatment vs no treatment is < 1
 coxph(Surv(fup, outcome) ~ treatment_obs,
       data = data_obs)
+# logistic regression
+# intercept = log(16/15 - 1) * -1
+# slope = log(20/15 - 1) * -1 - log(16/15 - 1) * -1
+glm(outcome ~ treatment_obs,
+    family = binomial(link = "logit"), 
+    data = data_obs) 
 
 ################################################################################
 # 3. CCW
@@ -171,14 +184,18 @@ split_notrt_outcome <-
     summarise(sum_outcome = sum(outcome_obs),
               n = n(),
               .groups = "drop")
-# weight on day 1 is 1.25; now it's on interval 0-1.... I'd say it has to shift 
-# one day......?
-weights <-
-  split_art_censoring %>%
-  left_join(split_outcome,
+weights_notrt <-
+  split_notrt_art_censoring %>%
+  left_join(split_notrt_outcome,
             by = c("start", "fup_art_uncensored" = "fup_obs", "n")) %>%
-  mutate(p_uncensored = (n - sum_art_censored - sum_outcome) / (n - sum_outcome),
+  mutate(p_uncensored = (n - sum_art_censored) / (n),
          weight = 1 / p_uncensored)
+weights_notrt <-
+  weights_notrt %>%
+  rename(end = fup_art_uncensored) %>%
+  select(start, end, weight) %>%
+  mutate(cum_weight = cumprod(weight))
+  
 # Split data set and add weights to data
 data_notrt_split <- 
   data_notrt %>%
@@ -190,12 +207,12 @@ data_notrt_split <-
               event = "outcome_obs")
 data_notrt_split <- 
   data_notrt_split %>%
-  full_join(weights,
-            by = c("start" = "start", "fup_obs" = "fup_art_uncensored"))
+  full_join(weights_notrt,
+            by = c("start" = "start", "fup_obs" = "end"))
 
 survfit(Surv(start, fup_obs, outcome_obs == 1) ~ 1, 
         data_notrt_split, 
-        weights = weight) %>% summary()
+        weights = cum_weight) %>% summary()
 survfit(Surv(start, fup_obs, outcome_obs == 1) ~ 1, 
         data_notrt_split) %>% summary()
 
@@ -206,12 +223,9 @@ glm(outcome_obs ~ 1,
 
 glm(outcome_obs ~ 1, 
     family = binomial(link = "logit"),
-    weights = c(1.25, 1.25*1.33, 1.25*1.33*1.5, 1.25*1.33*1.5*2,
-                rep(1.25*1.33*1.5*2, 23)),
+    weights = cum_weight,
     data = data_notrt_split)
 
-c(1.25, 1.25*1.33, 1.25*1.33*1.5, 1.25*1.33*1.5*2,
-  rep(1.25*1.33*1.5*2, 23))
 
 
 
