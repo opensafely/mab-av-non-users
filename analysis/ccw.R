@@ -298,7 +298,7 @@ data_cloned <-
 ################################################################################
 # Dataframe 'times' containing the time of events and an ID for the times of 
 # events
-t_events <- sort(unique(data_cohort$fup))
+t_events <- sort(unique(data_cloned$fup))
 
 data_outcome <- 
   data_cloned %>%
