@@ -291,7 +291,8 @@ data_trt <-
 ###################################################
 data_cloned <-
   rbind(data_control,
-        data_trt)
+        data_trt) %>% 
+  mutate(t_start = 0)
 
 ################################################################################
 # STEP 2-SPLITTING THE DATASET AT EACH TIME OF EVENT
@@ -310,7 +311,7 @@ data_outcome <-
   mutate(outcome = case_when(
     outcome == "censor" ~ "0",
     TRUE ~ "1",
-    ) %>% factor(levels = c("0", "1"))
+  ) %>% factor(levels = c("0", "1"))
   )
 # LN QU: Don't get why we're using fup and not fup_censoring?????
 # fup_censoring is not used in the script...? --> seems odd
@@ -326,7 +327,7 @@ data_cnsr <-
     TRUE ~ "1",
   ) %>% factor(levels = c("0", "1"))
   )
-  
+
 data_final <-
   data_outcome %>%
   left_join(data_cnsr,
@@ -336,7 +337,329 @@ data_final <-
          censoring = censoring.y,
          t_end = fup)
 
-# TO DO:
-# - Model weights for censoring (if needed?)
-# - Outcome model
-# - Variance estimation (---> bootstrap?)
+#Dataframe containing the time of events and an ID for the times of events
+t_events<-sort(unique(tab$fup))
+times<-data.frame("tevent"=t_events,"ID_t"=seq(1:length(t_events)))
+
+
+####################################
+# ArRM "Surgery" FIRST
+####################################
+
+
+tab_s<-tab[tab$arm=="Surgery",]
+
+#Creation of the entry variable (Tstart, 0 for everyone)
+tab_s$Tstart<-0
+
+#Splitting the dataset at each time of event until the event happens and sorting it
+data.long<-survSplit(tab_s, cut=t_events, end="fup", 
+                     start="Tstart", event="outcome",id="ID") 
+data.long<-data.long[order(data.long$ID,data.long$fup),] 
+
+#Splitting the original dataset at each time of event and sorting it
+#until censoring happens. This is to have the censoring status at each time of event 
+data.long.cens<-survSplit(tab_s, cut=t_events, end="fup", 
+                          start="Tstart", event="censoring",id="ID") 
+data.long.cens<-data.long.cens[order(data.long.cens$ID,data.long.cens$fup),] 
+
+#Replacing the censoring variable in data.long by the censoring variable obtained
+# in the second split dataset
+data.long$censoring<-data.long.cens$censoring
+
+#Creating Tstop (end of the interval) 
+data.long$Tstop<-data.long$fup
+
+#Merge and sort
+data.long<-merge(data.long,times,by.x="Tstart",by.y="tevent",all.x=T)
+data.long<-data.long[order(data.long$ID,data.long$fup),] 
+data.long$ID_t[is.na(data.long$ID_t)]<-0
+
+
+
+####################################
+# ARM "No Surgery" NOW
+###################################
+
+
+tab_c<-tab[tab$arm=="Control",]
+
+#Creation of the entry variable (Tstart, 0 for everyone)
+tab_c$Tstart<-0
+
+
+#Splitting the dataset first at each time of event
+#until the event happens 
+data.long2<-survSplit(tab_c, cut=t_events, end="fup", 
+                      start="Tstart", event="outcome",id="ID") 
+data.long2<-data.long2[order(data.long2$ID,data.long2$fup),] 
+
+#Splitting the original dataset at each time of event
+#until censoring happens 
+data.long.cens2<-survSplit(tab_c, cut=t_events, end="fup", 
+                           start="Tstart", event="censoring",id="ID") 
+data.long.cens2<-data.long.cens2[order(data.long.cens2$ID,data.long.cens2$fup),] 
+
+
+#Replacing the censoring variable in data.long by the censoring variable obtained
+# in the second split dataset
+data.long2$censoring<-data.long.cens2$censoring
+
+#Creating Tstop (end of the interval)
+data.long2$Tstop<-data.long2$fup
+
+#Merge and sort
+data.long2<-merge(data.long2,times,by.x="Tstart",by.y="tevent",all.x=T)
+data.long2<-data.long2[order(data.long2$ID,data.long2$fup),] 
+data.long2$ID_t[is.na(data.long2$ID_t)]<-0
+
+#Final dataset
+data<-rbind(data.long,data.long2)
+data_final<-merge(data,times,by="ID_t",all.x=T)
+data_final<-data_final[order(data_final$ID,data_final$fup),]
+
+
+############################################
+#STEP 3- ESTIMATING THE CENSORING WEIGHTS
+############################################
+
+#######################################################################################################################
+# Arm "Surgery" first
+
+data.long<-data_final[data_final$arm=="Surgery",]
+
+###########################
+# STEP 1: censoring model
+###########################
+# Create vector of variables for censoring model
+# Note: age and study_week modelled flexibly with cubic spline with 3 knots
+if (adjustment_set == "full"){
+  vars <-
+    c("ns(age, df=3)",
+      "ns(study_week, df=3)",
+      "sex",
+      "ethnicity",
+      "imdQ5" ,
+      "stp",
+      "rural_urban",
+      "huntingtons_disease_nhsd" ,
+      "myasthenia_gravis_nhsd" ,
+      "motor_neurone_disease_nhsd" ,
+      "multiple_sclerosis_nhsd"  ,
+      "solid_organ_transplant_new",
+      "hiv_aids_nhsd" ,
+      "immunosupression_new" ,
+      "imid_nhsd" ,
+      "liver_disease_nhsd",
+      "ckd_stage_5_nhsd",
+      "haematological_disease_nhsd",
+      "non_haem_cancer_new",
+      "downs_syndrome_nhsd",
+      "diabetes",
+      "bmi_group",
+      "smoking_status",
+      "copd",
+      "dialysis",
+      "cancer",
+      "lung_cancer",
+      "haem_cancer",
+      "vaccination_status",
+      "pfizer_most_recent_cov_vac",
+      "az_most_recent_cov_vac",
+      "moderna_most_recent_cov_vac")
+} else if (adjustment_set == "agesex") {
+  vars <-
+    c("ns(age, df=3)",
+      "sex")
+}
+
+# Specify model
+censorModelFunction <- as.formula(
+  paste("Surv(Tstart, Tstop, censoring)", 
+        paste(vars, collapse = " + "), 
+        sep = " ~ "))
+
+
+#Cox model
+ms_cens<-coxph(censorModelFunction, 
+               ties="efron", 
+               data=data.long)
+
+
+###########################################################
+# Estimating the probability of remaining uncensored
+###########################################################
+
+#Design matrix
+design_mat<-as.matrix(data.long[,c("ns(age, df=3)",
+                                   "ns(study_week, df=3)",
+                                   "sex",
+                                   "ethnicity",
+                                   "imdQ5" ,
+                                   "stp",
+                                   "rural_urban",
+                                   "huntingtons_disease_nhsd" ,
+                                   "myasthenia_gravis_nhsd" ,
+                                   "motor_neurone_disease_nhsd" ,
+                                   "multiple_sclerosis_nhsd"  ,
+                                   "solid_organ_transplant_new",
+                                   "hiv_aids_nhsd" ,
+                                   "immunosupression_new" ,
+                                   "imid_nhsd" ,
+                                   "liver_disease_nhsd",
+                                   "ckd_stage_5_nhsd",
+                                   "haematological_disease_nhsd",
+                                   "non_haem_cancer_new",
+                                   "downs_syndrome_nhsd",
+                                   "diabetes",
+                                   "bmi_group",
+                                   "smoking_status",
+                                   "copd",
+                                   "dialysis",
+                                   "cancer",
+                                   "lung_cancer",
+                                   "haem_cancer",
+                                   "vaccination_status",
+                                   "pfizer_most_recent_cov_vac",
+                                   "az_most_recent_cov_vac",
+                                   "moderna_most_recent_cov_vac")])
+
+# Need to check if study_week is defined sensibly and if this should be adjusted for
+
+#Vector of regression coefficients
+beta<-coef(ms_cens)
+
+#Calculation of XB (linear combineation of the covariates)
+data.long$lin_pred<-design_mat%*%beta
+
+#Estimating the cumulative hazard (when covariates=0)
+dat.base<-data.frame(basehaz(ms_cens,centered=F))
+names(dat.base)<-c("hazard","t")
+dat.base<-unique(merge(dat.base,times,by.x="t",by.y="tevent",all.x=T))
+
+
+#Merging and reordering the dataset
+data.long<-merge(data.long,dat.base,by="ID_t",all.x=T)
+data.long<-data.long[order(data.long$id,data.long$fup),]
+data.long$hazard<-ifelse(is.na(data.long$hazard),0,data.long$hazard)
+
+
+#Estimating the probability of remaining uncensored at each time of event
+data.long$P_uncens<-exp(-(data.long$hazard)*exp(data.long$lin_pred))  
+
+
+#############################
+# Computing IPC weights
+#############################
+
+#Weights are the inverse of the probability of remaining uncensored
+data.long$weight_Cox<-1/data.long$P_uncens
+####################################################################################################################
+
+####################################
+# Arm "No Surgery" now
+
+data.long2<-data_final[data_final$arm=="Control",]
+
+###########################
+# STEP 1: censoring model
+###########################
+
+
+#Cox model
+ms_cens2<-coxph(censorModelFunction, 
+                ties="efron", 
+                data=data.long2)
+
+summary(ms_cens2)
+
+###########################################################
+# STEP 2: estimate the probability of remaining uncensored
+###########################################################
+
+#Design matrix
+design_mat2<-as.matrix(data.long2[,c("ns(age, df=3)",
+                                     "ns(study_week, df=3)",
+                                     "sex",
+                                     "ethnicity",
+                                     "imdQ5" ,
+                                     "stp",
+                                     "rural_urban",
+                                     "huntingtons_disease_nhsd" ,
+                                     "myasthenia_gravis_nhsd" ,
+                                     "motor_neurone_disease_nhsd" ,
+                                     "multiple_sclerosis_nhsd"  ,
+                                     "solid_organ_transplant_new",
+                                     "hiv_aids_nhsd" ,
+                                     "immunosupression_new" ,
+                                     "imid_nhsd" ,
+                                     "liver_disease_nhsd",
+                                     "ckd_stage_5_nhsd",
+                                     "haematological_disease_nhsd",
+                                     "non_haem_cancer_new",
+                                     "downs_syndrome_nhsd",
+                                     "diabetes",
+                                     "bmi_group",
+                                     "smoking_status",
+                                     "copd",
+                                     "dialysis",
+                                     "cancer",
+                                     "lung_cancer",
+                                     "haem_cancer",
+                                     "vaccination_status",
+                                     "pfizer_most_recent_cov_vac",
+                                     "az_most_recent_cov_vac",
+                                     "moderna_most_recent_cov_vac")])
+#Vector of regression coefficients
+beta2<-coef(ms_cens2)
+
+#Calculation of XB (linear combineation of the covariates)
+data.long2$lin_pred<-design_mat2%*%beta2
+
+#Estimating the cumulative hazard (when covariates=0)
+dat.base2<-data.frame(basehaz(ms_cens2,centered=F))
+names(dat.base2)<-c("hazard","t")
+
+
+dat.base2<-unique(merge(dat.base2,times,by.x="t",by.y="tevent",all.x=T))
+
+#Merging and reordering the dataset
+data.long2<-merge(data.long2,dat.base2,by="ID_t",all.x=T)
+data.long2<-data.long2[order(data.long2$id,data.long2$fup),]
+data.long2$hazard<-ifelse(is.na(data.long2$hazard),0,data.long2$hazard)
+
+
+#Estimating the probability of remaining uncensored at each time of event
+data.long2$P_uncens<-exp(-(data.long2$hazard)*exp(data.long2$lin_pred))
+
+
+
+#############################
+# Computing the IPC weights
+#############################
+
+#Weights are the inverse of the probability of remaining uncensored
+data.long2$weight_Cox<-1/data.long2$P_uncens
+data.long2$weight_Cox[data.long2$ID_t==0]<-1
+
+data.long.Cox<-rbind(data.long,data.long2)
+
+
+##################################################
+# Emulated trial with Cox weights (Cox model)
+##################################################
+
+Cox_w <- coxph(Surv(Tstart,Tstop, outcome) ~ arm,
+               data=data.long.Cox, weights=weight_Cox) # Since weights are specified robust variance computed
+
+summary(Cox_w)
+HR<-exp(Cox_w$coefficients) #Hazard ratio
+HR
+
+
+# To do:
+# Check censoring step 
+# Check deriviation of datasets for weights calculation
+# Update the weights and analysis code upadting variable/dataset names to ours
+# Write code for picking up coefficients and writing to file
+
