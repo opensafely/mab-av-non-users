@@ -98,19 +98,20 @@ study = StudyDefinition(
   population=patients.satisfying(
     """
     age >= 18 AND age < 110
-    AND NOT has_died
+    AND (NOT has_died)
     AND (sex = "M" OR sex = "F")
-    AND NOT stp = ""
+    AND (NOT stp = "")
     AND imd != -1
     AND (
      registered_eligible
       AND
       (covid_test_positive
-      AND NOT covid_positive_prev_90_days
-      AND NOT any_covid_hosp_prev_90_days)
+      AND (NOT covid_positive_prev_90_days)
+      AND (NOT any_covid_hosp_prev_90_days))
     )
-    AND NOT prev_treated
+    AND (NOT prev_treated)
     AND high_risk_group
+    AND (NOT in_hospital_when_tested)
     """,
   ),
 
