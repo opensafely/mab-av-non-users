@@ -845,7 +845,7 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  sold_organ_transplant_nhsd_new=patients.satisfying(
+  solid_organ_transplant_nhsd_new=patients.satisfying(
     """
     solid_organ_transplant_nhsd_snomed_new OR
     solid_organ_transplant_nhsd_opcs4 OR
