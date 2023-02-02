@@ -32,7 +32,7 @@ def make_hosp_admission(day, prefix, diagnoses, primary_diagnoses):
                 find_first_match_in_period=True,
                 date_format="YYYY-MM-DD",
                 return_expectations={
-                  "date": {"earliest": "2022-02-16"},
+                  "date": {"earliest": "index_date + 1 days", "latest": end_date},
                   "rate": "uniform",
                   "incidence": 0.1},
             )
@@ -87,7 +87,7 @@ study = StudyDefinition(
   # PRELIMINARIES ----
   # Configure the expectations framework
   default_expectations={
-    "date": {"earliest": "2022-01-01", "latest": "today"},
+    "date": {"earliest": start_date, "latest": end_date},
     "rate": "uniform",
     "incidence": 0.05,
   }, 
@@ -139,7 +139,7 @@ study = StudyDefinition(
     between=["index_date", end_date],
     return_expectations={
       "incidence": 1.0,
-      "date": {"earliest": "2022-02-11", "latest": "2022-05-21"},
+      "date": {"earliest": "index_date", "latest": "index_date"},
     },
   ),
   # Was patients registered at the time of a positive test?
@@ -173,7 +173,7 @@ study = StudyDefinition(
     returning="date",
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2022-02-11"},
+      "date": {"earliest": "index_date"},
       "incidence": 0.5
     },
   ),
@@ -186,7 +186,7 @@ study = StudyDefinition(
     returning="date",
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2022-02-11"},
+      "date": {"earliest": "index_date"},
       "incidence": 0.2
     },
   ),
@@ -199,7 +199,7 @@ study = StudyDefinition(
     returning="date",
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2022-02-11"},
+      "date": {"earliest": "index_date"},
       "incidence": 0.5
     },
   ),
@@ -212,7 +212,7 @@ study = StudyDefinition(
     returning="date",
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2022-02-11"},
+      "date": {"earliest": "index_date"},
       "incidence": 0.05
     },
   ),
@@ -408,7 +408,7 @@ study = StudyDefinition(
     date_format="YYYY-MM-DD",
     on_or_after="covid_test_positive_date",
     return_expectations={
-      "date": {"earliest": "2021-12-20"},
+      "date": {"earliest": "index_date + 1 days", "latest": end_date},
       "incidence": 0.1
     },
   ),
@@ -417,7 +417,7 @@ study = StudyDefinition(
     on_or_after="covid_test_positive_date",
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2021-12-20"},
+      "date": {"earliest": "index_date + 1 days", "latest": end_date},
       "incidence": 0.1
     },
   ),
@@ -489,9 +489,11 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  non_haem_cancer_new=patients.with_these_clinical_events(
+  cancer_opensafely_snomed_new=patients.with_these_clinical_events(
     combine_codelists(
-      non_haem_cancer_new_codes
+      non_haem_cancer_new_codes,
+      lung_cancer_opensafely_snomed_codes,
+      chemotherapy_radiotherapy_opensafely_snomed_codes
     ),
     between=["covid_test_positive_date - 6 months", "covid_test_positive_date"],
     returning="binary_flag",
@@ -685,11 +687,9 @@ study = StudyDefinition(
       "incidence": 0.4
     },
   ),
-  immunosupression_new=patients.with_these_clinical_events(
-    combine_codelists(
-      immunosuppression_new_codes
-    ),
-    between=["covid_test_positive_date - 6 months", "covid_test_positive_date"],
+  immunosupression_nhsd_new=patients.with_these_clinical_events(
+    immunosuppression_new_codes,
+    on_or_before="covid_test_positive_date",
     returning="binary_flag",
     return_expectations={
       "incidence": 0.4
@@ -837,14 +837,26 @@ study = StudyDefinition(
       "incidence": 0.05
     },
   ),
-  solid_organ_transplant_new=patients.with_these_clinical_events(
-    combine_codelists(
-      solid_organ_transplant_new_codes
-    ),
-    between=["covid_test_positive_date - 6 months", "covid_test_positive_date"],
+  solid_organ_transplant_nhsd_snomed_new=patients.with_these_clinical_events(
+    solid_organ_transplant_new_codes,
+    on_or_before="covid_test_positive_date",
     returning="binary_flag",
     return_expectations={
       "incidence": 0.4
+    },
+  ),
+  sold_organ_transplant_nhsd_new=patients.satisfying(
+    """
+    solid_organ_transplant_nhsd_snomed_new OR
+    solid_organ_transplant_nhsd_opcs4 OR
+    transplant_thymus_opcs4 OR
+    transplant_conjunctiva_opcs4 OR
+    transplant_stomach_opcs4 OR
+    transplant_ileum_1_opcs4 OR
+    transplant_ileum_2_opcs4
+    """,
+    return_expectations={
+      "incidence": 0.05
     },
   ),
   # Rare neurological conditions
@@ -1484,7 +1496,7 @@ study = StudyDefinition(
     find_first_match_in_period=True,
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2022-02-16"},
+      "date": {"earliest": "index_date + 1 days"},
       "rate": "uniform",
       "incidence": 0.1
     },
@@ -1545,7 +1557,7 @@ study = StudyDefinition(
     find_first_match_in_period=True,
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2022-02-16"},
+      "date": {"earliest": "index_date + 1 days", "latest": end_date},
       "rate": "uniform",
       "incidence": 0.1
     },
@@ -1565,7 +1577,7 @@ study = StudyDefinition(
     find_first_match_in_period=True,
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2022-02-16"},
+      "date": {"earliest": "index_date + 1 days", "latest": end_date},
       "rate": "uniform",
       "incidence": 0.1
     },
@@ -1583,7 +1595,7 @@ study = StudyDefinition(
     find_first_match_in_period=True,
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2022-02-16"},
+      "date": {"earliest": "index_date + 1 days", "latest": end_date},
       "rate": "uniform",
       "incidence": 0.1
     },
@@ -1605,7 +1617,7 @@ study = StudyDefinition(
     find_first_match_in_period=True,
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2022-02-16"},
+      "date": {"earliest": "index_date + 1 days", "latest": end_date},
       "rate": "uniform",
       "incidence": 0.1
     },
@@ -1641,7 +1653,7 @@ study = StudyDefinition(
     find_first_match_in_period=True,
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2022-02-16"},
+      "date": {"earliest": "index_date + 1 days", "latest": end_date},
       "rate": "uniform",
       "incidence": 0.1
     },
@@ -1656,7 +1668,7 @@ study = StudyDefinition(
     find_first_match_in_period=True,
     date_format="YYYY-MM-DD",
     return_expectations={
-      "date": {"earliest": "2022-02-16"},
+      "date": {"earliest": "index_date + 1 days", "latest": end_date},
       "rate": "uniform",
       "incidence": 0.1
     },
@@ -1671,6 +1683,7 @@ study = StudyDefinition(
     match_only_underlying_cause=False,  # boolean for indicating if filters
     # results to only specified cause of death
     return_expectations={
+      "date": {"earliest": "index_date + 1 days", "latest": end_date},
       "rate": "exponential_increase",
       "incidence": 0.05,
     },
@@ -1685,6 +1698,7 @@ study = StudyDefinition(
     match_only_underlying_cause=True,  # boolean for indicating if filters
     # results to only specified cause of death
     return_expectations={
+      "date": {"earliest": "index_date + 1 days", "latest": end_date},
       "rate": "exponential_increase",
       "incidence": 0.05,
     },
