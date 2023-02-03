@@ -231,10 +231,15 @@ process_data <- function(data_extracted){
       # of note, patients can have allcause hosp before or after covid hosp, 
       # so the number of noncovid_hosp + covid_hosp is not strictly the number
       # of allcause_hosp
-      noncovid_hosp_admission_date = 
-        if_else(allcause_hosp_admission_date != covid_hosp_admission_date,
-                allcause_hosp_admission_date,
-                NA_Date_),
+      noncovid_hosp_admission_date =
+        case_when(!is.na(allcause_hosp_admission_date) &
+                    is.na(covid_hosp_admission_date) ~
+                    allcause_hosp_admission_date,
+                  (!is.na(allcause_hosp_admission_date) &
+                     !is.na(covid_hosp_admission_date)) &
+                    allcause_hosp_admission_date != covid_hosp_admission_date ~
+                    allcause_hosp_admission_date,
+                  TRUE ~ NA_Date_),
     ) %>%
     # adds column status_all and fu_all 
     add_status_and_fu_all() %>%
