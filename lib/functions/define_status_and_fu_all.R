@@ -6,7 +6,6 @@
 
 # linda.nab@thedatalab.org 20220627
 ######################################
-
 library("lubridate")
 library("tidyverse")
 
@@ -33,38 +32,23 @@ add_status_and_fu_all <- function(data){
                           study_window,
                           na.rm = TRUE),
       status_all = case_when(
-        min_date_all == dereg_date ~ "dereg",
-        min_date_all == covid_hosp_admission_date ~ "covid_hosp",
-        min_date_all == noncovid_hosp_admission_date ~ "noncovid_hosp",
         # pt should not have both noncovid and covid death, coded here to 
         # circumvent database errors
         min_date_all == covid_death_date ~ "covid_death",
         min_date_all == noncovid_death_date ~ "noncovid_death",
+        min_date_all == covid_hosp_admission_date ~ "covid_hosp",
+        min_date_all == noncovid_hosp_admission_date ~ "noncovid_hosp",
+        min_date_all == dereg_date ~ "dereg",
         TRUE ~ "none"
-      ) %>% factor(levels = c("covid_hosp",
-                              "noncovid_hosp",
-                              "covid_death",
+      ) %>% factor(levels = c("covid_death",
                               "noncovid_death",
+                              "covid_hosp",
+                              "noncovid_hosp",
                               "dereg",
                               "none")),
       # FOLLOW UP STATUS 'ALL" ----
-      fu_all = case_when(
-        status_all == "none" ~ as.difftime(27, units = "days"),
-        status_all == "dereg" ~ difftime(dereg_date, 
-                                         covid_test_positive_date,
-                                         units = "days"),
-        status_all == "covid_hosp" ~ difftime(covid_hosp_admission_date,
-                                              covid_test_positive_date,
-                                              units = "days"),
-        status_all == "noncovid_hosp" ~ difftime(noncovid_hosp_admission_date, 
-                                                 covid_test_positive_date,
-                                                 units = "days"),
-        status_all == "covid_death" ~ difftime(covid_death_date, 
-                                               covid_test_positive_date,
-                                               units = "days"),
-        status_all == "noncovid_death" ~ difftime(noncovid_death_date, 
-                                                  covid_test_positive_date,
-                                                  units = "days"),
-      ) %>% as.numeric()
+      fu_all = difftime(min_date_all,
+                        covid_test_positive_date,
+                        units = "days") %>% as.numeric(),
     )
 }

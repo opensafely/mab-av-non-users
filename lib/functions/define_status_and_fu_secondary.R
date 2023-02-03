@@ -32,29 +32,22 @@ add_status_and_fu_secondary <- function(data){
                                 study_window,
                                 na.rm = TRUE),
       status_secondary = case_when(
-        min_date_secondary == dereg_date ~ "dereg",
-        min_date_secondary == allcause_hosp_admission_date ~ "allcause_hosp",
         min_date_secondary == death_date ~ "allcause_death",
+        min_date_secondary == allcause_hosp_admission_date ~ "allcause_hosp",
+        min_date_secondary == dereg_date ~ "dereg",
         TRUE ~ "none"
       ),
       # FOLLOW UP STATUS 'SECONDARY' ----
-      fu_secondary = case_when(
-        status_secondary == "none" ~ as.difftime(27, units = "days"),
-        status_secondary == "dereg" ~ difftime(dereg_date, 
-                                               covid_test_positive_date,
-                                               units = "days"),
-        status_secondary == "allcause_hosp" ~ difftime(allcause_hosp_admission_date,
-                                                       covid_test_positive_date,
-                                                       units = "days"),
-        status_secondary == "allcause_death" ~ difftime(death_date, 
-                                                        covid_test_positive_date,
-                                                        units = "days"),
-      ) %>% as.numeric(),
+      # FOLLOW UP STATUS 'ALL" ----
+      fu_secondary = difftime(min_date_secondary,
+                              covid_test_positive_date,
+                              units = "days") %>% as.numeric(),
       # combine covid death and hospitalisation
-      status_secondary = case_when(
+      status_secondary = if_else(
         status_secondary == "allcause_hosp" | 
-          status_secondary == "allcause_death" ~ "allcause_hosp_death",
-        TRUE ~ status_secondary
+          status_secondary == "allcause_death",
+        "allcause_hosp_death",
+        status_secondary
       ) %>% factor(levels = c("allcause_hosp_death",
                               "dereg",
                               "none"))
