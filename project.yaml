@@ -30,46 +30,46 @@ actions:
     needs: [generate_study_population]
     outputs:
       highly_sensitive:
-        data: output/data/data_processed_day*.rds
+        data: output/data/data_processed.rds
 
   data_process_ba2:
     run: r:latest analysis/data_process.R ba2
     needs: [generate_study_population_ba2]
     outputs:
       highly_sensitive:
-        data1: output/data/ba2_data_processed_day*.rds   
+        data1: output/data/ba2_data_processed.rds   
 
-  data_properties_process_day0:
-    run: r:latest analysis/data_properties.R output/data/data_processed_day0.rds output/data_properties
+  data_properties:
+    run: r:latest analysis/data_properties/data_properties.R output/data/data_processed.rds output/data_properties
     needs: [data_process]
     outputs:
       moderately_sensitive:
-        txt1: output/data_properties/data_processed_day0_skim.txt
-        txt2: output/data_properties/data_processed_day0_coltypes.txt
-        txt3: output/data_properties/data_processed_day0_tabulate.txt
+        txt1: output/data_properties/data_processed_skim.txt
+        txt2: output/data_properties/data_processed_coltypes.txt
+        txt3: output/data_properties/data_processed_tabulate.txt
 
-  data_properties_process_day0_ba2:
-    run: r:latest analysis/data_properties.R output/data/ba2_data_processed_day0.rds output/data_properties
+  data_properties_ba2:
+    run: r:latest analysis/data_properties/data_properties.R output/data/ba2_data_processed.rds output/data_properties
     needs: [data_process_ba2]
     outputs:
       moderately_sensitive:
-        txt1: output/data_properties/ba2_data_processed_day0_skim.txt
-        txt2: output/data_properties/ba2_data_processed_day0_coltypes.txt
-        txt3: output/data_properties/ba2_data_processed_day0_tabulate.txt
+        txt1: output/data_properties/ba2_data_processed_skim.txt
+        txt2: output/data_properties/ba2_data_processed_coltypes.txt
+        txt3: output/data_properties/ba2_data_processed_tabulate.txt
   
-  crosstab_trt_outcomes:
-    run: r:latest analysis/crosstab_trt_outcomes.R ba1
+  sense_check:
+    run: r:latest analysis/data_properties/sense_check.R ba1
     needs: [data_process]
     outputs:
       moderately_sensitive:
-        csvsdays: output/data_properties/day*.csv
+        csv: output/data_properties/sense_checks.txt
 
-  crosstab_trt_outcomes_ba2:
-    run: r:latest analysis/crosstab_trt_outcomes.R ba2
+  sense_check_ba2:
+    run: r:latest analysis/data_properties/sense_check.R ba2
     needs: [data_process_ba2]
     outputs:
       moderately_sensitive:
-        csvsdays: output/data_properties/ba2_day*.csv
+        csv: output/data_properties/ba2_sense_checks.txt
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## CCW Analysis - Day 0 
