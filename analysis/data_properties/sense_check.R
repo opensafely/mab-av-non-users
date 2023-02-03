@@ -78,21 +78,12 @@ data %>%
   group_by(status_secondary) %>%
   tally() %>%
   print()
-cat("\n Non-corresponding outcomes [all and primary] \n")
+cat("\n Flow of non_covid_hosp from all to primary \n")
 data %>%
-  filter(min_date_all != min_date_primary) %>%
+  filter(status_all == "noncovid_hosp") %>%
   group_by(status_all, status_primary) %>%
-  tally()
-cat("\n Non-corresponding outcomes [all and secondary] \n")
-data %>%
-  filter(min_date_all != min_date_secondary) %>%
-  group_by(status_all, status_secondary) %>%
-  tally()
-cat("\n Non-corresponding outcomes [primary and secondary] \n")
-data %>%
-  filter(min_date_primary != min_date_secondary) %>%
-  group_by(status_primary, status_secondary) %>%
-  tally()
+  tally() %>%
+  print()
 cat("\n************************************\n")
 
 cat("\n************************************\n")
@@ -139,6 +130,14 @@ data %>%
            treatment_date == min_date_all) %>%
   group_by(treatment, status_secondary) %>%
   tally() %>% print()
+cat("\n************************************\n")
+
+cat("\n************************************\n")
+cat("\n Number of people hospitalised on day 0\n")
+data %>%
+  filter(status_all %in% c("covid_hosp", "noncovid_hosp") &
+           fu_all == 0) %>%
+  nrow() %>% print()
 cat("\n************************************\n")
 
 writeLines("see log file", 
