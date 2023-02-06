@@ -33,12 +33,17 @@ process_data <- function(data_extracted){
         ethnicity == "5" ~ "Other ethnic groups",
         TRUE ~ NA_character_),
       
-      bmi_group = fct_case_when(
+      bmi_cat = fct_case_when(
         bmi == "Not obese" ~ "Not obese",
-        bmi %in% c("Obese I (30-34.9)",
-                   "Obese II (35-39.9)",
-                   "Obese III (40+)") ~ "Obese",
+        bmi == "Obese I (30-34.9)" ~ "Obese I (30-34.9)",
+        bmi == "Obese II (35-39.9)" ~ "Obese II (35-39.9)",
+        bmi == "Obese III (40+)" ~ "Obese III (40+)",
         TRUE ~ NA_character_),
+      
+      obese = if_else(
+        bmi %in% c("Obese I (30-34.9)", "Obese II (35-39.9)", "Obese III (40+)"),
+        TRUE,
+        FALSE) %>% as.logical(),
       
       smoking_status = fct_case_when(
         smoking_status == "S" ~ "Smoker",
@@ -117,6 +122,12 @@ process_data <- function(data_extracted){
         tb_postest_vacc >= 28 & tb_postest_vacc < 84 ~ "28-83 days",
         tb_postest_vacc >= 84 ~ ">= 84 days"
       ),
+      
+      most_recent_vax_cat =
+        case_when(pfizer_most_recent_cov_vac == TRUE ~ "Pfizer",
+                  az_most_recent_cov_vac == TRUE ~ "AstraZeneca",
+                  moderna_most_recent_cov_vac == TRUE ~ "Moderna",
+                  TRUE ~ "Un-vaccinated"),
       
       # TREATMENT ----              
       # Time-between positive test and day of treatment

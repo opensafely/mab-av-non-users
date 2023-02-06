@@ -7,8 +7,9 @@
 #
 # Depending on 'period' the output of this script is:
 # -./output/data/'period'_data_processed.rds
+# - ./output/data_properties/'period'_n_excluded.rds
 # (if period == ba1, no prefix is used)
-#
+# 
 ################################################################################
 
 ################################################################################
@@ -22,11 +23,13 @@ library('purrr')
 ## Import custom user functions
 source(here::here("analysis", "data_import", "extract_data.R"))
 source(here::here("analysis", "data_import", "process_data.R"))
+source(here::here("analysis", "data_import", "calc_n_excluded.R"))
 
 ################################################################################
 # 0.1 Create directories for output
 ################################################################################
 fs::dir_create(here::here("output", "data"))
+fs::dir_create(here::here("output", "data_properties"))
 
 ################################################################################
 # 0.2 Import command-line arguments
@@ -37,19 +40,19 @@ if (length(args) == 0){
   period = "ba1"
   # import globally defined study dates and convert to "Date"
   study_dates <-
-    jsonlite::read_json(path = here("lib", "design", "study-dates.json")) %>%
+    jsonlite::read_json(path = here::here("lib", "design", "study-dates.json")) %>%
     map(as.Date)
 } else if (args[[1]] == "ba1") {
   period = "ba1"
   # import globally defined study dates and convert to "Date"
   study_dates <-
-    jsonlite::read_json(path = here("lib", "design", "study-dates.json")) %>%
+    jsonlite::read_json(path = here::here("lib", "design", "study-dates.json")) %>%
     map(as.Date)
 } else if (args[[1]] == "ba2") {
   period = "ba2"
   # import globally defined study dates and convert to "Date"
   study_dates <-
-    jsonlite::read_json(path = here("lib", "design", "study-dates-ba2.json")) %>%
+    jsonlite::read_json(path = here::here("lib", "design", "study-dates-ba2.json")) %>%
     map(as.Date)
 } else {
   # Print error if no argument specified
@@ -81,7 +84,17 @@ data_processed <-
   data_processed %>%
   # Exclude patients treated with both sotrovimab and molnupiravir on the
   # same day 
-  filter(treated_sot_mol_same_day  == 0)
+  filter(treated_sot_mol_same_day  == 0) %>%
+  # Exclude patients hospitalised on day of positive test
+  filter(status_all %in% c("covid_hosp", "noncovid_hosp") &
+           fu_all == 0)
+# calc n excluded
+n_excluded <- calc_n_excluded(data_processed)
+write_rds(n_excluded,
+          here::here("output", "data_properties",
+                     paste0(
+                       period[!period == "ba1"], "_"[!period == "ba1"],
+                       "n_excluded.rds")))
 
 ################################################################################
 # 4 Save data
@@ -91,6 +104,4 @@ write_rds(data_processed,
           here::here("output", "data", 
                      paste0(
                        period[!period == "ba1"], "_"[!period == "ba1"],
-                       "data_processed.rds")
-                     )
-          )
+                       "data_processed.rds")))

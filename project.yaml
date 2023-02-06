@@ -21,6 +21,18 @@ actions:
       highly_sensitive:
         cohort: output/input_ba2.csv.gz
 
+  generate_study_population_flowchart:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_flowchart --output-format=csv.gz
+    outputs:
+      highly_sensitive:
+        cohort: output/input_flowchart.csv.gz
+  
+  generate_study_population_flowchart_ba2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_flowchart_ba2 --output-format=csv.gz
+    outputs:
+      highly_sensitive:
+        cohort: output/input_flowchart_ba2.csv.gz
+
   ## # # # # # # # # # # # # # # # # # # # 
   ## Data cleaning and description
   ## # # # # # # # # # # # # # # # # # # # 
@@ -31,14 +43,30 @@ actions:
     outputs:
       highly_sensitive:
         data: output/data/data_processed.rds
+        rds: output/data_properties/n_excluded.rds
 
   data_process_ba2:
     run: r:latest analysis/data_process.R ba2
     needs: [generate_study_population_ba2]
     outputs:
       highly_sensitive:
-        data1: output/data/ba2_data_processed.rds   
+        data: output/data/ba2_data_processed.rds
+        rds: output/data_properties/ba2_n_excluded.rds
 
+  data_process_flowchart:
+    run: r:latest analysis/data_process_flowchart.R ba1
+    needs: [generate_study_population_flowchart]
+    outputs:
+      highly_sensitive:
+        data: output/data/data_flowchart_processed.rds
+
+  data_process_flowchart_ba2:
+    run: r:latest analysis/data_process_flowchart.R ba2
+    needs: [generate_study_population_flowchart_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/data/ba2_data_flowchart_processed.rds 
+  
   data_properties:
     run: r:latest analysis/data_properties/data_properties.R output/data/data_processed.rds output/data_properties
     needs: [data_process]
@@ -56,6 +84,20 @@ actions:
         txt1: output/data_properties/ba2_data_processed_skim.txt
         txt2: output/data_properties/ba2_data_processed_coltypes.txt
         txt3: output/data_properties/ba2_data_processed_tabulate.txt
+
+  create_flowchart:
+    run: r:latest analysis/flowchart.R ba1
+    needs: [data_process_flowchart, data_process]
+    outputs:
+      highly_sensitive:
+        csv: output/tables/flowchart/flowchart.csv
+
+  create_flowchart_ba2:
+    run: r:latest analysis/flowchart.R ba2
+    needs: [data_process_flowchart_ba2, data_process_ba2]
+    outputs:
+      highly_sensitive:
+        csv: output/tables/flowchart/ba2_flowchart.csv
   
   sense_check:
     run: r:latest analysis/data_properties/sense_check.R ba1
@@ -78,3 +120,17 @@ actions:
   ## # # # # # # # # # # # # # # # # # # # 
   ## Tables
   ## # # # # # # # # # # # # # # # # # # # 
+
+  create_table1:
+    run: r:latest analysis/table_1.R ba1
+    needs: [data_process]
+    outputs:
+      moderately_sensitive:
+        html: output/tables/table1_redacted.html
+
+  create_table1_ba2:
+    run: r:latest analysis/table_1.R ba2
+    needs: [data_process_ba2]
+    outputs:
+      moderately_sensitive:
+        html: output/tables/ba2_table1_redacted.html
