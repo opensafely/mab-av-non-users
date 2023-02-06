@@ -86,8 +86,11 @@ data_processed <-
   # same day 
   filter(treated_sot_mol_same_day  == 0) %>%
   # Exclude patients hospitalised on day of positive test
-  filter(status_all %in% c("covid_hosp", "noncovid_hosp") &
-           fu_all == 0)
+  filter(!(status_all %in% c("covid_hosp", "noncovid_hosp") &
+           fu_all == 0)) %>%
+  # if treated with paxlovid or remidesivir --> exclude
+  filter(is.na(paxlovid_covid_therapeutics) &
+           is.na(remdesivir_covid_therapeutics))
 # calc n excluded
 n_excluded <- calc_n_excluded(data_processed)
 write_rds(n_excluded,

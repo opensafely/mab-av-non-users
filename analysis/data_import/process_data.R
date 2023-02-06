@@ -273,7 +273,7 @@ process_data <- function(data_extracted){
                   min_date_primary <= treatment_date,
                 "Untreated",
                 treatment_strategy_cat %>% as.character()) %>%
-        factor(levels = c("Untreated",  "Sotrovimab", "Molnupiravir")),
+        factor(levels = c("Untreated", "Sotrovimab", "Molnupiravir")),
       # Treatment strategy overall
       treatment_prim =
         if_else(treatment_strategy_cat_prim == "Untreated",
