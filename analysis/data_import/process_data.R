@@ -45,18 +45,18 @@ process_data <- function(data_extracted){
         TRUE,
         FALSE) %>% as.logical(),
       
-      smoking_status = fct_case_when(
-        smoking_status == "S" ~ "Smoker",
-        smoking_status == "E" ~ "Ever",
-        smoking_status == "N" ~ "Never",
-        smoking_status == "M" ~ "Unknown"),
-      
       smoking_status_comb = fct_case_when(
         smoking_status %in% c("N", "M") ~ "Never and unknown",
         smoking_status == "E" ~ "Former",
         smoking_status == "S" ~ "Current",
         TRUE ~ NA_character_
       ),
+      
+      smoking_status = fct_case_when(
+        smoking_status == "S" ~ "Smoker",
+        smoking_status == "E" ~ "Ever",
+        smoking_status == "N" ~ "Never",
+        smoking_status == "M" ~ "Unknown"),
       
       imdQ5 = fct_case_when(
         imdQ5 == "5 (least deprived)" ~ "5 (least deprived)",
@@ -123,11 +123,11 @@ process_data <- function(data_extracted){
         tb_postest_vacc >= 84 ~ ">= 84 days"
       ),
       
-      most_recent_vax_cat =
-        case_when(pfizer_most_recent_cov_vac == TRUE ~ "Pfizer",
-                  az_most_recent_cov_vac == TRUE ~ "AstraZeneca",
-                  moderna_most_recent_cov_vac == TRUE ~ "Moderna",
-                  TRUE ~ "Un-vaccinated"),
+      most_recent_vax_cat = fct_case_when(
+        pfizer_most_recent_cov_vac == TRUE ~ "Pfizer",
+        az_most_recent_cov_vac == TRUE ~ "AstraZeneca",
+        moderna_most_recent_cov_vac == TRUE ~ "Moderna",
+        TRUE ~ "Un-vaccinated"),
       
       # TREATMENT ----              
       # Time-between positive test and day of treatment
@@ -282,7 +282,7 @@ process_data <- function(data_extracted){
         factor(levels = c("Untreated", "Treated")),
       # Treatment date
       treatment_date_prim = 
-        ifelse(treatment_prim == "Treated", treatment_date, NA_Date_),
+        if_else(treatment_prim == "Treated", treatment_date, NA_Date_),
       ## SECONDARY ##
       # Treatment strategy categories
       treatment_strategy_cat_sec = 
@@ -301,6 +301,6 @@ process_data <- function(data_extracted){
         factor(levels = c("Untreated", "Treated")),
       # Treatment date
       treatment_date_sec = 
-        ifelse(treatment_sec == "Treated", date_treated, NA_Date_),
+        if_else(treatment_sec == "Treated", date_treated, NA_Date_),
     )
 }
