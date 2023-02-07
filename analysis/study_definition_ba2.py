@@ -1352,7 +1352,10 @@ study = StudyDefinition(
     between=["2020-06-08", "covid_test_positive_date"],
     find_last_match_in_period=True,
     returning="date",
-    date_format="YYYY-MM-DD"
+    date_format="YYYY-MM-DD",
+    return_expectations={
+      "date": {"earliest": "2020-06-08", "latest": "index_date"},
+    },
   ),
   # Most recent covid covid vaccination
   pfizer_most_recent_cov_vac=patients.with_tpp_vaccination_record(
