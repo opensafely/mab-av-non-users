@@ -116,23 +116,95 @@ actions:
         csv: output/data_properties/ba2_sense_checks.txt
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## CCW Analysis - Day 0 
+  ## CCW Analysis
   ## # # # # # # # # # # # # # # # # # # # 
+  
+  perform_ccw_analysis:
+    run: r:latest analysis/ccw.R ba1 all primary
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/data/data_long_primary_all.rds
+        model1: output/models/km_trt_all.rds
+        model2: output/models/km_control_all.rds
+        model3: output/models/cox_w_all.rds
+      moderately_sensitive:
+        table: output/tables/ccw/ccw_all.csv
+  
+  perform_ccw_analysis_mol:
+    run: r:latest analysis/ccw.R ba1 molnupiravir primary
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/data/data_long_molnupiravir.rds
+        model1: output/models/km_trt_molnupiravir.rds
+        model2: output/models/km_control_molnupiravir.rds
+        model3: output/models/cox_w_molnupiravir.rds
+      moderately_sensitive:
+        table: output/tables/ccw/ccw_molnupiravir.csv
+
+  perform_ccw_analysis_sot:
+    run: r:latest analysis/ccw.R ba1 sotrovimab primary
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/data/data_long_sotrovimab.rds
+        model1: output/models/km_trt_sotrovimab.rds
+        model2: output/models/km_control_sotrovimab.rds
+        model3: output/models/cox_w_sotrovimab.rds
+      moderately_sensitive:
+        table: output/tables/ccw/ccw_sotrovimab.csv
+
+  perform_ccw_analysis_ba2:
+    run: r:latest analysis/ccw.R ba2 all primary
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/data/ba2_data_long_all.rds
+        model1: output/models/ba2_km_trt_all.rds
+        model2: output/models/ba2_km_control_all.rds
+        model3: output/models/ba2_cox_w_all.rds
+      moderately_sensitive:
+        table: output/tables/ccw/ba2_ccw_all.csv
+  
+  perform_ccw_analysis_mol_ba2:
+    run: r:latest analysis/ccw.R ba2 molnupiravir primary
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/data/ba2_data_long_molnupiravir.rds
+        model1: output/models/ba2_km_trt_molnupiravir.rds
+        model2: output/models/ba2_km_control_molnupiravir.rds
+        model3: output/models/ba2_cox_w_molnupiravir.rds
+      moderately_sensitive:
+        table: output/tables/ccw/ba2_ccw_molnupiravir.csv
+
+  perform_ccw_analysis_sot_ba2:
+    run: r:latest analysis/ccw.R ba2 sotrovimab primary
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/data/ba2_data_long_sotrovimab.rds
+        model1: output/models/ba2_km_trt_sotrovimab.rds
+        model2: output/models/ba2_km_control_sotrovimab.rds
+        model3: output/models/ba2_cox_w_sotrovimab.rds
+      moderately_sensitive:
+        table: output/tables/ccw/ba2_ccw_sotrovimab.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Tables
   ## # # # # # # # # # # # # # # # # # # # 
 
-  #create_table1:
-   # run: r:latest analysis/table_1.R ba1
-    #needs: [data_process]
-    #outputs:
-     # moderately_sensitive:
-      #  html: output/tables/table1_redacted.html
+  create_table1:
+    run: r:latest analysis/table_1.R ba1
+    needs: [data_process]
+    outputs:
+      moderately_sensitive:
+        html: output/tables/table1_redacted.html
 
-  #create_table1_ba2:
-   # run: r:latest analysis/table_1.R ba2
-    #needs: [data_process_ba2]
-    #outputs:
-     # moderately_sensitive:
-      #  html: output/tables/ba2_table1_redacted.html
+  create_table1_ba2:
+    run: r:latest analysis/table_1.R ba2
+    needs: [data_process_ba2]
+    outputs:
+      moderately_sensitive:
+        html: output/tables/ba2_table1_redacted.html
