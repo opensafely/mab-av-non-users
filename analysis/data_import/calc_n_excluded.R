@@ -18,7 +18,8 @@ calc_n_excluded <- function(data_processed){
     filter(!(status_all %in% c("covid_hosp", "noncovid_hosp") &
              fu_all == 0)) %>%
     filter(!is.na(paxlovid_covid_therapeutics) |
-             !is.na(remdesivir_covid_therapeutics))
+             !is.na(remdesivir_covid_therapeutics)) %>%
+    nrow()
   out <- tibble(n_before_exclusion_processing,
                 n_treated_same_day,
                 n_hospitalised_pos_test,

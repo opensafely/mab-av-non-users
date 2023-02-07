@@ -80,6 +80,8 @@ data_processed <- process_data(data_extracted)
 ################################################################################
 # 3 Apply additional eligibility and exclusion criteria
 ################################################################################
+# calc n excluded
+n_excluded <- calc_n_excluded(data_processed)
 data_processed <-
   data_processed %>%
   # Exclude patients treated with both sotrovimab and molnupiravir on the
@@ -91,13 +93,6 @@ data_processed <-
   # if treated with paxlovid or remidesivir --> exclude
   filter(is.na(paxlovid_covid_therapeutics) &
            is.na(remdesivir_covid_therapeutics))
-# calc n excluded
-n_excluded <- calc_n_excluded(data_processed)
-write_rds(n_excluded,
-          here::here("output", "data_properties",
-                     paste0(
-                       period[!period == "ba1"], "_"[!period == "ba1"],
-                       "n_excluded.rds")))
 
 ################################################################################
 # 4 Save data
@@ -108,3 +103,8 @@ write_rds(data_processed,
                      paste0(
                        period[!period == "ba1"], "_"[!period == "ba1"],
                        "data_processed.rds")))
+write_rds(n_excluded,
+          here::here("output", "data_properties",
+                     paste0(
+                       period[!period == "ba1"], "_"[!period == "ba1"],
+                       "n_excluded.rds")))

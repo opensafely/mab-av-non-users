@@ -90,14 +90,16 @@ actions:
     needs: [data_process_flowchart, data_process]
     outputs:
       moderately_sensitive:
-        csv: output/tables/flowchart/flowchart.csv
+        csv1: output/tables/flowchart/flowchart.csv
+        csv2: output/tables/flowchart/flowchart_redacted.csv
 
   create_flowchart_ba2:
     run: r:latest analysis/flowchart.R ba2
     needs: [data_process_flowchart_ba2, data_process_ba2]
     outputs:
       moderately_sensitive:
-        csv: output/tables/flowchart/ba2_flowchart.csv
+        csv1: output/tables/flowchart/ba2_flowchart.csv
+        csv2: output/tables/flowchart/ba2_flowchart_redacted.csv
   
   sense_check:
     run: r:latest analysis/data_properties/sense_check.R ba1
