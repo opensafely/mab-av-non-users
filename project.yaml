@@ -121,16 +121,16 @@ actions:
   ## Tables
   ## # # # # # # # # # # # # # # # # # # # 
 
-  create_table1:
-    run: r:latest analysis/table_1.R ba1
-    needs: [data_process]
-    outputs:
-      moderately_sensitive:
-        html: output/tables/table1_redacted.html
+  #create_table1:
+   # run: r:latest analysis/table_1.R ba1
+    #needs: [data_process]
+    #outputs:
+     # moderately_sensitive:
+      #  html: output/tables/table1_redacted.html
 
-  create_table1_ba2:
-    run: r:latest analysis/table_1.R ba2
-    needs: [data_process_ba2]
-    outputs:
-      moderately_sensitive:
-        html: output/tables/ba2_table1_redacted.html
+  #create_table1_ba2:
+   # run: r:latest analysis/table_1.R ba2
+    #needs: [data_process_ba2]
+    #outputs:
+     # moderately_sensitive:
+      #  html: output/tables/ba2_table1_redacted.html
