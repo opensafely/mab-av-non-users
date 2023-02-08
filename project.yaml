@@ -124,7 +124,7 @@ actions:
     needs: [data_process]
     outputs:
       highly_sensitive:
-        data: output/data/data_long_primary_all.rds
+        data: output/data/data_long_all.rds
         model1: output/models/km_trt_all.rds
         model2: output/models/km_control_all.rds
         model3: output/models/cox_w_all.rds
