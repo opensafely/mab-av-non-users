@@ -1,7 +1,7 @@
 version: '3.0'
 
 expectations:
-  population_size: 100000
+  population_size: 40000
 
 actions:
 
@@ -100,6 +100,26 @@ actions:
       moderately_sensitive:
         csv1: output/tables/flowchart/ba2_flowchart.csv
         csv2: output/tables/flowchart/ba2_flowchart_redacted.csv
+
+  describe_outcomes:
+    run: r:latest analysis/data_properties/describe_outcomes.R ba1
+    needs: [data_process]
+    outputs:
+      moderately_sensitive:
+        csv1: output/tables/descriptive/outcomes.csv
+        csv1sec: output/tables/descriptive/outcomes_secondary.csv
+        csv2: output/tables/descriptive/outcomes_redacted.csv
+        csv2sec: output/tables/descriptive/outcomes_secondary_redacted.csv
+
+  describe_outcomes_ba2:
+    run: r:latest analysis/data_properties/describe_outcomes.R ba2
+    needs: [data_process_ba2]
+    outputs:
+      moderately_sensitive:
+        csv1: output/tables/descriptive/ba2_outcomes.csv
+        csv1sec: output/tables/descriptive/ba2_outcomes_secondary.csv
+        csv2: output/tables/descriptive/ba2_outcomes_redacted.csv
+        csv2sec: output/tables/descriptive/ba2_outcomes_secondary_redacted.csv
   
   sense_check:
     run: r:latest analysis/data_properties/sense_check.R ba1
@@ -116,9 +136,9 @@ actions:
         csv: output/data_properties/ba2_sense_checks.txt
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## CCW Analysis
+  ## CCW Analysis - main
   ## # # # # # # # # # # # # # # # # # # # 
-  
+
   perform_ccw_analysis:
     run: r:latest analysis/ccw.R ba1 all primary
     needs: [data_process]
@@ -190,6 +210,52 @@ actions:
         model3: output/models/ba2_cox_w_sotrovimab.rds
       moderately_sensitive:
         table: output/tables/ccw/ba2_ccw_sotrovimab.csv
+  
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## CCW Analysis - check balance
+  ## # # # # # # # # # # # # # # # # # # #
+
+  calc_smd:
+    run: r:latest analysis/smd.R ba1 all primary
+    needs: [perform_ccw_analysis]
+    outputs:
+      moderately_sensitive:
+        table: output/tables/ccw/smd_all.csv
+
+  calc_smd_mol:
+    run: r:latest analysis/smd.R ba1 molnupiravir primary
+    needs: [perform_ccw_analysis_mol]
+    outputs:
+      moderately_sensitive:
+        table: output/tables/ccw/smd_molnupiravir.csv
+
+  calc_smd_sot:
+    run: r:latest analysis/smd.R ba1 sotrovimab primary
+    needs: [perform_ccw_analysis_sot]
+    outputs:
+      moderately_sensitive:
+        table: output/tables/ccw/smd_sotrovimab.csv
+
+  calc_smd_ba2:
+    run: r:latest analysis/smd.R ba2 all primary
+    needs: [perform_ccw_analysis_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/tables/ccw/ba2_smd_all.csv
+
+  calc_smd_mol_ba2:
+    run: r:latest analysis/smd.R ba2 molnupiravir primary
+    needs: [perform_ccw_analysis_mol_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/tables/ccw/ba2_smd_molnupiravir.csv
+
+  calc_smd_sot_ba2:
+    run: r:latest analysis/smd.R ba2 sotrovimab primary
+    needs: [perform_ccw_analysis_sot_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/tables/ccw/ba2_smd_sotrovimab.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Tables
