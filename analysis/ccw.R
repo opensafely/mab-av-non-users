@@ -147,6 +147,7 @@ data_control_long <-
   data_control %>%
   survSplit(cut = t_events,
             end = "fup",
+            zero = 0,
             event = "outcome")
 # splitting the original data set at each time of event and sorting it
 # until censoring happens. This is to have the censoring status at each time of
@@ -155,6 +156,7 @@ data_control_long_cens <-
   data_control %>%
   survSplit(cut = t_events,
             end = "fup", 
+            zero = 0,
             event = "censoring") %>%
   select(patient_id, tstart, fup, censoring)
 data_control_long <-
@@ -176,6 +178,7 @@ data_trt_long <-
   data_trt %>%
   survSplit(cut = t_events,
             end = "fup",
+            zero = 0,
             event = "outcome")
 # splitting the original data set at each time of event and sorting it
 # until censoring happens. This is to have the censoring status at each time of
@@ -184,6 +187,7 @@ data_trt_long_cens <-
   data_trt %>%
   survSplit(cut = t_events,
             end = "fup",
+            zero = 0,
             event = "censoring") %>%
   select(patient_id, tstart, fup, censoring)
 data_trt_long <-
