@@ -127,6 +127,8 @@ process_data <- function(data_extracted){
         pfizer_most_recent_cov_vac == TRUE ~ "Pfizer",
         az_most_recent_cov_vac == TRUE ~ "AstraZeneca",
         moderna_most_recent_cov_vac == TRUE ~ "Moderna",
+        !(vaccination_status %in% 
+            c("Un-vaccinated", "Un-vaccinated (declined)")) ~ "Other",
         TRUE ~ "Un-vaccinated"),
       
       # TREATMENT ----              
