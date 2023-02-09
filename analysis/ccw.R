@@ -131,6 +131,7 @@ data_trt <- data_cloned %>% filter(arm == "Treatment")
 # create vector of unique time points in 'data_cloned'
 t_events <- 
   data_cloned %>% pull(fup) %>% unique() %>% sort()
+print(t_events)
 ################################################################################
 # Arm "Control": no treatment within 5 days
 ################################################################################
