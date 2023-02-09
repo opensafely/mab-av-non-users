@@ -132,6 +132,10 @@ data_trt <- data_cloned %>% filter(arm == "Treatment")
 t_events <- 
   data_cloned %>% pull(fup) %>% unique() %>% sort()
 print(t_events)
+data_cloned %>%
+  filter(fup == 0) %>%
+  pull(outcome) %>%
+  table() %>% print()
 ################################################################################
 # Arm "Control": no treatment within 5 days
 ################################################################################
