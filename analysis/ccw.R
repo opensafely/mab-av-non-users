@@ -136,6 +136,10 @@ data_cloned %>%
   filter(fup == 0) %>%
   pull(outcome) %>%
   table() %>% print()
+data_cloned %>%
+  filter(fup == 0) %>%
+  pull(status_all) %>%
+  table() %>% print()
 ################################################################################
 # Arm "Control": no treatment within 5 days
 ################################################################################
