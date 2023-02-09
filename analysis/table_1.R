@@ -58,8 +58,8 @@ data <-
 # 1 Make table 1
 ################################################################################
 # Set rounding and redaction thresholds
-rounding_threshold = 5
-redaction_threshold = 10
+rounding_threshold = 6
+redaction_threshold = 8
 # Format data
 data_table <- 
   data %>%

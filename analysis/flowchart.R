@@ -57,6 +57,9 @@ n_excluded_in_data_processing <-
 ################################################################################
 # 2 Calc numbers
 ################################################################################
+# Set rounding and redaction thresholds
+rounding_threshold = 6
+redaction_threshold = 8
 total_n <- nrow(data)
 # previously treated
 prev_treated <- 
@@ -97,8 +100,10 @@ out <- bind_cols(out, n_excluded_in_data_processing)
 out_redacted <- 
   out %>%
   mutate(across(where(~ is.integer(.x)), 
-                ~ case_when(.x > 0 & .x <= 7 ~ "[REDACTED]",
-                            TRUE ~ .x %>% plyr::round_any(5) %>% as.character())))
+                ~ case_when(.x > 0 & .x <= redaction_threshold ~ "[REDACTED]",
+                            TRUE ~ .x %>% 
+                              plyr::round_any(rounding_threshold) %>% 
+                              as.character())))
 
 ################################################################################
 # 3 Save output
