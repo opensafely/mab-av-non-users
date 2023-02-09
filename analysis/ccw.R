@@ -136,7 +136,27 @@ data_cloned %>%
   filter(fup == 0) %>%
   pull(outcome) %>%
   table() %>% print()
+cat("number of 0 fups in control arm\n")
+data_control %>%
+  filter(fup == 0) %>%
+  pull(outcome) %>% table() %>% print()
+cat("outcome in people in control arm treated on day 0 (should be 0) \n")
 data_cloned %>%
+  filter(arm == "Control") %>%
+  filter(treatment_ccw == "Treated" & tb_postest_treat_ccw == 0) %>%
+  pull(outcome) %>% table() %>% print()
+cat("fup in people in control arm treated on day 0 (should be 0) \n")
+data_cloned %>%
+  filter(arm == "Control") %>%
+  filter(treatment_ccw == "Treated" & tb_postest_treat_ccw == 0) %>%
+  pull(fup) %>% quantile() %>% print()
+cat("number of 0 fups in treatment arm\n")
+data_trt %>%
+  filter(fup == 0) %>%
+  pull(outcome) %>% table() %>% print()
+cat("outcome in people with 0 fups in treatment arm\n")
+data_cloned %>%
+  filter(arm == "Treatment") %>%
   filter(fup == 0) %>%
   pull(status_all) %>%
   table() %>% print()
