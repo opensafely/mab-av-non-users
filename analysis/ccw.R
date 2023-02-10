@@ -227,6 +227,13 @@ data_control_long <-
   mutate(lin_pred = coxLP(cox_control_cens, data_control_long, center = FALSE)) %>%
   left_join(basehazard_control, by = c("tstart" = "time")) %>%
   mutate(p_uncens = exp(-(hazard)*exp(lin_pred)))
+cat("outcomes and censoring var in control arm")
+data_control_long %>%
+  pull(outcome) %>%
+  table() %>% print()
+data_control_long %>%
+  pull(censoring) %>%
+  table() %>% print()
 ################################################################################
 # Arm "Treatment": treatment within 5 days
 ################################################################################
@@ -245,7 +252,13 @@ data_trt_long <-
   mutate(lin_pred = coxLP(cox_trt_cens, data_trt_long, center = FALSE)) %>%
   left_join(basehazard_trt, by = c("tstart" = "time")) %>%
   mutate(p_uncens = exp(-(hazard)*exp(lin_pred)))
-
+cat("outcomes and censoring var in trt arm")
+data_trt_long %>%
+  pull(outcome) %>%
+  table() %>% print()
+data_trt_long %>%
+  pull(censoring) %>%
+  table() %>% print()
 ################################################################################
 # Computing the IPC weights
 ################################################################################
