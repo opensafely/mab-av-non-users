@@ -230,10 +230,10 @@ data_control_long <-
 cat("outcomes and censoring var in control arm")
 data_control_long %>%
   pull(outcome) %>%
-  table() %>% print()
+  table(useNA = "always") %>% print()
 data_control_long %>%
   pull(censoring) %>%
-  table() %>% print()
+  table(useNA = "always") %>% print()
 ################################################################################
 # Arm "Treatment": treatment within 5 days
 ################################################################################
@@ -255,10 +255,10 @@ data_trt_long <-
 cat("outcomes and censoring var in trt arm")
 data_trt_long %>%
   pull(outcome) %>%
-  table() %>% print()
+  table(useNA = "always") %>% print()
 data_trt_long %>%
   pull(censoring) %>%
-  table() %>% print()
+  table(useNA = "always") %>% print()
 ################################################################################
 # Computing the IPC weights
 ################################################################################
