@@ -266,7 +266,7 @@ data_long <-
   bind_rows(data_control_long, data_trt_long) %>%
   mutate(weight = 1 / p_uncens,
          arm = arm %>% factor(levels = c("Control", "Treatment")))
-  
+str(data_long)
 ################################################################################
 # Estimating the survivor function
 ################################################################################
