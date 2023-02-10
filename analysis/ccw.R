@@ -22,6 +22,8 @@ library(riskRegression) #coxLP
 source(here("lib", "design", "covars_formula.R"))
 source(here("analysis", "data_ccw", "simplify_data.R"))
 source(here("analysis", "data_ccw", "clone_data.R"))
+source(here("analysis", "data_ccw", "add_x_days_to_fup.R"))
+source(here("lib", "functions", "make_filename.R"))
 
 ################################################################################
 # 0.1 Create directories for output
@@ -121,9 +123,9 @@ data <- ccw_simplify_data(data, outcome, contrast)
 #              a given arm (either because they receive surgery in the control 
 #              arm or they didn't receive surgery in the surgery arm)
 ################################################################################
-data_cloned <- clone_data(data)
-data_control <- data_cloned %>% filter(arm == "Control")
-data_trt <- data_cloned %>% filter(arm == "Treatment")
+data_cloned <- 
+  clone_data(data) %>%
+  add_x_days_to_fup(0.5)
 
 ################################################################################
 # Splitting the data set at each time of event
@@ -132,34 +134,7 @@ data_trt <- data_cloned %>% filter(arm == "Treatment")
 t_events <- 
   data_cloned %>% pull(fup) %>% unique() %>% sort()
 print(t_events)
-data_cloned %>%
-  filter(fup == 0) %>%
-  pull(outcome) %>%
-  table() %>% print()
-cat("number of 0 fups in control arm\n")
-data_control %>%
-  filter(fup == 0) %>%
-  pull(outcome) %>% table() %>% print()
-cat("outcome in people in control arm treated on day 0 (should be 0) \n")
-data_cloned %>%
-  filter(arm == "Control") %>%
-  filter(treatment_ccw == "Treated" & tb_postest_treat_ccw == 0) %>%
-  pull(outcome) %>% table() %>% print()
-cat("fup in people in control arm treated on day 0 (should be 0) \n")
-data_cloned %>%
-  filter(arm == "Control") %>%
-  filter(treatment_ccw == "Treated" & tb_postest_treat_ccw == 0) %>%
-  pull(fup) %>% quantile() %>% print()
-cat("number of 0 fups in treatment arm\n")
-data_trt %>%
-  filter(fup == 0) %>%
-  pull(outcome) %>% table() %>% print()
-cat("outcome in people with 0 fups in treatment arm\n")
-data_cloned %>%
-  filter(arm == "Treatment") %>%
-  filter(fup == 0) %>%
-  pull(status_all) %>%
-  table() %>% print()
+
 ################################################################################
 # Arm "Control": no treatment within 5 days
 ################################################################################
@@ -172,7 +147,8 @@ data_cloned %>%
 # whether or not an event occurred in a time interval is saved in column 
 # 'outcome'
 data_control_long <- 
-  data_control %>%
+  data_cloned %>%
+  filter(arm == "Control") %>%
   survSplit(cut = t_events,
             end = "fup",
             zero = 0,
@@ -181,7 +157,8 @@ data_control_long <-
 # until censoring happens. This is to have the censoring status at each time of
 # event
 data_control_long_cens <-
-  data_control %>%
+  data_cloned %>%
+  filter(arm == "Control") %>%
   survSplit(cut = t_events,
             end = "fup", 
             zero = 0,
@@ -203,7 +180,8 @@ data_control_long <-
 # whether or not an event occurred in a time interval is saved in column 
 # 'outcome'
 data_trt_long <-
-  data_trt %>%
+  data_cloned %>%
+  filter(arm == "Treatment") %>%
   survSplit(cut = t_events,
             end = "fup",
             zero = 0,
@@ -212,7 +190,8 @@ data_trt_long <-
 # until censoring happens. This is to have the censoring status at each time of
 # event
 data_trt_long_cens <-
-  data_trt %>%
+  data_cloned %>%
+  filter(arm == "Treatment") %>%
   survSplit(cut = t_events,
             end = "fup",
             zero = 0,
@@ -286,17 +265,18 @@ km_control <- survfit(Surv(tstart, fup, outcome) ~ 1,
                       data = data_long %>% filter(arm == "Control"),
                       weights = weight)
 # difference in 28 day survival
-S28_trt <- km_trt$surv[27] # 28 day survival in treatment group 
-S28_control <- km_control$surv[27] # 28 day survival in control group 
+S28_trt <- km_trt$surv[which(km_trt$time == 27.5)] # 28 day survival in treatment group 
+S28_control <- km_control$surv[which(km_trt$time == 27.5)] # 28 day survival in control group 
 diff_surv <- S28_trt - S28_control #Difference in 28 day survival
-diff_surv_SE <- sqrt(km_trt$std.err[27] ^ 2 + km_control$std.err[27] ^ 2)
+diff_surv_SE <- sqrt(km_trt$std.err[which(km_trt$time == 27.5)] ^ 2 + 
+                       km_control$std.err[which(km_trt$time == 27.5)] ^ 2)
 diff_surv_CI <- diff_surv + c(-1, 1) * qnorm(0.975) * diff_surv_SE
 # difference in 28-day restricted mean survival
-RMST_trt <- summary(km_trt, rmean = 27)$table["rmean"] # Estimated RMST in the trt grp
-RMST_control <- summary(km_control, rmean = 27)$table["rmean"] # Estimated RMST in the control grp
+RMST_trt <- summary(km_trt, rmean = 27.5)$table["rmean"] # Estimated RMST in the trt grp
+RMST_control <- summary(km_control, rmean = 27.5)$table["rmean"] # Estimated RMST in the control grp
 diff_RMST <- RMST_trt - RMST_control # Difference in RMST
-diff_RMST_SE <- sqrt(summary(km_trt, rmean = 27)$table["se(rmean)"] ^ 2 + 
-                       summary(km_control, rmean = 27)$table["se(rmean)"] ^ 2)
+diff_RMST_SE <- sqrt(summary(km_trt, rmean = 27.5)$table["se(rmean)"] ^ 2 + 
+                       summary(km_control, rmean = 27.5)$table["se(rmean)"] ^ 2)
 diff_RMST_CI <- diff_RMST + c(-1, 1) * qnorm(0.975) * diff_RMST_SE
 # Emulated trial with Cox weights (Cox model)
 cox_w <- coxph(Surv(tstart, fup, outcome) ~ arm,
@@ -321,17 +301,6 @@ out <-
 ################################################################################
 # Save output
 ################################################################################
-make_filename <- function(object_name, period, outcome, contrast, type){
-  paste0(period[period != "ba1"],
-         "_"[period != "ba1"],
-         object_name,
-         "_",
-         contrast %>% tolower(),
-         "_"[outcome != "primary"],
-         outcome[outcome != "primary"],
-         ".",
-         type)
-}
 # save data in long format
 write_rds(data_long,
           here::here("output", "data",
