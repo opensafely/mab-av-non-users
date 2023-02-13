@@ -217,23 +217,21 @@ cox_control_cens <-
   coxph(formula_cens,
         ties = "efron",
         data = data_control_long)
+cox_control_cens %>% summary() %>% print()
 # calculate baseline hazard (0 for time = 0)
 basehazard_control <- 
   basehaz(cox_control_cens, centered = F) %>%
   add_row(hazard = 0, time = 0, .before = 1)
-# add linear predictor and calculate probablity of remaining uncensored
+basehazard_control %>% print()
+# add linear predictor and calculate probability of remaining uncensored
 data_control_long <-
   data_control_long %>%
   mutate(lin_pred = coxLP(cox_control_cens, data_control_long, center = FALSE)) %>%
   left_join(basehazard_control, by = c("tstart" = "time")) %>%
   mutate(p_uncens = exp(-(hazard)*exp(lin_pred)))
-cat("outcomes and censoring var in control arm")
 data_control_long %>%
-  pull(outcome) %>%
-  table(useNA = "always") %>% print()
-data_control_long %>%
-  pull(censoring) %>%
-  table(useNA = "always") %>% print()
+  select(lin_pred, hazard, p_uncens) %>%
+  str() %>% print()
 ################################################################################
 # Arm "Treatment": treatment within 5 days
 ################################################################################
@@ -242,23 +240,21 @@ cox_trt_cens <-
   coxph(formula_cens,
         ties = "efron",
         data = data_trt_long)
+cox_trt_cens %>% summary() %>% print()
 # calculate baseline hazard (0 for time = 0)
 basehazard_trt <- 
   basehaz(cox_trt_cens, centered = F) %>%
   add_row(hazard = 0, time = 0, .before = 1)
+basehazard_trt %>% print()
 # add linear predictor and calculate probablity of remaining uncensored
 data_trt_long <-
   data_trt_long %>%
   mutate(lin_pred = coxLP(cox_trt_cens, data_trt_long, center = FALSE)) %>%
   left_join(basehazard_trt, by = c("tstart" = "time")) %>%
   mutate(p_uncens = exp(-(hazard)*exp(lin_pred)))
-cat("outcomes and censoring var in trt arm")
 data_trt_long %>%
-  pull(outcome) %>%
-  table(useNA = "always") %>% print()
-data_trt_long %>%
-  pull(censoring) %>%
-  table(useNA = "always") %>% print()
+  select(lin_pred, hazard, p_uncens) %>%
+  str() %>% print()
 ################################################################################
 # Computing the IPC weights
 ################################################################################
@@ -278,62 +274,62 @@ data_long %>%
 # Estimating the survivor function
 ################################################################################
 # kaplan meier
-km_trt <- survfit(Surv(tstart, fup, outcome) ~ 1,
-                  data = subset(data_long, arm == "Treatment"),
-                  weights = weight)
-km_control <- survfit(Surv(tstart, fup, outcome) ~ 1,
-                      data = subset(data_long, arm == "Control"),
-                      weights = weight)
-# difference in 28 day survival
-S28_trt <- km_trt$surv[which(km_trt$time == 27.5)] # 28 day survival in treatment group 
-S28_control <- km_control$surv[which(km_trt$time == 27.5)] # 28 day survival in control group 
-diff_surv <- S28_trt - S28_control #Difference in 28 day survival
-diff_surv_SE <- sqrt(km_trt$std.err[which(km_trt$time == 27.5)] ^ 2 + 
-                       km_control$std.err[which(km_trt$time == 27.5)] ^ 2)
-diff_surv_CI <- diff_surv + c(-1, 1) * qnorm(0.975) * diff_surv_SE
-# difference in 28-day restricted mean survival
-RMST_trt <- summary(km_trt, rmean = 27.5)$table["rmean"] # Estimated RMST in the trt grp
-RMST_control <- summary(km_control, rmean = 27.5)$table["rmean"] # Estimated RMST in the control grp
-diff_RMST <- RMST_trt - RMST_control # Difference in RMST
-diff_RMST_SE <- sqrt(summary(km_trt, rmean = 27.5)$table["se(rmean)"] ^ 2 + 
-                       summary(km_control, rmean = 27.5)$table["se(rmean)"] ^ 2)
-diff_RMST_CI <- diff_RMST + c(-1, 1) * qnorm(0.975) * diff_RMST_SE
-# Emulated trial with Cox weights (Cox model)
-cox_w <- coxph(Surv(tstart, fup, outcome) ~ arm,
-               data = data_long, weights = weight)
-HR <- cox_w$coefficients %>% exp() #Hazard ratio
-HR_CI <- confint(cox_w) %>% exp()
-# save all coefficients in tibble
-out <-
-  tibble(period,
-         outcome,
-         contrast,
-         HR,
-         HR_lower = HR_CI[1],
-         HR_upper = HR_CI[2],
-         diff_surv,
-         diff_surv_lower = diff_surv_CI[1],
-         diff_surv_upper = diff_surv_CI[2],
-         diff_RMST,
-         diff_RMST_lower = diff_RMST_CI[1],
-         diff_RMST_upper = diff_RMST_CI[2])
-
-################################################################################
-# Save output
-################################################################################
-# save data in long format
-write_rds(data_long,
-          here::here("output", "data",
-          make_filename("data_long", period, outcome, contrast, "rds")))
-write_csv(out,
-          here::here("output", "tables", "ccw",
-          make_filename("ccw", period, outcome, contrast, "csv")))
-write_rds(km_trt,
-          here::here("output", "models",
-          make_filename("km_trt", period, outcome, contrast, "rds")))
-write_rds(km_control,
-          here::here("output", "models",
-          make_filename("km_control", period, outcome, contrast, "rds")))
-write_rds(cox_w,
-          here::here("output", "models",
-          make_filename("cox_w", period, outcome, contrast, "rds")))
+# km_trt <- survfit(Surv(tstart, fup, outcome) ~ 1,
+#                   data = subset(data_long, arm == "Treatment"),
+#                   weights = weight)
+# km_control <- survfit(Surv(tstart, fup, outcome) ~ 1,
+#                       data = subset(data_long, arm == "Control"),
+#                       weights = weight)
+# # difference in 28 day survival
+# S28_trt <- km_trt$surv[which(km_trt$time == 27.5)] # 28 day survival in treatment group 
+# S28_control <- km_control$surv[which(km_trt$time == 27.5)] # 28 day survival in control group 
+# diff_surv <- S28_trt - S28_control #Difference in 28 day survival
+# diff_surv_SE <- sqrt(km_trt$std.err[which(km_trt$time == 27.5)] ^ 2 + 
+#                        km_control$std.err[which(km_trt$time == 27.5)] ^ 2)
+# diff_surv_CI <- diff_surv + c(-1, 1) * qnorm(0.975) * diff_surv_SE
+# # difference in 28-day restricted mean survival
+# RMST_trt <- summary(km_trt, rmean = 27.5)$table["rmean"] # Estimated RMST in the trt grp
+# RMST_control <- summary(km_control, rmean = 27.5)$table["rmean"] # Estimated RMST in the control grp
+# diff_RMST <- RMST_trt - RMST_control # Difference in RMST
+# diff_RMST_SE <- sqrt(summary(km_trt, rmean = 27.5)$table["se(rmean)"] ^ 2 + 
+#                        summary(km_control, rmean = 27.5)$table["se(rmean)"] ^ 2)
+# diff_RMST_CI <- diff_RMST + c(-1, 1) * qnorm(0.975) * diff_RMST_SE
+# # Emulated trial with Cox weights (Cox model)
+# cox_w <- coxph(Surv(tstart, fup, outcome) ~ arm,
+#                data = data_long, weights = weight)
+# HR <- cox_w$coefficients %>% exp() #Hazard ratio
+# HR_CI <- confint(cox_w) %>% exp()
+# # save all coefficients in tibble
+# out <-
+#   tibble(period,
+#          outcome,
+#          contrast,
+#          HR,
+#          HR_lower = HR_CI[1],
+#          HR_upper = HR_CI[2],
+#          diff_surv,
+#          diff_surv_lower = diff_surv_CI[1],
+#          diff_surv_upper = diff_surv_CI[2],
+#          diff_RMST,
+#          diff_RMST_lower = diff_RMST_CI[1],
+#          diff_RMST_upper = diff_RMST_CI[2])
+# 
+# ################################################################################
+# # Save output
+# ################################################################################
+# # save data in long format
+# write_rds(data_long,
+#           here::here("output", "data",
+#           make_filename("data_long", period, outcome, contrast, "rds")))
+# write_csv(out,
+#           here::here("output", "tables", "ccw",
+#           make_filename("ccw", period, outcome, contrast, "csv")))
+# write_rds(km_trt,
+#           here::here("output", "models",
+#           make_filename("km_trt", period, outcome, contrast, "rds")))
+# write_rds(km_control,
+#           here::here("output", "models",
+#           make_filename("km_control", period, outcome, contrast, "rds")))
+# write_rds(cox_w,
+#           here::here("output", "models",
+#           make_filename("cox_w", period, outcome, contrast, "rds")))
