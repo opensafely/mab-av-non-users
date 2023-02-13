@@ -115,13 +115,14 @@ process_data <- function(data_extracted){
                   as.numeric(),
                 NA_real_),
       
-      tb_postest_vacc_cat = fct_case_when(
+      tb_postest_vacc_cat = case_when(
         is.na(tb_postest_vacc) ~ "Unknown",
         tb_postest_vacc < 7 ~ "< 7 days",
         tb_postest_vacc >=7 & tb_postest_vacc < 28 ~ "7-27 days",
         tb_postest_vacc >= 28 & tb_postest_vacc < 84 ~ "28-83 days",
         tb_postest_vacc >= 84 ~ ">= 84 days"
-      ),
+      ) %>% factor(levels = 
+                     c("28-83 days", "< 7 days", "7-27 days", ">= 84 days", "Unknown")),
       
       most_recent_vax_cat = fct_case_when(
         pfizer_most_recent_cov_vac == TRUE ~ "Pfizer",
