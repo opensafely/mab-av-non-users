@@ -288,7 +288,9 @@ diff_surv_SE <- sqrt(km_trt$std.err[which(km_trt$time == 27.5)] ^ 2 +
                        km_control$std.err[which(km_trt$time == 27.5)] ^ 2)
 diff_surv_CI <- diff_surv + c(-1, 1) * qnorm(0.975) * diff_surv_SE
 # difference in 28-day restricted mean survival
+summary(km_trt, rmean = 27.5)$table %>% print()
 RMST_trt <- summary(km_trt, rmean = 27.5)$table["rmean"] # Estimated RMST in the trt grp
+summary(km_control, rmean = 27.5)$table %>% print()
 RMST_control <- summary(km_control, rmean = 27.5)$table["rmean"] # Estimated RMST in the control grp
 diff_RMST <- RMST_trt - RMST_control # Difference in RMST
 diff_RMST_SE <- sqrt(summary(km_trt, rmean = 27.5)$table["se(rmean)"] ^ 2 +
