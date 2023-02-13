@@ -272,10 +272,10 @@ str(data_long)
 ################################################################################
 # kaplan meier
 km_trt <- survfit(Surv(tstart, fup, outcome) ~ 1,
-                  data = data_long %>% filter(arm == "Treatment"),
+                  data = subset(data_long, arm == "Treatment"),
                   weights = weight)
 km_control <- survfit(Surv(tstart, fup, outcome) ~ 1,
-                      data = data_long %>% filter(arm == "Control"),
+                      data = subset(data_long, arm == "Control"),
                       weights = weight)
 # difference in 28 day survival
 S28_trt <- km_trt$surv[which(km_trt$time == 27.5)] # 28 day survival in treatment group 
