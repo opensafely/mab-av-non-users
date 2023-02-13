@@ -16,6 +16,7 @@
 library(dplyr)
 library(readr)
 library(purrr)
+library(tidyr)
 source(here::here("lib", "functions", "std_diff.R"))
 source(here::here("lib", "design", "covars_smd.R"))
 source(here::here("analysis", "data_ccw", "spread_data.R"))
