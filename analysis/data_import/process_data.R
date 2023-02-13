@@ -1,4 +1,5 @@
 # load libraries
+library(forcats)
 source(here::here("lib", "functions", "fct_case_when.R"))
 source(here::here("lib", "functions", "define_covid_hosp_admissions.R"))
 source(here::here("lib", "functions", "define_allcause_hosp_admissions.R"))
@@ -121,8 +122,17 @@ process_data <- function(data_extracted){
         tb_postest_vacc >=7 & tb_postest_vacc < 28 ~ "7-27 days",
         tb_postest_vacc >= 28 & tb_postest_vacc < 84 ~ "28-83 days",
         tb_postest_vacc >= 84 ~ ">= 84 days"
-      ) %>% factor(levels = 
-                     c("28-83 days", "< 7 days", "7-27 days", ">= 84 days", "Unknown")),
+      ) %>% factor(
+        levels = c("28-83 days", "< 7 days", "7-27 days", ">= 84 days", "Unknown")
+        ),
+      
+      # because want to add dummy var
+      tb_postest_vax = 
+        fct_recode(tb_postest_vacc_cat,
+                   "7" = "< 7 days",
+                   "7_27" = "7-27 days",
+                   "28_83" = "28-83 days",
+                   "84" = ">= 84 days"),
       
       most_recent_vax_cat = fct_case_when(
         pfizer_most_recent_cov_vac == TRUE ~ "Pfizer",
@@ -214,6 +224,13 @@ process_data <- function(data_extracted){
                     difftime(., date_treated, units = "days") %>%
                     as.numeric()),
     ) %>%
+    # add dummy variable tb_postest categories
+    pivot_wider(names_from = tb_postest_vax,
+                values_from = tb_postest_vax,
+                names_prefix = "tb_postest_vax_",
+                values_fill = 0,
+                values_fn = length) %>%
+    mutate(across(starts_with("tb_postest_vax_"), . %>% as.logical())) %>%
     # because makes logic better readable
     rename(covid_death_date = died_ons_covid_any_date) %>%
     # add columns first admission in day 0-6, second admission etc. to be used
