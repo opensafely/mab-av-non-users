@@ -35,7 +35,7 @@ covars_formula <-
     "huntingtons_disease_nhsd",
     # vax vars
     "vaccination_status",
-    "ns(tb_postest_vacc, df = 3)",
+    #"ns(tb_postest_vacc, df = 3)",
     "pfizer_most_recent_cov_vac",
     "az_most_recent_cov_vac",
     "moderna_most_recent_cov_vac",
