@@ -80,12 +80,12 @@ smd <-
                            ~ std_diff(data_long_spread,
                                       .x,
                                       "weight",
-                                      5)),
+                                      5.5)),
             smd_uw = map_dbl(covars_smd,
                              ~ std_diff(data_long_spread,
                                         .x,
                                         "unweight",
-                                        5)))
+                                        5.5)))
 
 ################################################################################
 # 2 Save table
