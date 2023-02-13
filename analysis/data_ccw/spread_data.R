@@ -26,12 +26,6 @@ recode_fctrs <- function(data){
                         "1" = "One vaccination",
                         unvax = "Un-vaccinated",
                         declined = "Un-vaccinated (declined)"),
-           tb_postest_vax = 
-             fct_recode(tb_postest_vacc_cat,
-                        "7" = "< 7 days",
-                        "7_27" = "7-27 days",
-                        "28_83" = "28-83 days",
-                        "84" = ">= 84 days"),
            no_most_recent_cov_vac =
              if_else(most_recent_vax_cat == "Un-vaccinated", TRUE, FALSE))
 }
@@ -52,6 +46,5 @@ spread_data <- function(data){
     make_dummy_var("imd", "imd_") %>%
     make_dummy_var("rural_urban", "rural_urban_") %>%
     make_dummy_var("smoking_status", "smoking_") %>%
-    make_dummy_var("vax_status", "vax_status_") %>%
-    make_dummy_var("tb_postest_vax", "tb_postest_vax_")
+    make_dummy_var("vax_status", "vax_status_")
 }
