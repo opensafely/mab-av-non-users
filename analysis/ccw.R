@@ -299,6 +299,7 @@ diff_RMST_CI <- diff_RMST + c(-1, 1) * qnorm(0.975) * diff_RMST_SE
 cox_w <- coxph(Surv(tstart, fup, outcome) ~ arm,
                data = data_long, weights = weight)
 HR <- cox_w$coefficients %>% exp() #Hazard ratio
+HR_SE <- summary(cox_w)$coefficients[,"se(coef)"]
 HR_CI <- confint(cox_w) %>% exp()
 # save all coefficients in tibble
 out <-
@@ -308,12 +309,15 @@ out <-
          HR,
          HR_lower = HR_CI[1],
          HR_upper = HR_CI[2],
+         HR_SE = HR_SE,
          diff_surv,
          diff_surv_lower = diff_surv_CI[1],
          diff_surv_upper = diff_surv_CI[2],
+         diff_surv_SE = diff_surv_SE,
          diff_RMST,
          diff_RMST_lower = diff_RMST_CI[1],
-         diff_RMST_upper = diff_RMST_CI[2])
+         diff_RMST_upper = diff_RMST_CI[2],
+         diff_RMST_SE = diff_RMST_SE)
 
 ################################################################################
 # Save output
