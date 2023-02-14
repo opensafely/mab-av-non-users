@@ -67,12 +67,15 @@ output <-
                                       HR = col_double(),
                                       HR_lower = col_double(),
                                       HR_upper = col_double(),
+                                      HR_SE = col_double()
                                       diff_surv = col_double(),
                                       diff_surv_lower = col_double(),
                                       diff_surv_upper = col_double(),
+                                      diff_SE = col_double(),
                                       diff_RMST = col_double(),
                                       diff_RMST_lower = col_double(),
-                                      diff_RMST_upper = col_double())) %>%
+                                      diff_RMST_upper = col_double(),
+                                      diff_RMST_SE = col_double())) %>%
             mutate(across(where(~ is.double(.x)), ~ round(.x, 2)))
   ) # round to second decimal
 
@@ -82,6 +85,7 @@ output <-
 format_output <- function(output, measure){
   measure_lower <- paste0(measure, "_lower")
   measure_upper <- paste0(measure, "_upper")
+  measure_SE <- paste0(measure, "_SE")
   output_formatted <- 
     output %>%
     mutate("{measure}" := 
