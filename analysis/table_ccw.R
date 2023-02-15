@@ -67,11 +67,11 @@ output <-
                                       HR = col_double(),
                                       HR_lower = col_double(),
                                       HR_upper = col_double(),
-                                      HR_SE = col_double()
+                                      HR_SE = col_double(),
                                       diff_surv = col_double(),
                                       diff_surv_lower = col_double(),
                                       diff_surv_upper = col_double(),
-                                      diff_SE = col_double(),
+                                      diff_surv_SE = col_double(),
                                       diff_RMST = col_double(),
                                       diff_RMST_lower = col_double(),
                                       diff_RMST_upper = col_double(),
@@ -95,7 +95,7 @@ format_output <- function(output, measure){
                     ";",
                     .data[[measure_upper]],
                     ")")) %>%
-    select(period, outcome, contrast, measure)
+    select(period, outcome, contrast, measure, measure_SE)
   output_formatted
 }
 
