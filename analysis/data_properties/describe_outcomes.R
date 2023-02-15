@@ -52,7 +52,7 @@ data <-
   read_rds(here::here("output", "data", data_filename))
 
 ################################################################################
-# 1 Describe primary outcomes
+# 1 Add indicator to data
 ################################################################################
 data <-
   data %>%
@@ -61,28 +61,83 @@ data <-
                       covid_death_date == min_date_primary ~ "equal",
                      status_primary == "covid_hosp_death" &
                        death_date > min_date_primary ~ "after",
-                     TRUE ~ NA_character_))
+                     TRUE ~ NA_character_),
+         ind_death_equal_after2 = 
+           case_when(status_secondary == "allcause_hosp_death" & 
+                       death_date == min_date_secondary ~ "equal",
+                     status_secondary == "allcause_hosp_death" &
+                       death_date > min_date_secondary ~ "after",
+                     TRUE ~ NA_character_),
+         all = "All")
+
+################################################################################
+# 2 Tabularise outcomes
+################################################################################
+# function to tabular outcomes
+tabularise_outcomes <- function(data, group_var, status_var, indicator){
+  table <- 
+    data %>%
+    group_by({{ group_var }}) %>%
+    summarise(
+      n = n(), 
+      n_covid_hosp_death = 
+        sum({{ status_var }} == "covid_hosp_death", na.rm = TRUE),
+      n_of_which_covid_death = 
+        sum({{ status_var }} == "covid_hosp_death" & {{ indicator }} == "equal", 
+            na.rm = TRUE),
+      n_death_after_covid_hosp = 
+        sum({{ status_var }} == "covid_hosp_death" & {{ indicator }} == "after", 
+            na.rm = TRUE),
+      noncovid_death = 
+        sum({{ status_var }} == "noncovid_death", na.rm = TRUE),
+      dereg = sum({{ status_var }} == "dereg", na.rm = TRUE)
+    ) %>%
+    rename(group = {{ group_var }})
+  table
+}
 table_prim <- 
-  data %>%
-  summarise(
-    n_covid_hosp_death = sum(status_primary == "covid_hosp_death", 
-                             na.rm = TRUE),
-    n_of_which_covid_death = sum(status_primary == "covid_hosp_death" & 
-                                   ind_death_equal_after1 == "equal", 
-                                 na.rm = TRUE),
-    n_death_after_covid_hosp = sum(status_primary == "covid_hosp_death" & 
-                                     ind_death_equal_after1 == "after", 
-                                   na.rm = TRUE),
-    noncovid_death = sum(status_primary == "noncovid_death", 
-                         na.rm = TRUE),
-    dereg = sum(status_primary == "dereg", 
-                na.rm = TRUE)
-    )
+  tabularise_outcomes(data, 
+                      all, 
+                      status_primary, 
+                      ind_death_equal_after1) %>%
+  bind_rows(
+    tabularise_outcomes(data, 
+                        treatment_strategy_cat_prim, 
+                        status_primary, 
+                        ind_death_equal_after1))
+table_sec <- 
+  tabularise_outcomes(data, 
+                      all, 
+                      status_secondary, 
+                      ind_death_equal_after2) %>%
+  bind_rows(
+    tabularise_outcomes(data,
+                        treatment_strategy_cat_sec, 
+                        status_secondary, 
+                        ind_death_equal_after2))
+
+################################################################################
+# 3 Redact tables
+################################################################################
+# Set rounding and redaction thresholds
+rounding_threshold = 6
+redaction_threshold = 8
 table_prim_redacted <-
   table_prim %>%
   mutate(across(where(~ is.integer(.x)), 
-                ~ case_when(. <= 7 ~ "[REDACTED]",
-                            TRUE ~ plyr::round_any(., 5) %>% as.character())))
+                ~ case_when(. <= redaction_threshold ~ "[REDACTED]",
+                            TRUE ~ plyr::round_any(., rounding_threshold) %>% 
+                              as.character())))
+table_sec_redacted <-
+  table_sec %>%
+  mutate(across(where(~ is.integer(.x)), 
+                ~ case_when(. <= redaction_threshold ~ "[REDACTED]",
+                            TRUE ~ plyr::round_any(., rounding_threshold) %>% 
+                              as.character())))
+
+################################################################################
+# 4 Save output
+################################################################################
 write_csv(table_prim,
           here::here("output", "tables", "descriptive",
                      paste0(period[period != "ba1"],
@@ -93,37 +148,6 @@ write_csv(table_prim_redacted,
                      paste0(period[period != "ba1"],
                             "_"[period != "ba1"],
                             "outcomes_redacted.csv")))
-
-################################################################################
-# 2 Describe secondary outcomes
-################################################################################
-data <-
-  data %>%
-  mutate(ind_death_equal_after2 = 
-           case_when(status_secondary == "allcause_hosp_death" & 
-                       death_date == min_date_secondary ~ "equal",
-                     status_secondary == "allcause_hosp_death" &
-                       death_date > min_date_secondary ~ "after",
-                     TRUE ~ NA_character_))
-table_sec <- 
-  data %>%
-  summarise(
-    n_allcause_hosp_death = sum(status_secondary == "allcause_hosp_death",
-                                na.rm = TRUE),
-    n_of_which_death = sum(status_secondary == "allcause_hosp_death" & 
-                             ind_death_equal_after2 == "equal",
-                           na.rm = TRUE),
-    n_death_after_allcause_hosp = sum(status_secondary == "allcause_hosp_death" & 
-                                        ind_death_equal_after2 == "after",
-                                      na.rm = TRUE),
-    dereg = sum(status_secondary == "dereg",
-                na.rm = TRUE)
-    )
-table_sec_redacted <-
-  table_sec %>%
-  mutate(across(where(~ is.integer(.x)), 
-                ~ case_when(. <= 7 ~ "[REDACTED]",
-                            TRUE ~ plyr::round_any(., 5) %>% as.character())))
 write_csv(table_sec,
           here::here("output", "tables", "descriptive", 
                      paste0(period[period != "ba1"],
