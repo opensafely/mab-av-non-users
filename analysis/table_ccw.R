@@ -76,7 +76,7 @@ output <-
                                       diff_RMST_lower = col_double(),
                                       diff_RMST_upper = col_double(),
                                       diff_RMST_SE = col_double())) %>%
-            mutate(across(where(~ is.double(.x)), ~ round(.x, 2)))
+            mutate(across(where(~ is.double(.x)), ~ round(.x, 3)))
   ) # round to second decimal
 
 ################################################################################
