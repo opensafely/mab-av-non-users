@@ -3,6 +3,7 @@ covars <-
     "sex",
     "ethnicity",
     "imdQ5",
+    "region_nhs",
     "rural_urban",
     # other comorbidities/clinical characteristics
     "obese",

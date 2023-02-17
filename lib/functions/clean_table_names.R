@@ -10,6 +10,7 @@ clean_table_names = function(input_table) {
   input_table$Group[input_table$Group=="sex"] = "Sex"
   input_table$Group[input_table$Group=="ethnicity"] = "Ethnicity"
   input_table$Group[input_table$Group=="imdQ5"] = "IMD"
+  input_table$Group[input_table$Group=="region_nhs"] = "Region"
   input_table$Group[input_table$Group=="rural_urban"] = "Setting"
   # clinical characteristics
   input_table$Group[input_table$Group=="obese"] = "Obesity"
