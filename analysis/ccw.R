@@ -217,21 +217,16 @@ cox_control_cens <-
   coxph(formula_cens,
         ties = "efron",
         data = data_control_long)
-cox_control_cens %>% summary() %>% print()
 # calculate baseline hazard (0 for time = 0)
 basehazard_control <- 
   basehaz(cox_control_cens, centered = F) %>%
   add_row(hazard = 0, time = 0, .before = 1)
-basehazard_control %>% print()
 # add linear predictor and calculate probability of remaining uncensored
 data_control_long <-
   data_control_long %>%
   mutate(lin_pred = coxLP(cox_control_cens, data_control_long, center = FALSE)) %>%
   left_join(basehazard_control, by = c("tstart" = "time")) %>%
   mutate(p_uncens = exp(-(hazard)*exp(lin_pred)))
-data_control_long %>%
-  select(lin_pred, hazard, p_uncens) %>%
-  str() %>% print()
 ################################################################################
 # Arm "Treatment": treatment within 5 days
 ################################################################################
@@ -240,21 +235,17 @@ cox_trt_cens <-
   coxph(formula_cens,
         ties = "efron",
         data = data_trt_long)
-cox_trt_cens %>% summary() %>% print()
 # calculate baseline hazard (0 for time = 0)
 basehazard_trt <- 
   basehaz(cox_trt_cens, centered = F) %>%
   add_row(hazard = 0, time = 0, .before = 1)
-basehazard_trt %>% print()
 # add linear predictor and calculate probablity of remaining uncensored
 data_trt_long <-
   data_trt_long %>%
   mutate(lin_pred = coxLP(cox_trt_cens, data_trt_long, center = FALSE)) %>%
   left_join(basehazard_trt, by = c("tstart" = "time")) %>%
   mutate(p_uncens = exp(-(hazard)*exp(lin_pred)))
-data_trt_long %>%
-  select(lin_pred, hazard, p_uncens) %>%
-  str() %>% print()
+
 ################################################################################
 # Computing the IPC weights
 ################################################################################
@@ -262,14 +253,7 @@ data_long <-
   bind_rows(data_control_long, data_trt_long) %>%
   mutate(weight = 1 / p_uncens,
          arm = arm %>% factor(levels = c("Control", "Treatment")))
-data_long %>%
-  subset(arm == "Treatment") %>%
-  select(arm, tstart, fup, outcome, weight) %>%
-  str() %>% print()
-data_long %>%
-  subset(arm == "Control") %>%
-  select(arm, tstart, fup, outcome, weight) %>%
-  str() %>% print()
+
 ################################################################################
 # Estimating the survivor function
 ################################################################################
@@ -298,9 +282,14 @@ diff_RMST_CI <- diff_RMST + c(-1, 1) * qnorm(0.975) * diff_RMST_SE
 # Emulated trial with Cox weights (Cox model)
 cox_w <- coxph(Surv(tstart, fup, outcome) ~ arm,
                data = data_long, weights = weight)
-HR <- cox_w$coefficients %>% exp() #Hazard ratio
+HR <- cox_w$coefficients %>% exp() # Hazard ratio
 HR_SE <- summary(cox_w)$coefficients[,"se(coef)"]
 HR_CI <- confint(cox_w) %>% exp()
+# unweighted analysis
+cox_uw <- coxph(Surv(tstart, fup, outcome) ~ arm, data = data_long)
+HR_uw <- cox_uw$coefficients %>% exp() # Hazard ratio
+HR_uw_SE <- summary(cox_uw)$coefficients[,"se(coef)"]
+HR_uw_CI <- confint(cox_uw) %>% exp()
 # save all coefficients in tibble
 out <-
   tibble(period,
@@ -310,6 +299,10 @@ out <-
          HR_lower = HR_CI[1],
          HR_upper = HR_CI[2],
          HR_SE = HR_SE,
+         HR_uw,
+         HR_uw_SE,
+         HR_uw_lower = HR_uw_CI[1],
+         HR_uw_upper = HR_uw_CI[2],
          diff_surv,
          diff_surv_lower = diff_surv_CI[1],
          diff_surv_upper = diff_surv_CI[2],
@@ -322,13 +315,19 @@ out <-
 ################################################################################
 # Save output
 ################################################################################
+# save estimates from models
+write_csv(out,
+          here::here("output", "tables", "ccw",
+                     make_filename("ccw", period, outcome, contrast, "csv")))
+
+################################################################################
+# Save residual output
+################################################################################
 # save data in long format
 write_rds(data_long,
           here::here("output", "data",
           make_filename("data_long", period, outcome, contrast, "rds")))
-write_csv(out,
-          here::here("output", "tables", "ccw",
-          make_filename("ccw", period, outcome, contrast, "csv")))
+# save models
 write_rds(km_trt,
           here::here("output", "models",
           make_filename("km_trt", period, outcome, contrast, "rds")))
@@ -338,3 +337,6 @@ write_rds(km_control,
 write_rds(cox_w,
           here::here("output", "models",
           make_filename("cox_w", period, outcome, contrast, "rds")))
+write_rds(cox_uw,
+          here::here("output", "models",
+                     make_filename("cox_uw", period, outcome, contrast, "rds")))

@@ -148,6 +148,7 @@ actions:
         model1: output/models/km_trt_all.rds
         model2: output/models/km_control_all.rds
         model3: output/models/cox_w_all.rds
+        model4: output/models/cox_uw_all.rds
       moderately_sensitive:
         table: output/tables/ccw/ccw_all.csv
   
@@ -160,6 +161,7 @@ actions:
         model1: output/models/km_trt_molnupiravir.rds
         model2: output/models/km_control_molnupiravir.rds
         model3: output/models/cox_w_molnupiravir.rds
+        model4: output/models/cox_uw_molnupiravir.rds
       moderately_sensitive:
         table: output/tables/ccw/ccw_molnupiravir.csv
 
@@ -172,6 +174,7 @@ actions:
         model1: output/models/km_trt_sotrovimab.rds
         model2: output/models/km_control_sotrovimab.rds
         model3: output/models/cox_w_sotrovimab.rds
+        model4: output/models/cox_uw_sotrovimab.rds
       moderately_sensitive:
         table: output/tables/ccw/ccw_sotrovimab.csv
 
@@ -184,6 +187,7 @@ actions:
         model1: output/models/ba2_km_trt_all.rds
         model2: output/models/ba2_km_control_all.rds
         model3: output/models/ba2_cox_w_all.rds
+        model4: output/models/ba2_cox_uw_all.rds
       moderately_sensitive:
         table: output/tables/ccw/ba2_ccw_all.csv
   
@@ -196,6 +200,7 @@ actions:
         model1: output/models/ba2_km_trt_molnupiravir.rds
         model2: output/models/ba2_km_control_molnupiravir.rds
         model3: output/models/ba2_cox_w_molnupiravir.rds
+        model4: output/models/ba2_cox_uw_molnupiravir.rds
       moderately_sensitive:
         table: output/tables/ccw/ba2_ccw_molnupiravir.csv
 
@@ -208,6 +213,7 @@ actions:
         model1: output/models/ba2_km_trt_sotrovimab.rds
         model2: output/models/ba2_km_control_sotrovimab.rds
         model3: output/models/ba2_cox_w_sotrovimab.rds
+        model4: output/models/ba2_cox_uw_sotrovimab.rds
       moderately_sensitive:
         table: output/tables/ccw/ba2_ccw_sotrovimab.csv
   
