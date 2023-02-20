@@ -24,7 +24,7 @@ source(here::here("lib", "functions", "make_filename.R"))
 # 0.1 Create directories for output
 ################################################################################
 # Create directory where output of ccw analysis will be saved
-output_dir <- here::here("output", "tables", "ccw")
+output_dir <- here::here("output", "data_properties", "data_long")
 fs::dir_create(output_dir)
 
 ################################################################################
@@ -75,7 +75,7 @@ calc_dens_of_arm <- function(data, arm, time){
     filter(fup == time & arm == arm) %>%
     pull(weight) %>%
     density()
-  out <- cbind(dens$x, dens$y)
+  out <- cbind.data.frame(coord = dens$x, dens = dens$y)
 }
 arms <- c("Control", "Treatment")
 dens <- map(.x = arms,
@@ -86,6 +86,11 @@ names(dens) <- arms
 # 2 Save table
 ################################################################################
 iwalk(.x = dens,
-      .f = ~ write_csv(
-        fs::path(output_dir,
-                 make_filename("dens", period, outcome, contrast, "csv"))))
+      .f = ~ 
+        write_csv(
+          .x,
+          fs::path(output_dir,
+                   make_filename(paste0("dens_", tolower(.y)),
+                                 period, outcome, contrast, "csv"))
+        )
+      )
