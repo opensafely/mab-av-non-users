@@ -68,6 +68,10 @@ output <-
                                       HR_lower = col_double(),
                                       HR_upper = col_double(),
                                       HR_SE = col_double(),
+                                      HR_uw = col_double(),
+                                      HR_uw_SE = col_double(),
+                                      HR_uw_lower = col_double(),
+                                      HR_uw_upper = col_double(),
                                       diff_surv = col_double(),
                                       diff_surv_lower = col_double(),
                                       diff_surv_upper = col_double(),
@@ -103,7 +107,7 @@ format_output <- function(output, measure){
 # 1. Format output
 ################################################################################
 output_formatted <-
-  map(.x = c("HR", "diff_surv", "diff_RMST"),
+  map(.x = c("HR", "HR_uw", "diff_surv", "diff_RMST"),
       .f = ~ format_output(output, .x))
 output_combined <-
   output_formatted %>%
