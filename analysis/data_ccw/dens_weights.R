@@ -75,22 +75,18 @@ calc_dens_of_arm <- function(data, arm, time){
     filter(fup == time & arm == arm) %>%
     pull(weight) %>%
     density()
-  out <- cbind.data.frame(coord = dens$x, dens = dens$y)
+  out <- cbind.data.frame(coord = dens$x, dens = dens$y, arm = arm)
 }
 arms <- c("Control", "Treatment")
 dens <- map(.x = arms,
-            .f = ~ calc_dens_of_arm(data_long, .x, 5.5))
-names(dens) <- arms
+            .f = ~ calc_dens_of_arm(data_long, .x, 5.5)) %>% bind_rows()
+
 
 ################################################################################
 # 2 Save table
 ################################################################################
-iwalk(.x = dens,
-      .f = ~ 
-        write_csv(
-          .x,
-          fs::path(output_dir,
-                   make_filename(paste0("dens_", tolower(.y)),
-                                 period, outcome, contrast, "csv"))
-        )
-      )
+write_csv(
+  dens,
+  fs::path(output_dir,
+           make_filename("dens", period, outcome, contrast, "csv"))
+)
