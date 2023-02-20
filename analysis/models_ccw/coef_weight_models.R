@@ -23,6 +23,8 @@ library(dplyr)
 library(purrr)
 library(readr)
 library(stringr)
+library(survival)
+library(broom)
 
 ################################################################################
 # 0.1 Create directories for output
@@ -69,16 +71,15 @@ names(models) <- object_names
 ################################################################################
 coefs <- 
   map(.x = models,
-      .f = ~ coefficients(.x))
+      .f = ~ tidy(.x))
 
 ################################################################################
 # 2 Save coefficients to text file
 ################################################################################
 iwalk(
   .x = coefs,
-  .f = ~ capture.output(
+  .f = ~ write_csv(
     .x,
-    file = fs::path(output_dir, paste0(.y, ".txt")),
-    split = FALSE
+    fs::path(output_dir, paste0(.y, ".csv")),
   )
 )
