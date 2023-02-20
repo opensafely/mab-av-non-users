@@ -306,42 +306,42 @@ actions:
   ## # # # # # # # # # # # # # # # # # # #
 
   dens_weights:
-    run: r:latest analysis/dens_weights.R ba1 all primary
+    run: r:latest analysis/data_ccw/dens_weights.R ba1 all primary
     needs: [perform_ccw_analysis]
     outputs:
       moderately_sensitive:
         table: output/tables/ccw/dens_all.csv
   
   dens_weights_mol:
-    run: r:latest analysis/dens_weights.R ba1 molnupiravir primary
+    run: r:latest analysis/data_ccw/dens_weights.R ba1 molnupiravir primary
     needs: [perform_ccw_analysis_mol]
     outputs:
       moderately_sensitive:
         table: output/tables/ccw/dens_molnupiravir.csv
 
   dens_weights_sot:
-    run: r:latest analysis/dens_weights.R ba1 sotrovimab primary
+    run: r:latest analysis/data_ccw/dens_weights.R ba1 sotrovimab primary
     needs: [perform_ccw_analysis_sot]
     outputs:
       moderately_sensitive:
-        table: output/tables/ccw/dens_sotrovimab.csv
+        table: output/tables/data_ccw/ccw/dens_sotrovimab.csv
 
   dens_weights_ba2:
-    run: r:latest analysis/dens_weights.R ba2 all primary
+    run: r:latest analysis/data_ccw/dens_weights.R ba2 all primary
     needs: [perform_ccw_analysis_ba2]
     outputs:
       moderately_sensitive:
         table: output/tables/ccw/ba2_dens_all.csv
 
   dens_weights_mol_ba2:
-    run: r:latest analysis/dens_weights.R ba2 molnupiravir primary
+    run: r:latest analysis/data_ccw/dens_weights.R ba2 molnupiravir primary
     needs: [perform_ccw_analysis_mol_ba2]
     outputs:
       moderately_sensitive:
         table: output/tables/ccw/ba2_dens_molnupiravir.csv
 
   dens_weights_sot_ba2:
-    run: r:latest analysis/dens_weights.R ba2 sotrovimab primary
+    run: r:latest analysis/data_ccw/dens_weights.R ba2 sotrovimab primary
     needs: [perform_ccw_analysis_sot_ba2]
     outputs:
       moderately_sensitive:
