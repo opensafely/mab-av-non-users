@@ -57,22 +57,19 @@ files <-
   list.files(models_dir,
              pattern = pattern, 
              full.names = FALSE)
-print(files)
 # capture names of models
 object_names <- str_extract(files, "[^.]+")
 models <- 
   map(.x = files,
       .f = ~ readRDS(fs::path(models_dir, .x)))
 names(models) <- object_names
-print(models)
 
 ################################################################################
 # 1 Coef models
 ################################################################################
 coefs <- 
   map(.x = models,
-      .f = ~ summary(.x) %>% coefficients)
-print(coefs)
+      .f = ~ coefficients(.x))
 
 ################################################################################
 # 2 Save coefficients to text file
