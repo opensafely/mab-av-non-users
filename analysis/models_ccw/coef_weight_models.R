@@ -64,6 +64,7 @@ models <-
   map(.x = files,
       .f = ~ readRDS(fs::path(models_dir, .x)))
 names(models) <- object_names
+print(models)
 
 ################################################################################
 # 1 Coef models
@@ -71,6 +72,7 @@ names(models) <- object_names
 coefs <- 
   map(.x = models,
       .f = ~ summary(.x) %>% coefficients)
+print(coefs)
 
 ################################################################################
 # 2 Save coefficients to text file
