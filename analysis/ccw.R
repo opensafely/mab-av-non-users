@@ -32,6 +32,8 @@ source(here("lib", "functions", "make_filename.R"))
 fs::dir_create(here::here("output", "tables", "ccw"))
 # Create directory for models
 fs::dir_create(here::here("output", "models"))
+# Create directory for baseline hazards
+fs::dir_create(here::here("output", "models", "basehaz"))
 
 ################################################################################
 # 0.2 Import command-line arguments
@@ -273,7 +275,6 @@ diff_surv_SE <- sqrt(km_trt$std.err[which(km_trt$time == 27.5)] ^ 2 +
 diff_surv_CI <- diff_surv + c(-1, 1) * qnorm(0.975) * diff_surv_SE
 # difference in 28-day restricted mean survival
 RMST_trt <- summary(km_trt, rmean = 27.5)$table["*rmean"] # Estimated RMST in the trt grp
-summary(km_control, rmean = 27.5)$table %>% print()
 RMST_control <- summary(km_control, rmean = 27.5)$table["*rmean"] # Estimated RMST in the control grp
 diff_RMST <- RMST_trt - RMST_control # Difference in RMST
 diff_RMST_SE <- sqrt(summary(km_trt, rmean = 27.5)$table["*se(rmean)"] ^ 2 +
@@ -328,6 +329,12 @@ write_rds(data_long,
           here::here("output", "data",
           make_filename("data_long", period, outcome, contrast, "rds")))
 # save models
+write_rds(cox_control_cens,
+          here::here("output", "models",
+                     make_filename("cox_cens_control", period, outcome, contrast, "rds")))
+write_rds(cox_trt_cens,
+          here::here("output", "models",
+                     make_filename("cox_cens_trt", period, outcome, contrast, "rds")))
 write_rds(km_trt,
           here::here("output", "models",
           make_filename("km_trt", period, outcome, contrast, "rds")))
@@ -340,3 +347,10 @@ write_rds(cox_w,
 write_rds(cox_uw,
           here::here("output", "models",
                      make_filename("cox_uw", period, outcome, contrast, "rds")))
+# save baseline hazards
+write_csv(basehazard_control,
+          here::here("output", "models", "basehaz",
+                     make_filename("basehaz_control", period, outcome, contrast, "csv")))
+write_csv(basehazard_trt,
+          here::here("output", "models", "basehaz",
+                     make_filename("basehaz_trt", period, outcome, contrast, "csv")))
