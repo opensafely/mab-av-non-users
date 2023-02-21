@@ -325,6 +325,13 @@ actions:
     outputs:
       moderately_sensitive:
         table: output/data_properties/data_long/dens_sotrovimab.csv
+  
+  plot_dens_weights:
+    run: r:latest analysis/figures/plot_dens_weights.R ba1
+    needs: [dens_weights, dens_weights_mol, dens_weights_sot]
+    outputs:
+      moderately_sensitive:
+        figures: output/figures/density/dens_*.png
 
   dens_weights_ba2:
     run: r:latest analysis/data_ccw/dens_weights.R ba2 all primary
@@ -346,6 +353,13 @@ actions:
     outputs:
       moderately_sensitive:
         table: output/data_properties/data_long/ba2_dens_sotrovimab.csv
+
+  plot_dens_weights:
+    run: r:latest analysis/figures/plot_dens_weights.R ba2
+    needs: [dens_weights_ba2, dens_weights_mol_ba2, dens_weights_sot_ba2]
+    outputs:
+      moderately_sensitive:
+        figures: output/figures/density/ba2_dens_*.png
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Tables
