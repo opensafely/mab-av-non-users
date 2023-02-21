@@ -354,7 +354,7 @@ actions:
       moderately_sensitive:
         table: output/data_properties/data_long/ba2_dens_sotrovimab.csv
 
-  plot_dens_weights:
+  plot_dens_weights_ba2:
     run: r:latest analysis/figures/plot_dens_weights.R ba2
     needs: [dens_weights_ba2, dens_weights_mol_ba2, dens_weights_sot_ba2]
     outputs:
