@@ -19,12 +19,13 @@ library(dplyr)
 library(purrr)
 library(readr)
 library(stringr)
+library(ggplot2)
 
 ################################################################################
 # 0.1 Create directories for output
 ################################################################################
 # Create models directory
-output_dir <- here("output", "figures", "density")
+output_dir <- here::here("output", "figures", "density")
 fs::dir_create(output_dir)
 
 ################################################################################
