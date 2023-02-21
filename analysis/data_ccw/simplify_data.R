@@ -1,4 +1,4 @@
-ccw_simplify_data <- function(data, outcome, contrast){
+ccw_simplify_data <- function(data, outcome, contrast, subgrp){
   if (outcome == "primary"){
     data <-
       data %>%
@@ -23,6 +23,11 @@ ccw_simplify_data <- function(data, outcome, contrast){
         data %>%
         filter(treatment_strategy_cat_prim %in% c("Untreated", contrast))
     }
+    if (subgroup != "full"){
+      data <-
+        data %>% 
+        filter(haematological_disease_nhsd == 1)
+    }
   } else if (outcome == "secondary"){
     data <-
       data %>%
@@ -46,6 +51,11 @@ ccw_simplify_data <- function(data, outcome, contrast){
       data <- 
         data %>%
         filter(treatment_strategy_cat_sec %in% c("Untreated", contrast))
+    }
+    if (subgroup != "full"){
+      data <-
+        data %>% 
+        filter(haematological_disease_nhsd == 1)
     }
   }
   data
