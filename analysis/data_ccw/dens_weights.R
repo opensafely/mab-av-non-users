@@ -70,17 +70,16 @@ data_long <- read_rds(here::here("output", "data", data_filename))
 ################################################################################
 # 1 Estimate density
 ################################################################################
-calc_dens_of_arm <- function(data, arm, time){
+calc_dens_of_arm <- function(data, arm_str, time){
   dens <- data %>%
-    filter(fup == time & arm == arm) %>%
+    filter(arm == arm_str & fup == time) %>%
     pull(weight) %>%
     density()
-  out <- cbind.data.frame(coord = dens$x, dens = dens$y, arm = arm)
+  out <- cbind.data.frame(coord = dens$x, dens = dens$y, arm = arm_str)
 }
 arms <- c("Control", "Treatment")
 dens <- map(.x = arms,
             .f = ~ calc_dens_of_arm(data_long, .x, 5.5)) %>% bind_rows()
-
 
 ################################################################################
 # 2 Save table
