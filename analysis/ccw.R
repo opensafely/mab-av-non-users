@@ -2,11 +2,13 @@
 #
 # CCW Analysis
 #
-# This script can be run via an action in project.yaml using three arguments:
+# This script can be run via an action in project.yaml using five arguments:
 # - 'period' /in {ba1, ba2} (--> ba1 or ba2 analysis)
 # - 'contrast' /in {all, sotrovimab, molnupiravir} (--> treated vs untreated/ 
 #.   sotrovimab vs untreated (excl mol users)/ molnupiravir vs untreated)
 # - 'outcome' /in {primary, secondary} (--> primary or secondary outcome)
+# - 'subgrp' /in {full, haem} (--> full cohort or haematological subgroup)
+# - 'supp'/in {main, supp1} (--> main analysis or supplemental analysis)
 #
 ################################################################################
 
@@ -23,6 +25,7 @@ source(here("lib", "design", "covars_formula.R"))
 source(here("analysis", "data_ccw", "simplify_data.R"))
 source(here("analysis", "data_ccw", "clone_data.R"))
 source(here("analysis", "data_ccw", "add_x_days_to_fup.R"))
+source(here("analysis", "data_ccw", "add_x_days_to_day0.R"))
 source(here("lib", "functions", "make_filename.R"))
 
 ################################################################################
@@ -45,9 +48,11 @@ if (length(args) == 0){
   period = "ba1"
   contrast = "all"
   outcome = "primary"
-} else if (length(args) != 3){
-  stop("Three arguments are needed")
-} else if (length(args) == 3) {
+  subgrp = "full"
+  supp = "main"
+} else if (length(args) != 5){
+  stop("Five arguments are needed")
+} else if (length(args) == 5) {
   if (args[[1]] == "ba1") {
     period = "ba1"
   } else if (args[[1]] == "ba2") {
@@ -64,6 +69,16 @@ if (length(args) == 0){
     outcome = "primary"
   } else if (args[[3]] == "secondary"){
     outcome = "secondary"
+  }
+  if (args[[4]] == "full"){
+    subgrp = "full"
+  } else if (args[[4]] == "haem"){
+    subgrp = "haem"
+  }
+  if (args[[5]] == "main"){
+    supp = "main"
+  } else if (args[[5]] == "supp1"){
+    supp = "supp1"
   }
 } else {
   # Print error if no argument specified
@@ -110,7 +125,7 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 # 5. if 'contrast' is equal to Molnupiravir, individuals treated with Sot are
 #.   removed from the data; if 'contrast' is equal to Sotrovimab,
 #.   individuals treated with Mol are removed from the data
-data <- ccw_simplify_data(data, outcome, contrast)
+data <- ccw_simplify_data(data, outcome, contrast, subgrp)
 
 ################################################################################
 # Clone data and add vars outcome, fup and censoring
@@ -125,9 +140,15 @@ data <- ccw_simplify_data(data, outcome, contrast)
 #              a given arm (either because they receive surgery in the control 
 #              arm or they didn't receive surgery in the surgery arm)
 ################################################################################
+if (supp == "main") {
 data_cloned <- 
   clone_data(data) %>%
   add_x_days_to_fup(0.5)
+} else if (supp == "supp1") {
+  data_cloned <- 
+    clone_data(data) %>%
+    add_x_days_to_day0(0.5) 
+}
 
 ################################################################################
 # Splitting the data set at each time of event
@@ -319,7 +340,7 @@ out <-
 # save estimates from models
 write_csv(out,
           here::here("output", "tables", "ccw",
-                     make_filename("ccw", period, outcome, contrast, "csv")))
+                     make_filename("ccw", period, outcome, contrast, subgrp, supp, "csv")))
 
 ################################################################################
 # Save residual output
@@ -327,30 +348,30 @@ write_csv(out,
 # save data in long format
 write_rds(data_long,
           here::here("output", "data",
-          make_filename("data_long", period, outcome, contrast, "rds")))
+          make_filename("data_long", period, outcome, contrast, subgrp, supp, "rds")))
 # save models
 write_rds(cox_control_cens,
           here::here("output", "models",
-                     make_filename("cox_cens_control", period, outcome, contrast, "rds")))
+                     make_filename("cox_cens_control", period, outcome, contrast, subgrp, supp, "rds")))
 write_rds(cox_trt_cens,
           here::here("output", "models",
-                     make_filename("cox_cens_trt", period, outcome, contrast, "rds")))
+                     make_filename("cox_cens_trt", period, outcome, contrast, subgrp, supp, "rds")))
 write_rds(km_trt,
           here::here("output", "models",
-          make_filename("km_trt", period, outcome, contrast, "rds")))
+          make_filename("km_trt", period, outcome, contrast, subgrp, supp, "rds")))
 write_rds(km_control,
           here::here("output", "models",
-          make_filename("km_control", period, outcome, contrast, "rds")))
+          make_filename("km_control", period, outcome, contrast, subgrp, supp, "rds")))
 write_rds(cox_w,
           here::here("output", "models",
-          make_filename("cox_w", period, outcome, contrast, "rds")))
+          make_filename("cox_w", period, outcome, contrast, subgrp, supp, "rds")))
 write_rds(cox_uw,
           here::here("output", "models",
-                     make_filename("cox_uw", period, outcome, contrast, "rds")))
+                     make_filename("cox_uw", period, outcome, contrast, subgrp, supp, "rds")))
 # save baseline hazards
 write_csv(basehazard_control,
           here::here("output", "models", "basehaz",
-                     make_filename("basehaz_control", period, outcome, contrast, "csv")))
+                     make_filename("basehaz_control", period, outcome, contrast, subgrp, supp, "csv")))
 write_csv(basehazard_trt,
           here::here("output", "models", "basehaz",
-                     make_filename("basehaz_trt", period, outcome, contrast, "csv")))
+                     make_filename("basehaz_trt", period, outcome, contrast, subgrp, supp, "csv")))
