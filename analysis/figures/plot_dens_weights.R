@@ -81,17 +81,13 @@ plot_dens <- function(dens){
 plots <-
   map(.x = dens,
       .f = ~ plot_dens(.x))
-print(names(plots))
 
 ################################################################################
 # 2 Save plots
 ################################################################################
 iwalk(.x = plots,
       .f = ~ ggsave(
-        fs::path(output_dir, paste0(period[period != "ba1"], 
-                                    "_"[period != "ba1"],
-                                    .y, 
-                                    ".png")),
+        fs::path(output_dir, paste0(.y, ".png")),
         device = "png",
         .x
       )
