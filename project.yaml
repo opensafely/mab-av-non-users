@@ -195,7 +195,7 @@ actions:
     needs: [perform_ccw_analysis, perform_ccw_analysis_mol, perform_ccw_analysis_sot]
     outputs:
       moderately_sensitive:
-        table: output/models/coefficients/cox_cens_*.txt
+        table: output/models/coefficients/cox_cens_*.csv
 
   perform_ccw_analysis_ba2:
     run: r:latest analysis/ccw.R ba2 all primary
@@ -253,7 +253,7 @@ actions:
     needs: [perform_ccw_analysis_ba2, perform_ccw_analysis_mol_ba2, perform_ccw_analysis_sot_ba2]
     outputs:
       moderately_sensitive:
-        table: output/models/coefficients/ba2_cox_cens_*.txt
+        table: output/models/coefficients/ba2_cox_cens_*.csv
   
   ## # # # # # # # # # # # # # # # # # # # 
   ## CCW Analysis - check balance
