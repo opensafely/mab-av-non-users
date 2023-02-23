@@ -9,7 +9,7 @@
 # original models:
 # ./output/tables/ccw/['period'_]cox_cens_['arm'_]['contrast'_]['outcome'].rds
 # coefficients of each of the models are saved in:
-# ./output/models/coefficients/['period'_]cox_cens_['arm'_]['contrast'_]['outcome'].txt
+# ./output/models/coefficients/['period'_]cox_cens_['arm'_]['contrast'_]['outcome'].csv
 # note if 'period' == ba1, no prefix is used; 
 # if 'outcome' == primary, no suffix is used
 #
