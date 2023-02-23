@@ -16,7 +16,7 @@ library(lspline)
 ################################################################################
 # 1. Create tibble with trial data
 ################################################################################
-# Trial assignes 36 individuals, 30 to treatment arm and 6 to no treatment arm
+# Trial assigns 36 individuals, 30 to treatment arm and 6 to no treatment arm
 # In treatment arm, 6 are treated on day 0, ...., and 6 are treated on day 4
 # Treatment has no effect on outcome
 # Of each of the 6 individuals assigned to treatment on day 0-4 or no treatment,
