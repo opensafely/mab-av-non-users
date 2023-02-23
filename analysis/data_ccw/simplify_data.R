@@ -23,7 +23,7 @@ ccw_simplify_data <- function(data, outcome, contrast, subgrp){
         data %>%
         filter(treatment_strategy_cat_prim %in% c("Untreated", contrast))
     }
-    if (subgroup != "full"){
+    if (subgrp != "full"){
       data <-
         data %>% 
         filter(haematological_disease_nhsd == 1)
@@ -52,7 +52,7 @@ ccw_simplify_data <- function(data, outcome, contrast, subgrp){
         data %>%
         filter(treatment_strategy_cat_sec %in% c("Untreated", contrast))
     }
-    if (subgroup != "full"){
+    if (subgrp != "full"){
       data <-
         data %>% 
         filter(haematological_disease_nhsd == 1)
