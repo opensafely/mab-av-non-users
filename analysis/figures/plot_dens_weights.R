@@ -67,7 +67,13 @@ names(dens) <- object_names
 ################################################################################
 # 1 Plot models
 ################################################################################
-plot_dens <- function(dens){
+plot_dens <- function(dens, dens_contrast){
+  contrast <- str_extract(dens_contrast, "[^_]*$")
+  title <- 
+    paste0(ifelse(contrast == "all", 
+                  "Treated vs Untreated",
+                  paste0(contrast %>% str_to_title(), " vs Untreated")),
+           " [", period %>% toupper(), "]")
   p <- 
     ggplot(data = dens,
            aes(x = coord, y = dens, group = arm)) +
@@ -75,12 +81,13 @@ plot_dens <- function(dens){
     labs(linetype = "Arm") +
     theme_minimal() + 
     theme(legend.background = element_rect()) + 
-    scale_x_continuous(name = "") +
-    scale_y_continuous(name = "Density")
+    scale_x_continuous(name = "Weight") +
+    scale_y_continuous(name = "Density", limits = c(0, 25)) +
+    ggtitle(title)
 }
 plots <-
-  map(.x = dens,
-      .f = ~ plot_dens(.x))
+  imap(.x = dens,
+       .f = ~ plot_dens(.x, .y))
 
 ################################################################################
 # 2 Save plots
