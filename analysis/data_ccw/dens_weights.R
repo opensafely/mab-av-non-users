@@ -64,8 +64,8 @@ if (length(args) == 0){
 ################################################################################
 # 0.3 Import data
 ################################################################################
-data_filename <- make_filename("data_long", period, outcome, contrast, "rds")
-data_long <- read_rds(here::here("output", "data", data_filename))
+data_filename <- make_filename("data_long", period, outcome, contrast, "feather")
+data_long <- arrow::read_feather(here::here("output", "data", data_filename))
 
 ################################################################################
 # 1 Estimate density

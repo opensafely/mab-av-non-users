@@ -140,13 +140,13 @@ actions:
   ## # # # # # # # # # # # # # # # # # # # 
 
   perform_ccw_analysis:
-    run: r:latest analysis/ccw.R 
-    --period ba1
-    --contrast all
+    run: r:latest analysis/ccw.R
+      --period ba1
+      --contrast all
     needs: [data_process]
     outputs:
       highly_sensitive:
-        data: output/data/data_long_all.rds
+        data: output/data/data_long_all.feather
         model01: output/models/cox_cens_control_all.rds
         model02: output/models/cox_cens_trt_all.rds
         model1: output/models/km_trt_all.rds
@@ -160,12 +160,12 @@ actions:
   
   perform_ccw_analysis_mol:
     run: r:latest analysis/ccw.R
-    --period ba1
-    --contrast molnupiravir
+      --period ba1
+      --contrast molnupiravir
     needs: [data_process]
     outputs:
       highly_sensitive:
-        data: output/data/data_long_molnupiravir.rds
+        data: output/data/data_long_molnupiravir.feather
         model01: output/models/cox_cens_control_molnupiravir.rds
         model02: output/models/cox_cens_trt_molnupiravir.rds
         model1: output/models/km_trt_molnupiravir.rds
@@ -179,12 +179,12 @@ actions:
 
   perform_ccw_analysis_sot:
     run: r:latest analysis/ccw.R
-    --period ba1
-    --contrast sotrovimab
+      --period ba1
+      --contrast sotrovimab
     needs: [data_process]
     outputs:
       highly_sensitive:
-        data: output/data/data_long_sotrovimab.rds
+        data: output/data/data_long_sotrovimab.feather
         model01: output/models/cox_cens_control_sotrovimab.rds
         model02: output/models/cox_cens_trt_sotrovimab.rds
         model1: output/models/km_trt_sotrovimab.rds
@@ -205,12 +205,12 @@ actions:
 
   perform_ccw_analysis_ba2:
     run: r:latest analysis/ccw.R
-    --period ba2
-    --contrast all
+      --period ba2
+      --contrast all
     needs: [data_process_ba2]
     outputs:
       highly_sensitive:
-        data: output/data/ba2_data_long_all.rds
+        data: output/data/ba2_data_long_all.feather
         model01: output/models/ba2_cox_cens_control_all.rds
         model02: output/models/ba2_cox_cens_trt_all.rds
         model1: output/models/ba2_km_trt_all.rds
@@ -224,12 +224,12 @@ actions:
   
   perform_ccw_analysis_mol_ba2:
     run: r:latest analysis/ccw.R
-    --period ba2
-    --contrast molnupiravir
+      --period ba2
+      --contrast molnupiravir
     needs: [data_process_ba2]
     outputs:
       highly_sensitive:
-        data: output/data/ba2_data_long_molnupiravir.rds
+        data: output/data/ba2_data_long_molnupiravir.feather
         model01: output/models/ba2_cox_cens_control_molnupiravir.rds
         model02: output/models/ba2_cox_cens_trt_molnupiravir.rds
         model1: output/models/ba2_km_trt_molnupiravir.rds
@@ -243,12 +243,12 @@ actions:
 
   perform_ccw_analysis_sot_ba2:
     run: r:latest analysis/ccw.R
-    --period ba2
-    --contrast sotrovimab
+      --period ba2
+      --contrast sotrovimab
     needs: [data_process_ba2]
     outputs:
       highly_sensitive:
-        data: output/data/ba2_data_long_sotrovimab.rds
+        data: output/data/ba2_data_long_sotrovimab.feather
         model01: output/models/ba2_cox_cens_control_sotrovimab.rds
         model02: output/models/ba2_cox_cens_trt_sotrovimab.rds
         model1: output/models/ba2_km_trt_sotrovimab.rds
