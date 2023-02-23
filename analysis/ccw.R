@@ -42,49 +42,43 @@ fs::dir_create(here::here("output", "models", "basehaz"))
 # 0.2 Import command-line arguments
 ################################################################################
 args <- commandArgs(trailingOnly=TRUE)
-print(args)
-# Set input data to ba1 or ba2 data, default is ba1
-if (length(args) == 0){
-  period = "ba1"
-  contrast = "all"
-  outcome = "primary"
-  subgrp = "full"
-  supp = "main"
-} else if (length(args) != 5){
-  stop("Five arguments are needed")
-} else if (length(args) == 5) {
-  if (args[[1]] == "ba1") {
-    period = "ba1"
-  } else if (args[[1]] == "ba2") {
-    period = "ba2"
-  }
-  if (args[[2]] == "all"){
-    contrast = "all"
-  } else if (args[[2]] == "molnupiravir"){
-    contrast = "Molnupiravir"
-  } else if (args[[2]] == "sotrovimab"){
-    contrast = "Sotrovimab"
-  }
-  if (args[[3]] == "primary"){
-    outcome = "primary"
-  } else if (args[[3]] == "secondary"){
-    outcome = "secondary"
-  }
-  if (args[[4]] == "full"){
-    subgrp = "full"
-  } else if (args[[4]] == "haem"){
-    subgrp = "haem"
-  }
-  if (args[[5]] == "main"){
-    supp = "main"
-  } else if (args[[5]] == "supp1"){
-    supp = "supp1"
-  }
-} else {
-  # Print error if no argument specified
-  stop("No period and/or contrast and/or outcome specified")
-}
 
+if(length(args)==0){
+  # use for interactive testing
+  period <- "ba1"
+  contrast <- "all"
+  outcome <- "primary"
+  subgrp <- "full"
+  supp <- "main"
+} else {
+  
+  option_list <- list(
+    make_option("--period", type = "character", default = NULL,
+                help = "Period where the analysis is conducted in, options are 'ba1' or 'ba2' [default %default].",
+                metavar = "period"),
+    make_option("--contrast", type = "character", default = NULL,
+                help = "Contrast of the analysis, options are 'all' (treated vs untreated), 'molnupiravir' (molnupiravir vs untreated) or 'sotrovimab' (sotrovimab vs untreated) [default %default].",
+                metavar = "contrast"),
+    make_option("--outcome", type = "character", default = NULL,
+                help = "Outcome used in the analysis, options are 'primary' or 'secondary' [default %default].",
+                metavar = "outcome"),
+    make_option("--subgrp", type = "character", default = NULL,
+                help = "Subgroup where the analysis is conducted on, options are 'full' and 'haem' [default %default].",
+                metavar = "subgrp"),
+    make_option("--supp", type = "character", default = NULL,
+                help = "Main analysis or supplementary analysis, options are 'main' or 'supp1' [default %default]",
+                metavar = "supp")
+  )
+  
+  opt_parser <- OptionParser(usage = "ccw:[version] [options]", option_list = option_list)
+  opt <- parse_args(opt_parser)
+  
+  period <- opt$period
+  contrast <- opt$contrast
+  outcome <- opt$outcome
+  subgrp <- opt$subgrp
+  supp <- opt$supp
+}
 
 ################################################################################
 # 0.3 Import data

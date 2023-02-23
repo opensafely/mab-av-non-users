@@ -140,7 +140,9 @@ actions:
   ## # # # # # # # # # # # # # # # # # # # 
 
   perform_ccw_analysis:
-    run: r:latest analysis/ccw.R ba1 all primary
+    run: r:latest analysis/ccw.R 
+    --period ba1
+    --contrast all
     needs: [data_process]
     outputs:
       highly_sensitive:
@@ -157,7 +159,9 @@ actions:
         basehaz2: output/models/basehaz/basehaz_trt_all.csv
   
   perform_ccw_analysis_mol:
-    run: r:latest analysis/ccw.R ba1 molnupiravir primary
+    run: r:latest analysis/ccw.R
+    --period ba1
+    --contrast molnupiravir
     needs: [data_process]
     outputs:
       highly_sensitive:
@@ -174,7 +178,9 @@ actions:
         basehaz2: output/models/basehaz/basehaz_trt_molnupiravir.csv
 
   perform_ccw_analysis_sot:
-    run: r:latest analysis/ccw.R ba1 sotrovimab primary
+    run: r:latest analysis/ccw.R
+    --period ba1
+    --contrast sotrovimab
     needs: [data_process]
     outputs:
       highly_sensitive:
@@ -198,7 +204,9 @@ actions:
         table: output/models/coefficients/cox_cens_*.csv
 
   perform_ccw_analysis_ba2:
-    run: r:latest analysis/ccw.R ba2 all primary
+    run: r:latest analysis/ccw.R
+    --period ba2
+    --contrast all
     needs: [data_process_ba2]
     outputs:
       highly_sensitive:
@@ -215,7 +223,9 @@ actions:
         basehaz2: output/models/basehaz/ba2_basehaz_trt_all.csv
   
   perform_ccw_analysis_mol_ba2:
-    run: r:latest analysis/ccw.R ba2 molnupiravir primary
+    run: r:latest analysis/ccw.R
+    --period ba2
+    --contrast molnupiravir
     needs: [data_process_ba2]
     outputs:
       highly_sensitive:
@@ -232,7 +242,9 @@ actions:
         basehaz2: output/models/basehaz/ba2_basehaz_trt_molnupiravir.csv
 
   perform_ccw_analysis_sot_ba2:
-    run: r:latest analysis/ccw.R ba2 sotrovimab primary
+    run: r:latest analysis/ccw.R
+    --period ba2
+    --contrast sotrovimab
     needs: [data_process_ba2]
     outputs:
       highly_sensitive:
