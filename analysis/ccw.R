@@ -21,6 +21,8 @@ library(survival)
 library(here)
 library(readr)
 library(riskRegression) #coxLP
+library(arrow)
+library(optparse)
 source(here("lib", "design", "covars_formula.R"))
 source(here("analysis", "data_ccw", "simplify_data.R"))
 source(here("analysis", "data_ccw", "clone_data.R"))
@@ -53,19 +55,19 @@ if(length(args)==0){
 } else {
   
   option_list <- list(
-    make_option("--period", type = "character", default = NULL,
+    make_option("--period", type = "character", default = "ba1",
                 help = "Period where the analysis is conducted in, options are 'ba1' or 'ba2' [default %default].",
                 metavar = "period"),
-    make_option("--contrast", type = "character", default = NULL,
+    make_option("--contrast", type = "character", default = "all",
                 help = "Contrast of the analysis, options are 'all' (treated vs untreated), 'molnupiravir' (molnupiravir vs untreated) or 'sotrovimab' (sotrovimab vs untreated) [default %default].",
                 metavar = "contrast"),
-    make_option("--outcome", type = "character", default = NULL,
+    make_option("--outcome", type = "character", default = "primary",
                 help = "Outcome used in the analysis, options are 'primary' or 'secondary' [default %default].",
                 metavar = "outcome"),
-    make_option("--subgrp", type = "character", default = NULL,
+    make_option("--subgrp", type = "character", default = "full",
                 help = "Subgroup where the analysis is conducted on, options are 'full' and 'haem' [default %default].",
                 metavar = "subgrp"),
-    make_option("--supp", type = "character", default = NULL,
+    make_option("--supp", type = "character", default = "main",
                 help = "Main analysis or supplementary analysis, options are 'main' or 'supp1' [default %default]",
                 metavar = "supp")
   )
@@ -105,9 +107,6 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 #     1 (covid hosp/death; allcause hosp/death)
 # --> in 'status_primary', noncovid_hosp is ignored (assuming an event can still 
 #.    occur so individual is still at risk for the outcome (covid hosp/death))
-# FIX ME:
-# - Should we treat non covid death as a competing risk in 'status_primary'?
-#   (= informative censoring)
 # 2. modifies the variable 'tb_postest_treat' in 'tb_postest_treat_ccw'
 # --> we classify people as untreated if they experience an event before or on
 #     day of treatment and set their
@@ -117,8 +116,10 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 # 4. variable 'fu_ccw' == 'fu_primary' OR 'fu_secondary' (depending on value of
 #    'outcome')
 # 5. if 'contrast' is equal to Molnupiravir, individuals treated with Sot are
-#.   removed from the data; if 'contrast' is equal to Sotrovimab,
-#.   individuals treated with Mol are removed from the data
+#    removed from the data; if 'contrast' is equal to Sotrovimab,
+#    individuals treated with Mol are removed from the data
+# 6. if 'subgrp' is not equal to 'full', the data is subsetted to only include
+#    individuals in a particular subgroup (eg haem malignancies)
 data <- ccw_simplify_data(data, outcome, contrast, subgrp)
 
 ################################################################################
@@ -340,9 +341,11 @@ write_csv(out,
 # Save residual output
 ################################################################################
 # save data in long format
-write_rds(data_long,
-          here::here("output", "data",
-          make_filename("data_long", period, outcome, contrast, subgrp, supp, "rds")))
+arrow::write_feather(data_long,
+                     here::here("output", "data",
+                                make_filename("data_long", period, outcome, contrast, subgrp, supp, "feather")),
+                     compression = "zstd")
+
 # save models
 write_rds(cox_control_cens,
           here::here("output", "models",
