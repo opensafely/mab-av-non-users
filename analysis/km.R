@@ -179,6 +179,9 @@ if(max_fup==Inf) max_fup <- max(data_patients$tend)+1
 for (subgroup_i in subgroups) {
   #subgroup_i = "previous_covid_test"
   
+  survfit(Surv(tstart, tend, event_indicator) ~ 1, data = subset(data_patients, arm == "Control"), id = patient_id) %>% 
+    summary()
+  
   # for each exposure level and subgroup level, pass data through `survival::Surv` to get KM table
   data_surv <-
     data_patients %>%
@@ -206,12 +209,12 @@ for (subgroup_i in subgroups) {
         N = max(n.risk, na.rm = TRUE),
         
         # rounded to `min_count - (min_count/2)`
-        cml.event = round_cmlcount(cumsum(n.event), time, min_count),
-        cml.censor = round_cmlcount(cumsum(n.censor), time, min_count),
-        cml.eventcensor = cml.event + cml.censor,
-        n.event = diff(c(0, cml.event)),
-        n.censor = diff(c(0, cml.censor)),
-        n.risk = roundmid_any(N, min_count) - lag(cml.eventcensor, 1, 0),
+        #cml.event = round_cmlcount(cumsum(n.event), time, min_count),
+        #cml.censor = round_cmlcount(cumsum(n.censor), time, min_count),
+        #cml.eventcensor = cml.event + cml.censor,
+        #n.event = diff(c(0, cml.event)),
+        #n.censor = diff(c(0, cml.censor)),
+        #n.risk = roundmid_any(N, min_count) - lag(cml.eventcensor, 1, 0),
         
         # KM estimate for event of interest, combining censored and competing events as censored
         summand = (1 / (n.risk - n.event)) - (1 / n.risk), # = n.event / ((n.risk - n.event) * n.risk) but re-written to prevent integer overflow
