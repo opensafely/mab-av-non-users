@@ -6,7 +6,9 @@ expectations:
 actions:
 
   ## # # # # # # # # # # # # # # # # # # # 
+  ## # # # # # # # # # # # # # # # # # # # 
   ## Data extraction 
+  ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
 
   generate_study_population:
@@ -34,7 +36,9 @@ actions:
         cohort: output/input_flowchart_ba2.csv.gz
 
   ## # # # # # # # # # # # # # # # # # # # 
+  ## # # # # # # # # # # # # # # # # # # # 
   ## Data cleaning and description
+  ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
 
   data_process:
@@ -136,7 +140,13 @@ actions:
         csv: output/data_properties/ba2_sense_checks.txt
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## CCW Analysis - main
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 1 MAIN ANALYSIS
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## # # # # # # # # # # # # # # # # # # #
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 1.1 CCW Analysis
   ## # # # # # # # # # # # # # # # # # # # 
 
   perform_ccw_analysis:
@@ -197,7 +207,8 @@ actions:
         basehaz2: output/models/basehaz/basehaz_trt_sotrovimab.csv
 
   save_coef_weight_models:
-    run: r:latest analysis/models_ccw/coef_weight_models.R ba1
+    run: r:latest analysis/models_ccw/coef_weight_models.R 
+      --period ba1
     needs: [perform_ccw_analysis, perform_ccw_analysis_mol, perform_ccw_analysis_sot]
     outputs:
       moderately_sensitive:
@@ -261,14 +272,15 @@ actions:
         basehaz2: output/models/basehaz/ba2_basehaz_trt_sotrovimab.csv
 
   save_coef_weight_models_ba2:
-    run: r:latest analysis/models_ccw/coef_weight_models.R ba2
+    run: r:latest analysis/models_ccw/coef_weight_models.R 
+      --period ba2
     needs: [perform_ccw_analysis_ba2, perform_ccw_analysis_mol_ba2, perform_ccw_analysis_sot_ba2]
     outputs:
       moderately_sensitive:
         table: output/models/coefficients/ba2_cox_cens_*.csv
   
   ## # # # # # # # # # # # # # # # # # # # 
-  ## CCW Analysis - check balance
+  ## 1.2 CCW Analysis - check balance
   ## # # # # # # # # # # # # # # # # # # #
 
   calc_smd:
@@ -314,7 +326,7 @@ actions:
         table: output/tables/ccw/ba2_smd_sotrovimab.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## CCW Analysis - density weights
+  ## 1.3 CCW Analysis - density weights
   ## # # # # # # # # # # # # # # # # # # #
 
   dens_weights:
@@ -337,13 +349,6 @@ actions:
     outputs:
       moderately_sensitive:
         table: output/data_properties/data_long/dens_sotrovimab.csv
-  
-  plot_dens_weights:
-    run: r:latest analysis/figures/plot_dens_weights.R ba1
-    needs: [dens_weights, dens_weights_mol, dens_weights_sot]
-    outputs:
-      moderately_sensitive:
-        figures: output/figures/density/dens_*.png
 
   dens_weights_ba2:
     run: r:latest analysis/data_ccw/dens_weights.R ba2 all primary
@@ -366,12 +371,261 @@ actions:
       moderately_sensitive:
         table: output/data_properties/data_long/ba2_dens_sotrovimab.csv
 
-  plot_dens_weights_ba2:
-    run: r:latest analysis/figures/plot_dens_weights.R ba2
-    needs: [dens_weights_ba2, dens_weights_mol_ba2, dens_weights_sot_ba2]
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 2 SUBGROUP ANALYSIS: HEAM MALIG
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## # # # # # # # # # # # # # # # # # # # 
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 2.1 CCW Analysis
+  ## # # # # # # # # # # # # # # # # # # # 
+
+  perform_ccw_analysis_haem:
+    run: r:latest analysis/ccw.R
+      --period ba1
+      --contrast all
+      --subgrp haem
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/data/haem/data_long_all_haem.feather
+        model01: output/models/haem/cox_cens_control_all_haem.rds
+        model02: output/models/haem/cox_cens_trt_all_haem.rds
+        model1: output/models/haem/km_trt_all_haem.rds
+        model2: output/models/haem/km_control_all_haem.rds
+        model3: output/models/haem/cox_w_all_haem.rds
+        model4: output/models/haem/cox_uw_all_haem.rds
+      moderately_sensitive:
+        table: output/tables/ccw/haem/ccw_all_haem.csv
+        basehaz1: output/models/basehaz/haem/basehaz_control_all_haem.csv
+        basehaz2: output/models/basehaz/haem/basehaz_trt_all_haem.csv
+  
+  perform_ccw_analysis_mol_haem:
+    run: r:latest analysis/ccw.R
+      --period ba1
+      --contrast molnupiravir
+      --subgrp haem
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/data/haem/data_long_molnupiravir_haem.feather
+        model01: output/models/haem/cox_cens_control_molnupiravir_haem.rds
+        model02: output/models/haem/cox_cens_trt_molnupiravir_haem.rds
+        model1: output/models/haem/km_trt_molnupiravir_haem.rds
+        model2: output/models/haem/km_control_molnupiravir_haem.rds
+        model3: output/models/haem/cox_w_molnupiravir_haem.rds
+        model4: output/models/haem/cox_uw_molnupiravir_haem.rds
+      moderately_sensitive:
+        table: output/tables/ccw/haem/ccw_molnupiravir_haem.csv
+        basehaz1: output/models/basehaz/haem/basehaz_control_molnupiravir_haem.csv
+        basehaz2: output/models/basehaz/haem/basehaz_trt_molnupiravir_haem.csv
+
+  perform_ccw_analysis_sot_haem:
+    run: r:latest analysis/ccw.R
+      --period ba1
+      --contrast sotrovimab
+      --subgrp haem
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/data/haem/data_long_sotrovimab_haem.feather
+        model01: output/models/haem/cox_cens_control_sotrovimab_haem.rds
+        model02: output/models/haem/cox_cens_trt_sotrovimab_haem.rds
+        model1: output/models/haem/km_trt_sotrovimab_haem.rds
+        model2: output/models/haem/km_control_sotrovimab_haem.rds
+        model3: output/models/haem/cox_w_sotrovimab_haem.rds
+        model4: output/models/haem/cox_uw_sotrovimab_haem.rds
+      moderately_sensitive:
+        table: output/tables/ccw/haem/ccw_sotrovimab_haem.csv
+        basehaz1: output/models/basehaz/haem/basehaz_control_sotrovimab_haem.csv
+        basehaz2: output/models/basehaz/haem/basehaz_trt_sotrovimab_haem.csv
+
+  save_coef_weight_models_haem:
+    run: r:latest analysis/models_ccw/coef_weight_models.R 
+      --period ba1
+      --subgrp haem
+    needs: [perform_ccw_analysis_haem, perform_ccw_analysis_mol_haem, perform_ccw_analysis_sot_haem]
     outputs:
       moderately_sensitive:
-        figures: output/figures/density/ba2_dens_*.png
+        table: output/models/coefficients/haem/cox_cens_*.csv
+
+  perform_ccw_analysis_haem_ba2:
+    run: r:latest analysis/ccw.R
+      --period ba2
+      --contrast all
+      --subgrp haem
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/data/haem/ba2_data_long_all_haem.feather
+        model01: output/models/haem/ba2_cox_cens_control_all_haem.rds
+        model02: output/models/haem/ba2_cox_cens_trt_all_haem.rds
+        model1: output/models/haem/ba2_km_trt_all_haem.rds
+        model2: output/models/haem/ba2_km_control_all_haem.rds
+        model3: output/models/haem/ba2_cox_w_all_haem.rds
+        model4: output/models/haem/ba2_cox_uw_all_haem.rds
+      moderately_sensitive:
+        table: output/tables/ccw/haem/ba2_ccw_all_haem.csv
+        basehaz1: output/models/basehaz/haem/ba2_basehaz_control_all_haem.csv
+        basehaz2: output/models/basehaz/haem/ba2_basehaz_trt_all_haem.csv
+  
+  perform_ccw_analysis_mol_haem_ba2:
+    run: r:latest analysis/ccw.R
+      --period ba2
+      --contrast molnupiravir
+      --subgrp haem
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/data/haem/ba2_data_long_molnupiravir_haem.feather
+        model01: output/models/haem/ba2_cox_cens_control_molnupiravir_haem.rds
+        model02: output/models/haem/ba2_cox_cens_trt_molnupiravir_haem.rds
+        model1: output/models/haem/ba2_km_trt_molnupiravir_haem.rds
+        model2: output/models/haem/ba2_km_control_molnupiravir_haem.rds
+        model3: output/models/haem/ba2_cox_w_molnupiravir_haem.rds
+        model4: output/models/haem/ba2_cox_uw_molnupiravir_haem.rds
+      moderately_sensitive:
+        table: output/tables/ccw/haem/ba2_ccw_molnupiravir_haem.csv
+        basehaz1: output/models/basehaz/haem/ba2_basehaz_control_molnupiravir_haem.csv
+        basehaz2: output/models/basehaz/haem/ba2_basehaz_trt_molnupiravir_haem.csv
+
+  perform_ccw_analysis_sot_haem_ba2:
+    run: r:latest analysis/ccw.R
+      --period ba2
+      --contrast sotrovimab
+      --subgrp haem
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/data/haem/ba2_data_long_sotrovimab_haem.feather
+        model01: output/models/haem/ba2_cox_cens_control_sotrovimab_haem.rds
+        model02: output/models/haem/ba2_cox_cens_trt_sotrovimab_haem.rds
+        model1: output/models/haem/ba2_km_trt_sotrovimab_haem.rds
+        model2: output/models/haem/ba2_km_control_sotrovimab_haem.rds
+        model3: output/models/haem/ba2_cox_w_sotrovimab_haem.rds
+        model4: output/models/haem/ba2_cox_uw_sotrovimab_haem.rds
+      moderately_sensitive:
+        table: output/tables/ccw/haem/ba2_ccw_sotrovimab_haem.csv
+        basehaz1: output/models/basehaz/haem/ba2_basehaz_control_sotrovimab_haem.csv
+        basehaz2: output/models/basehaz/haem/ba2_basehaz_trt_sotrovimab_haem.csv
+
+  save_coef_weight_models_haem_ba2:
+    run: r:latest analysis/models_ccw/coef_weight_models.R 
+      --period ba2
+      --subgrp haem
+    needs: [perform_ccw_analysis_haem_ba2, perform_ccw_analysis_mol_haem_ba2, perform_ccw_analysis_sot_haem_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/models/coefficients/haem/ba2_cox_cens_*.csv
+  
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 2.2 CCW Analysis - check balance
+  ## # # # # # # # # # # # # # # # # # # #
+
+  calc_smd_haem:
+    run: r:latest analysis/smd.R
+      --period ba1
+      --subgrp haem
+    needs: [perform_ccw_analysis_haem]
+    outputs:
+      moderately_sensitive:
+        table: output/tables/ccw/haem/smd_all_haem.csv
+
+  calc_smd_mol_haem:
+    run: r:latest analysis/smd.R 
+      --period ba1
+      --contrast molnupiravir
+      --subgrp haem
+    needs: [perform_ccw_analysis_mol_haem]
+    outputs:
+      moderately_sensitive:
+        table: output/tables/ccw/haem/smd_molnupiravir_haem.csv
+
+  calc_smd_sot_haem:
+    run: r:latest analysis/smd.R
+      --period ba1
+      --contrast sotrovimab
+      --subgrp haem
+    needs: [perform_ccw_analysis_sot_haem]
+    outputs:
+      moderately_sensitive:
+        table: output/tables/ccw/haem/smd_sotrovimab_haem.csv
+
+  calc_smd_haem_ba2:
+    run: r:latest analysis/smd.R
+      --period ba2
+      --subgrp haem
+    needs: [perform_ccw_analysis_haem_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/tables/ccw/haem/ba2_smd_all_haem.csv
+
+  calc_smd_mol_haem_ba2:
+    run: r:latest analysis/smd.R
+      --period ba2
+      --contrast molnupiravir
+      --subgrp haem
+    needs: [perform_ccw_analysis_mol_haem_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/tables/ccw/haem/ba2_smd_molnupiravir_haem.csv
+
+  calc_smd_sot_haem_ba2:
+    run: r:latest analysis/smd.R
+      --period ba2
+      --contrast sotrovimab
+      --subgrp haem
+    needs: [perform_ccw_analysis_sot_haem_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/tables/ccw/haem/ba2_smd_sotrovimab_haem.csv
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 2.3 CCW Analysis - density weights
+  ## # # # # # # # # # # # # # # # # # # #
+
+  dens_weights_haem:
+    run: r:latest analysis/data_ccw/dens_weights.R ba1 all primary
+    needs: [perform_ccw_analysis]
+    outputs:
+      moderately_sensitive:
+        table: output/data_properties/data_long/dens_all.csv
+  
+  dens_weights_mol_haem:
+    run: r:latest analysis/data_ccw/dens_weights.R ba1 molnupiravir primary
+    needs: [perform_ccw_analysis_mol]
+    outputs:
+      moderately_sensitive:
+        table: output/data_properties/data_long/dens_molnupiravir.csv
+
+  dens_weights_sot_haem:
+    run: r:latest analysis/data_ccw/dens_weights.R ba1 sotrovimab primary
+    needs: [perform_ccw_analysis_sot]
+    outputs:
+      moderately_sensitive:
+        table: output/data_properties/data_long/dens_sotrovimab.csv
+
+  dens_weights_haem_ba2:
+    run: r:latest analysis/data_ccw/dens_weights.R ba2 all primary
+    needs: [perform_ccw_analysis_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/data_properties/data_long/ba2_dens_all.csv
+
+  dens_weights_mol_haem_ba2:
+    run: r:latest analysis/data_ccw/dens_weights.R ba2 molnupiravir primary
+    needs: [perform_ccw_analysis_mol_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/data_properties/data_long/ba2_dens_molnupiravir.csv
+
+  dens_weights_sot_haem_ba2:
+    run: r:latest analysis/data_ccw/dens_weights.R ba2 sotrovimab primary
+    needs: [perform_ccw_analysis_sot_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/data_properties/data_long/ba2_dens_sotrovimab.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Tables

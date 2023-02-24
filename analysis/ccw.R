@@ -7,7 +7,8 @@
 # - 'contrast' /in {all, sotrovimab, molnupiravir} (--> treated vs untreated/ 
 #.   sotrovimab vs untreated (excl mol users)/ molnupiravir vs untreated)
 # - 'outcome' /in {primary, secondary} (--> primary or secondary outcome)
-# - 'subgrp' /in {full, haem} (--> full cohort or haematological subgroup)
+# - 'model' /in {cox, plr} (--> model used to estimate prob of remaining uncensored)
+# - 'subgrp' /in {full, haem, transplant} (--> full cohort or haematological subgroup)
 # - 'supp'/in {main, supp1} (--> main analysis or supplemental analysis)
 #
 ################################################################################
@@ -23,25 +24,17 @@ library(readr)
 library(riskRegression) #coxLP
 library(arrow)
 library(optparse)
-source(here("lib", "design", "covars_formula.R"))
+library(fs)
 source(here("analysis", "data_ccw", "simplify_data.R"))
 source(here("analysis", "data_ccw", "clone_data.R"))
 source(here("analysis", "data_ccw", "add_x_days_to_fup.R"))
 source(here("analysis", "data_ccw", "add_x_days_to_day0.R"))
+source(here("analysis", "models_ccw", "km_estimates.R"))
 source(here("lib", "functions", "make_filename.R"))
+source(here("lib", "functions", "dir_structure.R"))
 
 ################################################################################
-# 0.1 Create directories for output
-################################################################################
-# Create directory where output of ccw analysis will be saved
-fs::dir_create(here::here("output", "tables", "ccw"))
-# Create directory for models
-fs::dir_create(here::here("output", "models"))
-# Create directory for baseline hazards
-fs::dir_create(here::here("output", "models", "basehaz"))
-
-################################################################################
-# 0.2 Import command-line arguments
+# 0.1 Import command-line arguments
 ################################################################################
 args <- commandArgs(trailingOnly=TRUE)
 
@@ -50,6 +43,7 @@ if(length(args)==0){
   period <- "ba1"
   contrast <- "all"
   outcome <- "primary"
+  model <- "cox"
   subgrp <- "full"
   supp <- "main"
 } else {
@@ -61,6 +55,9 @@ if(length(args)==0){
     make_option("--contrast", type = "character", default = "all",
                 help = "Contrast of the analysis, options are 'all' (treated vs untreated), 'molnupiravir' (molnupiravir vs untreated) or 'sotrovimab' (sotrovimab vs untreated) [default %default].",
                 metavar = "contrast"),
+    make_option("--model", type = "character", default = "cox",
+                help = "Model used to estimate probability of remaining uncensored [default %default].",
+                metavar = "model"),
     make_option("--outcome", type = "character", default = "primary",
                 help = "Outcome used in the analysis, options are 'primary' or 'secondary' [default %default].",
                 metavar = "outcome"),
@@ -78,9 +75,31 @@ if(length(args)==0){
   period <- opt$period
   contrast <- opt$contrast
   outcome <- opt$outcome
+  model <- opt$model
   subgrp <- opt$subgrp
   supp <- opt$supp
 }
+
+################################################################################
+# 0.2 Create directories for output
+################################################################################
+output_dir <- here::here("output")
+data_dir <- 
+  concat_dirs("data", output_dir, model, subgrp, supp)
+tables_ccw_dir <- 
+  concat_dirs(path("tables", "ccw"), output_dir, model, subgrp, supp)
+models_dir <-
+  concat_dirs("models", output_dir, model, subgrp, supp)
+models_basehaz_dir <-
+  concat_dirs(path("models", "basehaz"), output_dir, model, subgrp, supp)
+# Create directory where data in long format will be saved
+fs::dir_create(data_dir)
+# Create directory where output of ccw analysis will be saved
+fs::dir_create(tables_ccw_dir)
+# Create directory for models
+fs::dir_create(models_dir)
+# Create directory for baseline hazards
+fs::dir_create(models_basehaz_dir)
 
 ################################################################################
 # 0.3 Import data
@@ -223,8 +242,12 @@ data_trt_long <-
 ################################################################################
 # Estimating the censoring weights
 ################################################################################
-# Cox model
+# Cox model (main) or pooled log reg
 # covars_formula in ./lib/design/covars.R
+source(here("lib", "design", 
+            paste0("covars_formula",
+                   "_"[subgrp != "full"], subgrp[subgrp!= "full"],
+                   ".R")))
 formula_cens <- paste0("Surv(tstart, fup, censoring) ~ ",
                   paste0(covars_formula, collapse = " + ")) %>% as.formula()
 ################################################################################
@@ -276,99 +299,79 @@ data_long <-
 # Estimating the survivor function
 ################################################################################
 # kaplan meier
-km_trt <- survfit(Surv(tstart, fup, outcome) ~ 1,
-                  data = subset(data_long, arm == "Treatment"),
-                  weights = weight)
 km_control <- survfit(Surv(tstart, fup, outcome) ~ 1,
                       data = subset(data_long, arm == "Control"),
                       weights = weight)
-# difference in 28 day survival
-S28_trt <- km_trt$surv[which(km_trt$time == 27.5)] # 28 day survival in treatment group
-S28_control <- km_control$surv[which(km_trt$time == 27.5)] # 28 day survival in control group
-diff_surv <- S28_trt - S28_control #Difference in 28 day survival
-diff_surv_SE <- sqrt(km_trt$std.err[which(km_trt$time == 27.5)] ^ 2 +
-                       km_control$std.err[which(km_trt$time == 27.5)] ^ 2)
-diff_surv_CI <- diff_surv + c(-1, 1) * qnorm(0.975) * diff_surv_SE
-# difference in 28-day restricted mean survival
-RMST_trt <- summary(km_trt, rmean = 27.5)$table["*rmean"] # Estimated RMST in the trt grp
-RMST_control <- summary(km_control, rmean = 27.5)$table["*rmean"] # Estimated RMST in the control grp
-diff_RMST <- RMST_trt - RMST_control # Difference in RMST
-diff_RMST_SE <- sqrt(summary(km_trt, rmean = 27.5)$table["*se(rmean)"] ^ 2 +
-                       summary(km_control, rmean = 27.5)$table["*se(rmean)"] ^ 2)
-diff_RMST_CI <- diff_RMST + c(-1, 1) * qnorm(0.975) * diff_RMST_SE
+km_trt <- survfit(Surv(tstart, fup, outcome) ~ 1,
+                  data = subset(data_long, arm == "Treatment"),
+                  weights = weight)
+max_fup <- max(t_events)
+km_est <- extract_km_estimates(km_control, km_trt, max_fup)
 # Emulated trial with Cox weights (Cox model)
 cox_w <- coxph(Surv(tstart, fup, outcome) ~ arm,
                data = data_long, weights = weight)
-HR <- cox_w$coefficients %>% exp() # Hazard ratio
-HR_SE <- summary(cox_w)$coefficients[,"se(coef)"]
-HR_CI <- confint(cox_w) %>% exp()
+cox_w_est <- extract_cox_estimates(cox_w)
 # unweighted analysis
 cox_uw <- coxph(Surv(tstart, fup, outcome) ~ arm, data = data_long)
-HR_uw <- cox_uw$coefficients %>% exp() # Hazard ratio
-HR_uw_SE <- summary(cox_uw)$coefficients[,"se(coef)"]
-HR_uw_CI <- confint(cox_uw) %>% exp()
+cox_uw_est <- extract_cox_estimates(cox_uw)
+names(cox_uw_est) <-
+  names(cox_uw_est) %>%
+  str_replace("HR", "HR_uw")
 # save all coefficients in tibble
-out <-
-  tibble(period,
-         outcome,
-         contrast,
-         HR,
-         HR_lower = HR_CI[1],
-         HR_upper = HR_CI[2],
-         HR_SE = HR_SE,
-         HR_uw,
-         HR_uw_SE,
-         HR_uw_lower = HR_uw_CI[1],
-         HR_uw_upper = HR_uw_CI[2],
-         diff_surv,
-         diff_surv_lower = diff_surv_CI[1],
-         diff_surv_upper = diff_surv_CI[2],
-         diff_surv_SE = diff_surv_SE,
-         diff_RMST,
-         diff_RMST_lower = diff_RMST_CI[1],
-         diff_RMST_upper = diff_RMST_CI[2],
-         diff_RMST_SE = diff_RMST_SE)
+out <- 
+  bind_cols(cox_w_est, cox_uw_est, km_est)
 
 ################################################################################
 # Save output
 ################################################################################
 # save estimates from models
-write_csv(out,
-          here::here("output", "tables", "ccw",
-                     make_filename("ccw", period, outcome, contrast, subgrp, supp, "csv")))
+write_csv(
+  out,
+  fs::path(tables_ccw_dir,
+           make_filename("ccw", period, outcome, contrast, subgrp, supp, "csv"))
+)
 
 ################################################################################
 # Save residual output
 ################################################################################
 # save data in long format
-arrow::write_feather(data_long,
-                     here::here("output", "data",
-                                make_filename("data_long", period, outcome, contrast, subgrp, supp, "feather")),
-                     compression = "zstd")
-
+arrow::write_feather(
+  data_long,
+  fs::path(data_dir,
+           make_filename("data_long", period, outcome, contrast, subgrp, supp, "feather")),
+  compression = "zstd"
+)
 # save models
-write_rds(cox_control_cens,
-          here::here("output", "models",
-                     make_filename("cox_cens_control", period, outcome, contrast, subgrp, supp, "rds")))
-write_rds(cox_trt_cens,
-          here::here("output", "models",
-                     make_filename("cox_cens_trt", period, outcome, contrast, subgrp, supp, "rds")))
-write_rds(km_trt,
-          here::here("output", "models",
-          make_filename("km_trt", period, outcome, contrast, subgrp, supp, "rds")))
-write_rds(km_control,
-          here::here("output", "models",
-          make_filename("km_control", period, outcome, contrast, subgrp, supp, "rds")))
-write_rds(cox_w,
-          here::here("output", "models",
-          make_filename("cox_w", period, outcome, contrast, subgrp, supp, "rds")))
-write_rds(cox_uw,
-          here::here("output", "models",
-                     make_filename("cox_uw", period, outcome, contrast, subgrp, supp, "rds")))
+models_list <-
+  list(cox_control_cens = cox_control_cens,
+       cox_trt_cens = cox_trt_cens,
+       km_control = km_control,
+       km_trt = km_trt,
+       cox_w = cox_w,
+       cox_uw = cox_uw)
+iwalk(.x = models_list,
+      .f = ~ 
+        write_rds(
+          .x,
+          fs::path(models_dir,
+                   make_filename(
+                     .y, period, outcome, contrast, subgrp, supp, "rds"
+                   )
+          )
+        )
+)
 # save baseline hazards
-write_csv(basehazard_control,
-          here::here("output", "models", "basehaz",
-                     make_filename("basehaz_control", period, outcome, contrast, subgrp, supp, "csv")))
-write_csv(basehazard_trt,
-          here::here("output", "models", "basehaz",
-                     make_filename("basehaz_trt", period, outcome, contrast, subgrp, supp, "csv")))
+basehaz_list <-
+  list(basehaz_control = basehazard_control,
+       basehaz_trt = basehazard_trt)
+iwalk(.x = basehaz_list,
+      .f = ~ 
+        write_csv(
+          .x,
+          fs::path(models_basehaz_dir,
+                   make_filename(
+                     .y, period, outcome, contrast, subgrp, supp, "csv"
+                   )
+          )
+        )
+)
