@@ -23,7 +23,7 @@ args <- commandArgs(trailingOnly=TRUE)
 
 if(length(args)==0){
   # use for interactive testing
-  df_input <- "output/data/data_long_all.rds"
+  df_input <- "output/data/data_long_all.feather"
   dir_output <- "output/figures/km_estimates/"
   exposure <- c("arm")
   subgroups <- NULL
@@ -160,7 +160,7 @@ round_cmlcount <- function(x, time, min_count, method="linear", integer.times=TR
 
 ## Import ----
 data_patients <-
-  read_rds(here::here(df_input)) %>%
+  read_feather(here::here(df_input)) %>%
   transmute(all = TRUE,
             patient_id,
             !!exposure_sym,
