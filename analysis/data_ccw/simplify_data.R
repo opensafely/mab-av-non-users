@@ -1,4 +1,5 @@
 ccw_simplify_data <- function(data, outcome, contrast, subgrp){
+  contrast <- contrast %>% stringr::str_to_title()
   if (outcome == "primary"){
     data <-
       data %>%
