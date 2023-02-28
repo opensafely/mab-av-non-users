@@ -256,7 +256,7 @@ if (model == "cox"){
   # Arm "Control": no treatment within 5 days
   ##############################################################################
   model_cens_control <- fit_cens_cox(data_control_long, formula_cens)
-  basehaz_control <- basehaz_cens(data_control_long, model_cens_control)
+  basehaz_control <- basehaz_cens(model_cens_control)
   data_control_long <- 
     data_control_long %>%
     add_p_uncens_cox(model_cens_control, basehaz_control)
@@ -264,7 +264,7 @@ if (model == "cox"){
   # Arm "Treatment": treatment within 5 days
   ##############################################################################
   model_cens_trt <- fit_cens_cox(data_trt_long, formula_cens)
-  basehaz_trt <- basehaz_cens(data_trt_long, model_cens_trt)
+  basehaz_trt <- basehaz_cens(model_cens_trt)
   data_trt_long <- 
     data_trt_long %>%
     add_p_uncens_cox(model_cens_trt, basehaz_trt)

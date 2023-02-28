@@ -15,7 +15,7 @@ fit_cens_cox <- function(data_long, formula_cens){
           data = data_long,
           model = TRUE)
 }
-basehaz_cens <- function(data_long, cox_fit){
+basehaz_cens <- function(cox_fit){
   # calculate baseline hazard (0 for time = 0)
   basehazard <- 
     basehaz(cox_fit, centered = FALSE) %>%
