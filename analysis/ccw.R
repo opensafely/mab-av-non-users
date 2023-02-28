@@ -255,18 +255,19 @@ if (model == "cox"){
   ##############################################################################
   # Arm "Control": no treatment within 5 days
   ##############################################################################
-  model_control_cens <- fit_cens_cox(data_control_long, formula_cens)
-  basehaz_control <- basehaz_cens(data_control_long, model_control_cens)
+  model_cens_control <- fit_cens_cox(data_control_long, formula_cens)
+  basehaz_control <- basehaz_cens(data_control_long, model_cens_control)
   data_control_long <- 
     data_control_long %>%
-    add_p_uncens_cox(model_control_cens, basehaz_control)
+    add_p_uncens_cox(model_cens_control, basehaz_control)
   ##############################################################################
   # Arm "Treatment": treatment within 5 days
-  model_trt_cens <- fit_cens_cox(data_trt_long, formula_cens)
-  basehaz_trt <- basehaz_cens(data_trt_long, model_trt_cens)
+  ##############################################################################
+  model_cens_trt <- fit_cens_cox(data_trt_long, formula_cens)
+  basehaz_trt <- basehaz_cens(data_trt_long, model_cens_trt)
   data_trt_long <- 
     data_trt_long %>%
-    add_p_uncens_cox(model_trt_cens, basehaz_trt)
+    add_p_uncens_cox(model_cens_trt, basehaz_trt)
 }
 
 ################################################################################
@@ -325,8 +326,8 @@ arrow::write_feather(
 )
 # save models
 models_list <-
-  list(model_control_cens = model_control_cens,
-       model_trt_cens = model_trt_cens,
+  list(model_cens_control = model_cens_control,
+       model_cens_trt = model_cens_control,
        km_control = km_control,
        km_trt = km_trt,
        cox_w = cox_w,
