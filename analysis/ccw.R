@@ -331,6 +331,9 @@ models_list <-
        km_trt = km_trt,
        cox_w = cox_w,
        cox_uw = cox_uw)
+names(models_list) <-
+  names(models_list) %>%
+  str_replace("model", model)
 iwalk(.x = models_list,
       .f = ~ 
         write_rds(
