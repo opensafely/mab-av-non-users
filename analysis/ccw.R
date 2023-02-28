@@ -348,15 +348,15 @@ iwalk(.x = models_list,
 # save baseline hazards
 if (model == "cox"){
   basehaz_list <-
-    list(basehaz_control = basehazard_control,
-         basehaz_trt = basehazard_trt)
+    list(basehaz_control = basehaz_control,
+         basehaz_trt = basehaz_trt)
   iwalk(.x = basehaz_list,
         .f = ~ 
           write_csv(
             .x,
             fs::path(models_basehaz_dir,
                      make_filename(
-                       .y, period, outcome, contrast, subgrp, supp, "csv"
+                       .y, period, outcome, contrast, model, subgrp, supp, "csv"
                      )
             )
           )
