@@ -19,53 +19,71 @@ library(purrr)
 library(tidyr)
 library(here)
 source(here::here("lib", "functions", "make_filename.R"))
+source(here::here("lib", "functions", "dir_structure.R"))
 
 ################################################################################
-# 0.1 Create directories for output
-################################################################################
-# Create directory where output of ccw analysis will be saved
-output_dir <- here::here("output", "data_properties", "data_long")
-fs::dir_create(output_dir)
-
-################################################################################
-# 0.2 Import command-line arguments
+# 0.1 Import command-line arguments
 ################################################################################
 args <- commandArgs(trailingOnly=TRUE)
-# Set input data to ba1 or ba2 data, default is ba1
-if (length(args) == 0){
-  period = "ba1"
-  contrast = "all"
-  outcome = "primary"
-} else if (length(args) != 3){
-  stop("Three arguments are needed")
-} else if (length(args) == 3) {
-  if (args[[1]] == "ba1") {
-    period = "ba1"
-  } else if (args[[1]] == "ba2") {
-    period = "ba2"
-  }
-  if (args[[2]] == "all"){
-    contrast = "all"
-  } else if (args[[2]] == "molnupiravir"){
-    contrast = "Molnupiravir"
-  } else if (args[[2]] == "sotrovimab"){
-    contrast = "Sotrovimab"
-  }
-  if (args[[3]] == "primary"){
-    outcome = "primary"
-  } else if (args[[3]] == "secondary"){
-    outcome = "secondary"
-  }
+
+if(length(args)==0){
+  # use for interactive testing
+  period <- "ba1"
+  contrast <- "all"
+  outcome <- "primary"
+  model <- "cox"
+  subgrp <- "full"
+  supp <- "main"
 } else {
-  # Print error if no argument specified
-  stop("No period and/or contrast and/or outcome specified")
+  
+  option_list <- list(
+    make_option("--period", type = "character", default = "ba1",
+                help = "Period where the analysis is conducted in, options are 'ba1' or 'ba2' [default %default].",
+                metavar = "period"),
+    make_option("--contrast", type = "character", default = "all",
+                help = "Contrast of the analysis, options are 'all' (treated vs untreated), 'molnupiravir' (molnupiravir vs untreated) or 'sotrovimab' (sotrovimab vs untreated) [default %default].",
+                metavar = "contrast"),
+    make_option("--model", type = "character", default = "cox",
+                help = "Model used to estimate probability of remaining uncensored [default %default].",
+                metavar = "model"),
+    make_option("--outcome", type = "character", default = "primary",
+                help = "Outcome used in the analysis, options are 'primary' or 'secondary' [default %default].",
+                metavar = "outcome"),
+    make_option("--subgrp", type = "character", default = "full",
+                help = "Subgroup where the analysis is conducted on, options are 'full' and 'haem' [default %default].",
+                metavar = "subgrp"),
+    make_option("--supp", type = "character", default = "main",
+                help = "Main analysis or supplementary analysis, options are 'main' or 'supp1' [default %default]",
+                metavar = "supp")
+  )
+  
+  opt_parser <- OptionParser(usage = "ccw:[version] [options]", option_list = option_list)
+  opt <- parse_args(opt_parser)
+  
+  period <- opt$period
+  contrast <- opt$contrast
+  outcome <- opt$outcome
+  model <- opt$model
+  subgrp <- opt$subgrp
+  supp <- opt$supp
 }
+
+################################################################################
+# 0.2 Create directories for output
+################################################################################
+output_dir <- here::here("output")
+data_properties_long_dir <- 
+  concat_dirs(fs::path("data_properties", "data_long"), output_dir, model, subgrp, supp)
+# Create directory where output of ccw analysis will be saved
+fs::dir_create(data_properties_long_dir)
 
 ################################################################################
 # 0.3 Import data
 ################################################################################
-data_filename <- make_filename("data_long", period, outcome, contrast, "feather")
-data_long <- arrow::read_feather(here::here("output", "data", data_filename))
+data_filename <- make_filename("data_long", period, outcome, contrast, model, subgrp, supp, "feather")
+data_dir <- 
+  concat_dirs("data", output_dir, model, subgrp, supp)
+data_long <- arrow::read_feather(fs::path(data_dir, data_filename))
 
 ################################################################################
 # 1 Estimate density
@@ -86,6 +104,6 @@ dens <- map(.x = arms,
 ################################################################################
 write_csv(
   dens,
-  fs::path(output_dir,
-           make_filename("dens", period, outcome, contrast, "csv"))
+  fs::path(data_properties_long_dir,
+           make_filename("dens", period, outcome, contrast, model, subgrp, supp, "csv"))
 )

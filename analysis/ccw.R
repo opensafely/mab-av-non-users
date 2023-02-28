@@ -29,7 +29,9 @@ source(here("analysis", "data_ccw", "simplify_data.R"))
 source(here("analysis", "data_ccw", "clone_data.R"))
 source(here("analysis", "data_ccw", "add_x_days_to_fup.R"))
 source(here("analysis", "data_ccw", "add_x_days_to_day0.R"))
-source(here("analysis", "models_ccw", "km_estimates.R"))
+source(here("analysis", "models_ccw", "extract_km_estimates.R"))
+source(here("analysis", "models_ccw", "extract_cox_estimates.R"))
+source(here("analysis", "models_ccw", "cox_cens.R"))
 source(here("lib", "functions", "make_filename.R"))
 source(here("lib", "functions", "dir_structure.R"))
 
@@ -242,50 +244,30 @@ data_trt_long <-
 ################################################################################
 # Estimating the censoring weights
 ################################################################################
-# Cox model (main) or pooled log reg
 # covars_formula in ./lib/design/covars.R
 source(here("lib", "design", 
             paste0("covars_formula",
                    "_"[subgrp != "full"], subgrp[subgrp!= "full"],
                    ".R")))
-formula_cens <- paste0("Surv(tstart, fup, censoring) ~ ",
-                  paste0(covars_formula, collapse = " + ")) %>% as.formula()
-################################################################################
-# Arm "Control": no treatment within 5 days
-################################################################################
-# Cox model
-cox_control_cens <-
-  coxph(formula_cens,
-        ties = "efron",
-        data = data_control_long)
-# calculate baseline hazard (0 for time = 0)
-basehazard_control <- 
-  basehaz(cox_control_cens, centered = F) %>%
-  add_row(hazard = 0, time = 0, .before = 1)
-# add linear predictor and calculate probability of remaining uncensored
-data_control_long <-
-  data_control_long %>%
-  mutate(lin_pred = coxLP(cox_control_cens, data_control_long, center = FALSE)) %>%
-  left_join(basehazard_control, by = c("tstart" = "time")) %>%
-  mutate(p_uncens = exp(-(hazard)*exp(lin_pred)))
-################################################################################
-# Arm "Treatment": treatment within 5 days
-################################################################################
-# Cox model
-cox_trt_cens <-
-  coxph(formula_cens,
-        ties = "efron",
-        data = data_trt_long)
-# calculate baseline hazard (0 for time = 0)
-basehazard_trt <- 
-  basehaz(cox_trt_cens, centered = F) %>%
-  add_row(hazard = 0, time = 0, .before = 1)
-# add linear predictor and calculate probablity of remaining uncensored
-data_trt_long <-
-  data_trt_long %>%
-  mutate(lin_pred = coxLP(cox_trt_cens, data_trt_long, center = FALSE)) %>%
-  left_join(basehazard_trt, by = c("tstart" = "time")) %>%
-  mutate(p_uncens = exp(-(hazard)*exp(lin_pred)))
+# Cox model (main) or pooled log reg
+if (model == "cox"){
+  formula_cens <- create_formula_cens_cox(covars_formula)
+  ##############################################################################
+  # Arm "Control": no treatment within 5 days
+  ##############################################################################
+  model_control_cens <- fit_cens_cox(data_control_long, formula_cens)
+  basehaz_control <- basehaz_cens(data_control_long, model_control_cens)
+  data_control_long <- 
+    data_control_long %>%
+    add_p_uncens_cox(model_control_cens, basehaz_control)
+  ##############################################################################
+  # Arm "Treatment": treatment within 5 days
+  model_trt_cens <- fit_cens_cox(data_trt_long, formula_cens)
+  basehaz_trt <- basehaz_cens(data_trt_long, model_trt_cens)
+  data_trt_long <- 
+    data_trt_long %>%
+    add_p_uncens_cox(model_trt_cens, basehaz_trt)
+}
 
 ################################################################################
 # Computing the IPC weights
@@ -328,7 +310,7 @@ out <-
 write_csv(
   out,
   fs::path(tables_ccw_dir,
-           make_filename("ccw", period, outcome, contrast, subgrp, supp, "csv"))
+           make_filename("ccw", period, outcome, contrast, model, subgrp, supp, "csv"))
 )
 
 ################################################################################
@@ -338,13 +320,13 @@ write_csv(
 arrow::write_feather(
   data_long,
   fs::path(data_dir,
-           make_filename("data_long", period, outcome, contrast, subgrp, supp, "feather")),
+           make_filename("data_long", period, outcome, contrast, model, subgrp, supp, "feather")),
   compression = "zstd"
 )
 # save models
 models_list <-
-  list(cox_control_cens = cox_control_cens,
-       cox_trt_cens = cox_trt_cens,
+  list(model_control_cens = model_control_cens,
+       model_trt_cens = model_trt_cens,
        km_control = km_control,
        km_trt = km_trt,
        cox_w = cox_w,
@@ -355,23 +337,25 @@ iwalk(.x = models_list,
           .x,
           fs::path(models_dir,
                    make_filename(
-                     .y, period, outcome, contrast, subgrp, supp, "rds"
+                     .y, period, outcome, contrast, model, subgrp, supp, "rds"
                    )
           )
         )
 )
 # save baseline hazards
-basehaz_list <-
-  list(basehaz_control = basehazard_control,
-       basehaz_trt = basehazard_trt)
-iwalk(.x = basehaz_list,
-      .f = ~ 
-        write_csv(
-          .x,
-          fs::path(models_basehaz_dir,
-                   make_filename(
-                     .y, period, outcome, contrast, subgrp, supp, "csv"
-                   )
+if (model == "cox"){
+  basehaz_list <-
+    list(basehaz_control = basehazard_control,
+         basehaz_trt = basehazard_trt)
+  iwalk(.x = basehaz_list,
+        .f = ~ 
+          write_csv(
+            .x,
+            fs::path(models_basehaz_dir,
+                     make_filename(
+                       .y, period, outcome, contrast, subgrp, supp, "csv"
+                     )
+            )
           )
-        )
-)
+  )
+}
