@@ -1,5 +1,4 @@
 ccw_simplify_data <- function(data, outcome, contrast, subgrp){
-  contrast <- contrast %>% stringr::str_to_title()
   if (outcome == "primary"){
     data <-
       data %>%
@@ -20,6 +19,7 @@ ccw_simplify_data <- function(data, outcome, contrast, subgrp){
         fu_ccw = fu_primary,
       )
     if (contrast != "all"){
+      contrast <- contrast %>% stringr::str_to_title()
       data <- 
         data %>%
         filter(treatment_strategy_cat_prim %in% c("Untreated", contrast))
@@ -49,6 +49,7 @@ ccw_simplify_data <- function(data, outcome, contrast, subgrp){
         fu_ccw = fu_secondary,
       )
     if (contrast != "all"){
+      contrast <- contrast %>% stringr::str_to_title()
       data <- 
         data %>%
         filter(treatment_strategy_cat_sec %in% c("Untreated", contrast))
