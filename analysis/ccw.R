@@ -142,6 +142,9 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 # 6. if 'subgrp' is not equal to 'full', the data is subsetted to only include
 #    individuals in a particular subgroup (eg haem malignancies)
 data <- ccw_simplify_data(data, outcome, contrast, subgrp)
+data %>%
+  group_by(treatment_ccw) %>%
+  tally() %>% print()
 
 ################################################################################
 # Clone data and add vars outcome, fup and censoring
@@ -256,6 +259,7 @@ if (model == "cox"){
   # Arm "Control": no treatment within 5 days
   ##############################################################################
   model_cens_control <- fit_cens_cox(data_control_long, formula_cens)
+  model_cens_control %>% coefficients() %>% print()
   basehaz_control <- basehaz_cens(model_cens_control)
   data_control_long <- 
     data_control_long %>%
@@ -264,6 +268,7 @@ if (model == "cox"){
   # Arm "Treatment": treatment within 5 days
   ##############################################################################
   model_cens_trt <- fit_cens_cox(data_trt_long, formula_cens)
+  model_cens_trt %>% coefficients() %>% print()
   basehaz_trt <- basehaz_cens(model_cens_trt)
   data_trt_long <- 
     data_trt_long %>%
