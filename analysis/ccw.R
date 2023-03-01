@@ -307,7 +307,11 @@ names(cox_uw_est) <-
   str_replace("HR", "HR_uw")
 # save all coefficients in tibble
 out <- 
-  bind_cols(cox_w_est, cox_uw_est, km_est)
+  bind_cols(cox_w_est, cox_uw_est, km_est) %>%
+  mutate(period = period,
+         outcome = outcome,
+         contrast = contrast,
+         .before = 1)
 
 ################################################################################
 # Save output

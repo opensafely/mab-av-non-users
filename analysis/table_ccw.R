@@ -22,35 +22,64 @@ library(dplyr)
 library(purrr)
 library(readr)
 library(gt)
+source(here("lib", "functions", "make_filename.R"))
+source(here("lib", "functions", "dir_structure.R"))
 
 ################################################################################
-# 0.1 Create directories for output
+# 0.1 Import command-line arguments
 ################################################################################
-# Create tables directory
-fs::dir_create(here("output", "tables"))
+args <- commandArgs(trailingOnly=TRUE)
 
-################################################################################
-# 0.2 Import command-line arguments
-################################################################################
-args <- commandArgs(trailingOnly = TRUE)
-# Set input data to ba1 or ba2 data, default is ba1
-if (length(args) == 0){
-  period = "ba1"
-} else if (args[[1]] == "ba1") {
-  period = "ba1"
-} else if (args[[1]] == "ba2") {
-  period = "ba2"
+if(length(args)==0){
+  # use for interactive testing
+  period <- "ba1"
+  model <- "cox"
+  subgrp <- "full"
+  supp <- "main"
 } else {
-  # Print error if no argument specified
-  stop("No period specified")
+  
+  option_list <- list(
+    make_option("--period", type = "character", default = "ba1",
+                help = "Period where the analysis is conducted in, options are 'ba1' or 'ba2' [default %default].",
+                metavar = "period"),
+    make_option("--model", type = "character", default = "cox",
+                help = "Model used to estimate probability of remaining uncensored [default %default].",
+                metavar = "model"),
+    make_option("--subgrp", type = "character", default = "full",
+                help = "Subgroup where the analysis is conducted on, options are 'full' and 'haem' [default %default].",
+                metavar = "subgrp"),
+    make_option("--supp", type = "character", default = "main",
+                help = "Main analysis or supplementary analysis, options are 'main' or 'supp1' [default %default]",
+                metavar = "supp")
+  )
+  
+  opt_parser <- OptionParser(usage = "ccw:[version] [options]", option_list = option_list)
+  opt <- parse_args(opt_parser)
+  
+  period <- opt$period
+  model <- opt$model
+  subgrp <- opt$subgrp
+  supp <- opt$supp
 }
+
+################################################################################
+# 0.2 Create directories for output
+################################################################################
+output_dir <- here::here("output")
+tables_dir <- 
+  concat_dirs("tables", output_dir, model, subgrp, supp)
+# Create tables directory
+fs::dir_create(tables_dir)
 
 ################################################################################
 # 0.2 Search files
 ################################################################################
 pattern <- if_else(period == "ba1", "^ccw", "^ba2_ccw")
+# directory where tables are saved
+tables_ccw_dir <- 
+  concat_dirs(fs::path("tables", "ccw"), output_dir, model, subgrp, supp)
 files <- 
-  list.files(here("output", "tables", "ccw"),
+  list.files(tables_ccw_dir,
              pattern = pattern, 
              full.names = TRUE)
 
@@ -108,7 +137,7 @@ format_output <- function(output, measure){
 ################################################################################
 output_formatted <-
   map(.x = c("HR", "HR_uw", "diff_surv", "diff_RMST"),
-      .f = ~ format_output(output, .x))
+      .f = ~ format_output(output, all_of(.x)))
 output_combined <-
   output_formatted %>%
   reduce(full_join, by = c("period", "outcome", "contrast")) %>%
@@ -118,6 +147,6 @@ output_combined <-
 # 2. Save
 ################################################################################
 file_name <- 
-  paste0(period[period != "ba1"], "_"[period != "ba1"], "table_ccw.html")
+  make_filename("table_ccw", period, outcome = "primary", contrast = "", model, subgrp, supp, "html")
 gtsave(gt(output_combined), 
-       filename = here::here("output", "tables", file_name))
+       fs::path(tables_dir, file_name))
