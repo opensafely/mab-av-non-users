@@ -24,11 +24,6 @@ ccw_simplify_data <- function(data, outcome, contrast, subgrp){
         data %>%
         filter(treatment_strategy_cat_prim %in% c("Untreated", contrast))
     }
-    if (subgrp != "full"){
-      data <-
-        data %>% 
-        filter(haematological_disease_nhsd == 1)
-    }
   } else if (outcome == "secondary"){
     data <-
       data %>%
@@ -54,15 +49,15 @@ ccw_simplify_data <- function(data, outcome, contrast, subgrp){
         data %>%
         filter(treatment_strategy_cat_sec %in% c("Untreated", contrast))
     }
-    if (subgrp == "haem"){
-      data <-
-        data %>% 
-        filter(haematological_disease_nhsd == TRUE)
-    } else if (subgrp == "transplant"){
-      data <- 
-        data %>%
-        filter(solid_organ_transplant_nhsd_new == TRUE)
-    }
+  }
+  if (subgrp == "haem"){
+    data <-
+      data %>% 
+      filter(haematological_disease_nhsd == TRUE)
+  } else if (subgrp == "transplant"){
+    data <- 
+      data %>%
+      filter(solid_organ_transplant_nhsd_new == TRUE)
   }
   data
 }
