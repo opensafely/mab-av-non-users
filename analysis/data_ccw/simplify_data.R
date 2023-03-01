@@ -61,7 +61,7 @@ ccw_simplify_data <- function(data, outcome, contrast, subgrp){
     } else if (subgrp == "transplant"){
       data <- 
         data %>%
-        filter(solid_organ_transplant_nhsd == TRUE)
+        filter(solid_organ_transplant_nhsd_new == TRUE)
     }
   }
   data
