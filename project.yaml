@@ -677,16 +677,14 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/data_long_all_plr.feather
-        model01: output/plr/models/cox_cens_control_all_plr.rds
-        model02: output/plr/models/cox_cens_trt_all_plr.rds
+        model01: output/plr/models/plr_cens_control_all_plr.rds
+        model02: output/plr/models/plr_cens_trt_all_plr.rds
         model1: output/plr/models/km_trt_all_plr.rds
         model2: output/plr/models/km_control_all_plr.rds
         model3: output/plr/models/cox_w_all_plr.rds
         model4: output/plr/models/cox_uw_all_plr.rds
       moderately_sensitive:
         table: output/plr/tables/ccw/ccw_all_plr.csv
-        basehaz1: output/plr/models/basehaz/basehaz_control_all_plr.csv
-        basehaz2: output/plr/models/basehaz/basehaz_trt_all_plr.csv
   
   perform_ccw_analysis_mol_plr:
     run: r:latest analysis/ccw.R
@@ -697,16 +695,14 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/data_long_molnupiravir_plr.feather
-        model01: output/plr/models/cox_cens_control_molnupiravir_plr.rds
-        model02: output/plr/models/cox_cens_trt_molnupiravir_plr.rds
+        model01: output/plr/models/plr_cens_control_molnupiravir_plr.rds
+        model02: output/plr/models/plr_cens_trt_molnupiravir_plr.rds
         model1: output/plr/models/km_trt_molnupiravir_plr.rds
         model2: output/plr/models/km_control_molnupiravir_plr.rds
         model3: output/plr/models/cox_w_molnupiravir_plr.rds
         model4: output/plr/models/cox_uw_molnupiravir_plr.rds
       moderately_sensitive:
         table: output/plr/tables/ccw/ccw_molnupiravir_plr.csv
-        basehaz1: output/plr/models/basehaz/basehaz_control_molnupiravir_plr.csv
-        basehaz2: output/plr/models/basehaz/basehaz_trt_molnupiravir_plr.csv
 
   perform_ccw_analysis_sot_plr:
     run: r:latest analysis/ccw.R
@@ -717,16 +713,14 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/data_long_sotrovimab_plr.feather
-        model01: output/plr/models/cox_cens_control_sotrovimab_plr.rds
-        model02: output/plr/models/cox_cens_trt_sotrovimab_plr.rds
+        model01: output/plr/models/plr_cens_control_sotrovimab_plr.rds
+        model02: output/plr/models/plr_cens_trt_sotrovimab_plr.rds
         model1: output/plr/models/km_trt_sotrovimab_plr.rds
         model2: output/plr/models/km_control_sotrovimab_plr.rds
         model3: output/plr/models/cox_w_sotrovimab_plr.rds
         model4: output/plr/models/cox_uw_sotrovimab_plr.rds
       moderately_sensitive:
         table: output/plr/tables/ccw/ccw_sotrovimab_plr.csv
-        basehaz1: output/plr/models/basehaz/basehaz_control_sotrovimab_plr.csv
-        basehaz2: output/plr/models/basehaz/basehaz_trt_sotrovimab_plr.csv
 
   save_coef_weight_models_plr:
     run: r:latest analysis/models_ccw/coef_weight_models.R 
@@ -735,7 +729,7 @@ actions:
     needs: [perform_ccw_analysis_plr, perform_ccw_analysis_mol_plr, perform_ccw_analysis_sot_plr]
     outputs:
       moderately_sensitive:
-        table: output/plr/models/coefficients/cox_cens_*.csv
+        table: output/plr/models/coefficients/plr_cens_*.csv
 
   perform_ccw_analysis_plr_ba2:
     run: r:latest analysis/ccw.R
@@ -745,16 +739,14 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/ba2_data_long_all_plr.feather
-        model01: output/plr/models/ba2_cox_cens_control_all_plr.rds
-        model02: output/plr/models/ba2_cox_cens_trt_all_plr.rds
+        model01: output/plr/models/ba2_plr_cens_control_all_plr.rds
+        model02: output/plr/models/ba2_plr_cens_trt_all_plr.rds
         model1: output/plr/models/ba2_km_trt_all_plr.rds
         model2: output/plr/models/ba2_km_control_all_plr.rds
         model3: output/plr/models/ba2_cox_w_all_plr.rds
         model4: output/plr/models/ba2_cox_uw_all_plr.rds
       moderately_sensitive:
         table: output/plr/tables/ccw/ba2_ccw_all_plr.csv
-        basehaz1: output/plr/models/basehaz/ba2_basehaz_control_all_plr.csv
-        basehaz2: output/plr/models/basehaz/ba2_basehaz_trt_all_plr.csv
   
   perform_ccw_analysis_mol_plr_ba2:
     run: r:latest analysis/ccw.R
@@ -765,16 +757,14 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/ba2_data_long_molnupiravir_plr.feather
-        model01: output/plr/models/ba2_cox_cens_control_molnupiravir_plr.rds
-        model02: output/plr/models/ba2_cox_cens_trt_molnupiravir_plr.rds
+        model01: output/plr/models/ba2_plr_cens_control_molnupiravir_plr.rds
+        model02: output/plr/models/ba2_plr_cens_trt_molnupiravir_plr.rds
         model1: output/plr/models/ba2_km_trt_molnupiravir_plr.rds
         model2: output/plr/models/ba2_km_control_molnupiravir_plr.rds
         model3: output/plr/models/ba2_cox_w_molnupiravir_plr.rds
         model4: output/plr/models/ba2_cox_uw_molnupiravir_plr.rds
       moderately_sensitive:
         table: output/plr/tables/ccw/ba2_ccw_molnupiravir_plr.csv
-        basehaz1: output/plr/models/basehaz/ba2_basehaz_control_molnupiravir_plr.csv
-        basehaz2: output/plr/models/basehaz/ba2_basehaz_trt_molnupiravir_plr.csv
 
   perform_ccw_analysis_sot_plr_ba2:
     run: r:latest analysis/ccw.R
@@ -785,16 +775,14 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/ba2_data_long_sotrovimab_plr.feather
-        model01: output/plr/models/ba2_cox_cens_control_sotrovimab_plr.rds
-        model02: output/plr/models/ba2_cox_cens_trt_sotrovimab_plr.rds
+        model01: output/plr/models/ba2_plr_cens_control_sotrovimab_plr.rds
+        model02: output/plr/models/ba2_plr_cens_trt_sotrovimab_plr.rds
         model1: output/plr/models/ba2_km_trt_sotrovimab_plr.rds
         model2: output/plr/models/ba2_km_control_sotrovimab_plr.rds
         model3: output/plr/models/ba2_cox_w_sotrovimab_plr.rds
         model4: output/plr/models/ba2_cox_uw_sotrovimab_plr.rds
       moderately_sensitive:
         table: output/plr/tables/ccw/ba2_ccw_sotrovimab_plr.csv
-        basehaz1: output/plr/models/basehaz/ba2_basehaz_control_sotrovimab_plr.csv
-        basehaz2: output/plr/models/basehaz/ba2_basehaz_trt_sotrovimab_plr.csv
 
   save_coef_weight_models_plr_ba2:
     run: r:latest analysis/models_ccw/coef_weight_models.R 
@@ -803,7 +791,7 @@ actions:
     needs: [perform_ccw_analysis_plr_ba2, perform_ccw_analysis_mol_plr_ba2, perform_ccw_analysis_sot_plr_ba2]
     outputs:
       moderately_sensitive:
-        table: output/plr/models/coefficients/ba2_cox_cens_*.csv
+        table: output/plr/models/coefficients/ba2_plr_cens_*.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Tables
