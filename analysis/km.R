@@ -25,6 +25,8 @@ if(length(args)==0){
   # use for interactive testing
   df_input <- "output/data/data_long_all.feather"
   dir_output <- "output/figures/km_estimates/"
+  period <- "ba1"
+  contrast <- "all"
   exposure <- c("arm")
   subgroups <- NULL
   tstart <- c("tstart")
@@ -33,7 +35,6 @@ if(length(args)==0){
   weight <- c("weight")
   min_count <- as.integer("6")
   method <- "linear"
-  max_fup <- as.numeric("28")
   fill_times <- as.logical("TRUE")
   plot <- as.logical("FALSE")
 } else {
@@ -45,6 +46,12 @@ if(length(args)==0){
     make_option("--dir_output", type = "character", default = NULL,
                 help = "Output directory [default %default].",
                 metavar = "output"),
+    make_option("--period", type = "character", default = NULL,
+                help = "Period of analysis [default %default].",
+                metavar = "period"),
+    make_option("--contrast", type = "character", default = NULL,
+                help = "Contrast of analysis [default %default].",
+                metavar = "contrast"),
     make_option("--exposure", type = "character", default = NULL,
                 help = "Exposure variable name in the input dataset [default %default]. All outputs will be stratified by this variable.",
                 metavar = "exposure_varname"),
@@ -66,9 +73,6 @@ if(length(args)==0){
     make_option("--method", type = "character", default = "constant",
                 help = "Interpolation method after rounding [default %default]. The 'constant' method leaves the event times unchanged after rounding, making the KM curve have bigger, fewer steps. The 'linear' method linearly interpolates between rounded events times (then rounds to the nearest day), so that the steps appear more natural.",
                 metavar = "method"),
-    make_option("--max_fup", type = "numeric", default = Inf,
-                help = "The maximum time. If event variables are dates, then this will be days. [default %default]. ",
-                metavar = "max_fup"),
     make_option("--fill_times", type = "logical", default = TRUE,
                 help = "Should Kaplan-Meier estimates be provided for all possible event times (TRUE) or just observed event times (FALSE) [default %default]. ",
                 metavar = "TRUE/FALSE"),
@@ -82,6 +86,8 @@ if(length(args)==0){
   
   df_input <- opt$df_input
   dir_output <- opt$dir_output
+  period <- opt$period
+  contrast <- opt$contrast
   exposure <- opt$exposure
   subgroups <- opt$subgroups
   tstart <- opt$tstart
@@ -90,7 +96,6 @@ if(length(args)==0){
   weight <- opt$weight
   min_count <- opt$min_count
   method <- opt$method
-  max_fup <- opt$max_fup
   fill_times <- opt$fill_times
   plot <- opt$plot
 }
@@ -171,16 +176,10 @@ data_patients <-
             weight = .data[[weight]])
 if(is.null(subgroups)) subgroups <- list("all")
 
-if(max_fup==Inf) max_fup <- max(data_patients$tend)+1
-# fix me not use fup but tend
-
 # Get KM estimates ------
 
 for (subgroup_i in subgroups) {
   #subgroup_i = "previous_covid_test"
-  
-  survfit(Surv(tstart, tend, event_indicator) ~ 1, data = subset(data_patients, arm == "Control"), id = patient_id) %>% 
-    summary()
   
   # for each exposure level and subgroup level, pass data through `survival::Surv` to get KM table
   data_surv <-
@@ -192,7 +191,7 @@ for (subgroup_i in subgroups) {
     tidyr::nest() %>%
     dplyr::mutate(
       surv_obj = purrr::map(data, ~ {
-        survival::survfit(survival::Surv(tstart, tend, event_indicator) ~ 1, data = .x, conf.type="log-log", weights = weight)
+        survival::survfit(survival::Surv(tstart, tend, event_indicator) ~ 1, data = .x, id = patient_id, conf.type="log-log", weights = weight)
       }),
       surv_obj_tidy = purrr::map(surv_obj, ~ {
         tidied <- broom::tidy(.x)
@@ -256,7 +255,7 @@ for (subgroup_i in subgroups) {
         .subgroup,
         !!exposure_sym,
         time, lagtime, interval,
-        cml.event, cml.censor,
+        #cml.event, cml.censor,
         n.risk, n.event, n.censor,
         surv, surv.se, surv.low, surv.high,
         risk, risk.se, risk.low, risk.high
@@ -267,7 +266,10 @@ for (subgroup_i in subgroups) {
   data_surv_rounded <- round_km(data_surv, min_count)
   
   ## write to disk
-  arrow::write_feather(data_surv_rounded, fs::path(dir_output, glue("km_estimates_{subgroup_i}.feather")))
+  file_name <- ifelse(subgroups != "all", glue("km_estimates_{subgroup_i}"), "km_estimates")
+  file_name <- paste0(period[period != "ba1"], "_"[period != "ba1"], file_name, "_"[contrast != "all"], contrast[contrast != "all"])
+  arrow::write_feather(data_surv_rounded, fs::path(dir_output, paste0(file_name, ".feather")))
+  write_csv(data_surv_rounded, fs::path(dir_output, paste0(file_name, ".csv")))
   
   if(plot){
     
