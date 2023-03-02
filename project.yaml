@@ -916,18 +916,56 @@ actions:
   ## # # # # # # # # # # # # # # # # # # # 
 
   create_table1:
-    run: r:latest analysis/table_1.R ba1
+    run: r:latest analysis/table_1.R
+      --period ba1
     needs: [data_process]
     outputs:
       moderately_sensitive:
         html: output/tables/table1_redacted.html
 
   create_table1_ba2:
-    run: r:latest analysis/table_1.R ba2
+    run: r:latest analysis/table_1.R
+      --period ba2
     needs: [data_process_ba2]
     outputs:
       moderately_sensitive:
         html: output/tables/ba2_table1_redacted.html
+  
+  create_table1_haem:
+    run: r:latest analysis/table_1.R
+      --period ba1
+      --subgrp haem
+    needs: [data_process]
+    outputs:
+      moderately_sensitive:
+        html: output/tables/haem/table1_redacted_haem.html
+
+  create_table1_haem_ba2:
+    run: r:latest analysis/table_1.R
+      --period ba2
+      --subgrp haem
+    needs: [data_process_ba2]
+    outputs:
+      moderately_sensitive:
+        html: output/tables/haem/ba2_table1_redacted_haem.html
+
+  create_table1_transplant:
+    run: r:latest analysis/table_1.R
+      --period ba1
+      --subgrp transplant
+    needs: [data_process]
+    outputs:
+      moderately_sensitive:
+        html: output/tables/transplant/table1_redacted_transplant.html
+
+  create_table1_transplant_ba2:
+    run: r:latest analysis/table_1.R
+      --period ba2
+      --subgrp transplant
+    needs: [data_process_ba2]
+    outputs:
+      moderately_sensitive:
+        html: output/tables/transplant/ba2_table1_redacted_transplant.html
 
   create_table_ccw:
     run: r:latest analysis/table_ccw.R

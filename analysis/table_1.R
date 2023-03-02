@@ -20,30 +20,48 @@ library('glue')
 library('gt')
 library('gtsummary')
 library('fs')
+library('optparse')
 # Import custom user functions
 source(here::here("lib", "design", "covars_table.R"))
 source(here::here("lib", "functions", "clean_table_names.R"))
+source(here("lib", "functions", "make_filename.R"))
+source(here("lib", "functions", "dir_structure.R"))
 
 ################################################################################
-# 0.1 Create directories for output
+# 0.1 Import command-line arguments
 ################################################################################
-fs::dir_create(here::here("output", "tables"))
+args <- commandArgs(trailingOnly=TRUE)
 
-################################################################################
-# 0.2 Import command-line arguments
-################################################################################
-args <- commandArgs(trailingOnly = TRUE)
-# Set input data to ba1 or ba2 data, default is ba1
-if (length(args) == 0){
-  period = "ba1"
-} else if (args[[1]] == "ba1") {
-  period = "ba1"
-} else if (args[[1]] == "ba2") {
-  period = "ba2"
+if(length(args)==0){
+  # use for interactive testing
+  period <- "ba1"
+  subgrp <- "full"
 } else {
-  # Print error if no argument specified
-  stop("No period specified")
+  
+  option_list <- list(
+    make_option("--period", type = "character", default = "ba1",
+                help = "Period where the analysis is conducted in, options are 'ba1' or 'ba2' [default %default].",
+                metavar = "period"),
+    make_option("--subgrp", type = "character", default = "full",
+                help = "Subgroup where the analysis is conducted on, options are 'full' and 'haem' [default %default].",
+                metavar = "subgrp")
+  )
+  
+  opt_parser <- OptionParser(usage = "table_1:[version] [options]", option_list = option_list)
+  opt <- parse_args(opt_parser)
+  
+  period <- opt$period
+  subgrp <- opt$subgrp
 }
+
+################################################################################
+# 0.2 Create directories for output
+################################################################################
+output_dir <- here::here("output")
+tables_dir <- 
+  concat_dirs("tables", output_dir, model = "cox", subgrp, supp = "main")
+# model and supp default ones to trick concat_dirs function
+fs::dir_create(tables_dir)
 
 ################################################################################
 # 0.3 Import data
@@ -53,6 +71,15 @@ data_filename <-
          "data_processed", ".rds")
 data <-
   read_rds(here::here("output", "data", data_filename))
+if (subgrp == "haem"){
+  data <-
+    data %>% 
+    filter(haematological_disease_nhsd == TRUE)
+} else if (subgrp == "transplant"){
+  data <- 
+    data %>%
+    filter(solid_organ_transplant_nhsd_new == TRUE)
+}
 
 ################################################################################
 # 1 Make table 1
@@ -64,7 +91,7 @@ redaction_threshold = 8
 data_table <- 
   data %>%
   mutate(N = 1, allpop = "All") %>%
-  select(c("N", "allpop", "treatment_strategy_cat_prim", covars))
+  select(c("N", "allpop", "treatment_strategy_cat_prim", all_of(covars)))
 # Generate full and stratified table
 pop_levels = c("All", "Molnupiravir", "Sotrovimab", "Untreated")
 # Generate table - full and stratified populations
@@ -132,8 +159,6 @@ for (pop_level in pop_levels) {
 ################################################################################
 # 2 Save table
 ################################################################################
-file_name <- paste0(period[period != "ba1"], 
-                    "_"[period != "ba1"],
-                    "table1_redacted.html")
+file_name <- make_filename("table1_redacted", period, outcome = "primary", contrast = "", model = "cox", subgrp = subgrp, supp = "main", type = "html")
 gtsave(gt(collated_table), 
-       filename = here::here("output", "tables", file_name))
+       filename = fs::path(tables_dir, file_name))
