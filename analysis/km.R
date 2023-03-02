@@ -318,6 +318,6 @@ for (subgroup_i in subgroups) {
     }
     
     km_plot_rounded <- km_plot(data_surv_rounded)
-    ggsave(filename = fs::path(dir_output, glue("km_plot_{subgroup_i}.png")), km_plot_rounded, width = 20, height = 20, units = "cm")
+    ggsave(filename = fs::path(dir_output, paste0(file_name, ".png")), km_plot_rounded, width = 20, height = 20, units = "cm")
   }
 }
