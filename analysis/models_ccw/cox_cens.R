@@ -13,7 +13,6 @@ fit_cens_cox <- function(data_long, formula_cens){
     coxph(formula_cens,
           ties = "efron",
           data = data_long,
-          singular.ok = FALSE,
           model = TRUE)
 }
 basehaz_cens <- function(cox_fit){

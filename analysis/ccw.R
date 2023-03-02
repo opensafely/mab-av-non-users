@@ -262,6 +262,8 @@ if (model == "cox"){
   # Arm "Control": no treatment within 5 days
   ##############################################################################
   model_cens_control <- fit_cens_cox(data_control_long, formula_cens)
+  # set NA coefficients to null
+  model_cens_control$coefficients[is.na(model_cens_control$coefficients)] <- 0
   model_cens_control %>% coefficients() %>% print()
   basehaz_control <- basehaz_cens(model_cens_control)
   data_control_long <- 
@@ -271,6 +273,8 @@ if (model == "cox"){
   # Arm "Treatment": treatment within 5 days
   ##############################################################################
   model_cens_trt <- fit_cens_cox(data_trt_long, formula_cens)
+  # set NA coefficients to null
+  model_cens_trt$coefficients[is.na(model_cens_trt$coefficients)] <- 0
   model_cens_trt %>% coefficients() %>% print()
   basehaz_trt <- basehaz_cens(model_cens_trt)
   data_trt_long <- 
