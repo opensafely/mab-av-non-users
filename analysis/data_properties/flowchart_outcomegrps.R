@@ -47,7 +47,7 @@ if(length(args)==0){
                 metavar = "subgrp")
   )
   
-  opt_parser <- OptionParser(usage = "ccw:[version] [options]", option_list = option_list)
+  opt_parser <- OptionParser(usage = "flowchart_outcomegrps:[version] [options]", option_list = option_list)
   opt <- parse_args(opt_parser)
   
   period <- opt$period

@@ -60,7 +60,7 @@ if(length(args)==0){
                 metavar = "supp")
   )
   
-  opt_parser <- OptionParser(usage = "ccw:[version] [options]", option_list = option_list)
+  opt_parser <- OptionParser(usage = "smd:[version] [options]", option_list = option_list)
   opt <- parse_args(opt_parser)
   
   period <- opt$period
