@@ -32,6 +32,7 @@ source(here("analysis", "data_ccw", "add_x_days_to_day0.R"))
 source(here("analysis", "models_ccw", "extract_km_estimates.R"))
 source(here("analysis", "models_ccw", "extract_cox_estimates.R"))
 source(here("analysis", "models_ccw", "cox_cens.R"))
+source(here("analysis", "models_ccw", "plr_cens.R"))
 source(here("lib", "functions", "make_filename.R"))
 source(here("lib", "functions", "dir_structure.R"))
 
@@ -101,7 +102,9 @@ fs::dir_create(tables_ccw_dir)
 # Create directory for models
 fs::dir_create(models_dir)
 # Create directory for baseline hazards
-fs::dir_create(models_basehaz_dir)
+if (model == "cox"){
+  fs::dir_create(models_basehaz_dir)
+}
 
 ################################################################################
 # 0.3 Import data
@@ -273,6 +276,24 @@ if (model == "cox"){
   data_trt_long <- 
     data_trt_long %>%
     add_p_uncens_cox(model_cens_trt, basehaz_trt)
+} else if (model == "plr"){
+  formula_cens <- create_formula_cens_plr(covars_formula)
+  ##############################################################################
+  # Arm "Control": no treatment within 5 days
+  ##############################################################################
+  model_cens_control <- fit_cens_plr(data_control_long, formula_cens)
+  model_cens_control %>% coefficients() %>% print()
+  data_control_long <- 
+    data_control_long %>%
+    add_p_uncens_plr(model_cens_control)
+  ##############################################################################
+  # Arm "Treatment": treatment within 5 days
+  ##############################################################################
+  model_cens_trt <- fit_cens_plr(data_trt_long, formula_cens)
+  model_cens_trt %>% coefficients() %>% print()
+  data_trt_long <- 
+    data_trt_long %>%
+    add_p_uncens_plr(model_cens_trt)
 }
 
 ################################################################################

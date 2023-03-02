@@ -83,7 +83,12 @@ fs::dir_create(models_coef_dir)
 ################################################################################
 # 1 Read models
 ################################################################################
-pattern <- if_else(period == "ba1", "^cox_cens", "^ba2_cox_cens")
+if (model == "cox"){
+  pattern <- if_else(period == "ba1", "^cox_cens", "^ba2_cox_cens")
+} else if (model == "plr"){
+  pattern <- if_else(period == "ba1", "^plr_cens", "^ba2_plr_cens")
+}
+
 # directory where models are saved
 models_dir <- 
   concat_dirs("models", output_dir, model, subgrp, supp)
