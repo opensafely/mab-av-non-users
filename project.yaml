@@ -842,6 +842,34 @@ actions:
         table: output/plr/models/coefficients/ba2_cox_cens_*.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
+  ## KM curves
+  ## # # # # # # # # # # # # # # # # # # #
+  
+  plot_km:
+    run: r:latest analysis/km.R
+      --plot TRUE
+    needs: [perform_ccw_analysis]
+    outputs:
+      highly_sensitive:
+        feather: output/figures/km_estimates/km_estimates.feather
+      moderately_sensitive:
+        csv: output/figures/km_estimates/km_estimates.csv
+        plot: output/figures/km_estimates/km_estimates.png
+
+  plot_km_ba2:
+    run: r:latest analysis/km.R
+      --df_input output/data/ba2_data_long_all.feather
+      --period ba2
+      --plot TRUE
+    needs: [perform_ccw_analysis_ba2]
+    outputs:
+      highly_sensitive:
+        feather: output/figures/km_estimates/ba2_km_estimates.feather
+      moderately_sensitive:
+        csv: output/figures/km_estimates/ba2_km_estimates.csv
+        plot: output/figures/km_estimates/ba2_km_estimates.png
+
+  ## # # # # # # # # # # # # # # # # # # # 
   ## Tables
   ## # # # # # # # # # # # # # # # # # # # 
 
