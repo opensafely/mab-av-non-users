@@ -16,6 +16,7 @@ library('tidyverse')
 library('survival')
 library('optparse')
 library('rlang')
+library('arrow')
 
 ## parse command-line arguments ----
 
