@@ -22,6 +22,7 @@ library(dplyr)
 library(purrr)
 library(readr)
 library(gt)
+library(optparse)
 source(here("lib", "functions", "make_filename.R"))
 source(here("lib", "functions", "dir_structure.R"))
 
@@ -53,7 +54,7 @@ if(length(args)==0){
                 metavar = "supp")
   )
   
-  opt_parser <- OptionParser(usage = "ccw:[version] [options]", option_list = option_list)
+  opt_parser <- OptionParser(usage = "ccw_table:[version] [options]", option_list = option_list)
   opt <- parse_args(opt_parser)
   
   period <- opt$period
