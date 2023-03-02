@@ -29,10 +29,10 @@ if(length(args)==0){
   contrast <- "all"
   exposure <- c("arm")
   subgroups <- NULL
-  tstart <- c("tstart")
-  tend <- c("fup")
-  event_indicator <- c("outcome")
-  weight <- c("weight")
+  tstart <- "tstart"
+  tend <- "fup"
+  event_indicator <- "outcome"
+  weight <- "weight"
   min_count <- as.integer("6")
   method <- "linear"
   fill_times <- as.logical("TRUE")
@@ -40,31 +40,31 @@ if(length(args)==0){
 } else {
   
   option_list <- list(
-    make_option("--df_input", type = "character", default = NULL,
+    make_option("--df_input", type = "character", default = "output/data/data_long_all.feather",
                 help = "Input dataset .feather filename [default %default]. feather format is enforced to ensure date types are preserved.",
                 metavar = "filename.feather"),
-    make_option("--dir_output", type = "character", default = NULL,
+    make_option("--dir_output", type = "character", default = "output/figures/km_estimates/",
                 help = "Output directory [default %default].",
                 metavar = "output"),
-    make_option("--period", type = "character", default = NULL,
+    make_option("--period", type = "character", default = "ba1",
                 help = "Period of analysis [default %default].",
                 metavar = "period"),
-    make_option("--contrast", type = "character", default = NULL,
+    make_option("--contrast", type = "character", default = "all",
                 help = "Contrast of analysis [default %default].",
                 metavar = "contrast"),
-    make_option("--exposure", type = "character", default = NULL,
+    make_option("--exposure", type = "character", default = "arm",
                 help = "Exposure variable name in the input dataset [default %default]. All outputs will be stratified by this variable.",
                 metavar = "exposure_varname"),
     make_option("--subgroups", type = "character", default = NULL,
                 help = "Subgroup variable name or list of variable names [default %default]. If subgroups are used, analyses will be stratified as exposure * ( subgroup1, subgroup2, ...). If NULL, no stratification will occur.",
                 metavar = "subgroup_varnames"),
-    make_option("--interval_start", type = "character", default = NULL,
+    make_option("--interval_start", type = "character", default = "tstart",
                 help = "Interval start variable name in the input dataset [default %default]. Should refer to a numeric variable.",
                 metavar = "start_varname"),
-    make_option("--interval_end", type = "character", default = NULL,
+    make_option("--interval_end", type = "character", default = "fup",
                 help = "Interval end variable name in the input dataset [default %default]. Should refer to a numeric variable.",
                 metavar = "end_varname"),
-    make_option("--weight", type = "character", default = NULL,
+    make_option("--weight", type = "character", default = "weight",
                 help = "Weight variable name in the input dataset [default %default]. Should refer to a numeric variable.",
                 metavar = "weight_varname"),
     make_option("--min_count", type = "integer", default = 6,
