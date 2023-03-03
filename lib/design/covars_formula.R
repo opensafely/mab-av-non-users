@@ -5,7 +5,7 @@ covars_formula <-
     "ethnicity",
     "imdQ5",
     "rural_urban",
-    "stp",
+    "region_nhs",
     # other comorbidities/clinical characteristics
     "smoking_status",
     "chronic_cardiac_disease",

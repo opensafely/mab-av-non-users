@@ -19,6 +19,17 @@ recode_fctrs <- function(data){
                         citytown = "Urban - city and town",
                         townfringe = "Rural - town and fringe",
                         villagedisp = "Rural - village and dispersed"),
+           region_nhs =
+             fct_recode(region_nhs,
+                        london = "London",
+                        east = "East of England",
+                        east_midlands = "East Midlands",
+                        north_east = "North East",
+                        north_west = "North West",
+                        south_east = "South East",
+                        south_west = "South West",
+                        west_midlands = "West Midlands",
+                        yorkshire_humber = "Yorkshire and the Humber"),
            vax_status = 
              fct_recode(vaccination_status,
                         "3" = "Three or more vaccinations",
@@ -45,6 +56,7 @@ spread_data <- function(data){
     make_dummy_var("ethnicity", "ethnicity_") %>%
     make_dummy_var("imd", "imd_") %>%
     make_dummy_var("rural_urban", "rural_urban_") %>%
+    make_dummy_var("region_nhs", "region_nhs_") %>%
     make_dummy_var("smoking_status", "smoking_") %>%
     make_dummy_var("vax_status", "vax_status_")
 }

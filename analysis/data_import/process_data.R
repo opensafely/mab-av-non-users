@@ -77,8 +77,7 @@ process_data <- function(data_extracted){
         region_nhs == "South East" ~ "South East",
         region_nhs == "South West" ~ "South West",
         region_nhs == "West Midlands" ~ "West Midlands",
-        region_nhs == "Yorkshire and The Humber" ~ "Yorkshire and the Humber",
-        TRUE ~ "Unknown"),
+        region_nhs == "Yorkshire and The Humber" ~ "Yorkshire and the Humber"),
       
       # Rural/urban
       rural_urban = fct_case_when(
