@@ -85,7 +85,7 @@ clone_data <- function(data){
              # --> they don't experience an event and their follow-up time is 5 
              #     days
              treatment_ccw == "Untreated" & 
-               fu_ccw > 4 ~ 5,
+               fu_ccw > 4 ~ 4,
            ),
            # ADD VARIALBE CENSORING
            censoring = case_when(
