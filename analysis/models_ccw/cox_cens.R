@@ -11,7 +11,7 @@ create_formula_cens_cox <- function(covars_formula){
 fit_cens_cox <- function(data_long, formula_cens){
   fit <-
     coxph(formula_cens,
-          ties = "efron",
+          ties = "breslow",
           data = data_long,
           model = TRUE)
 }
