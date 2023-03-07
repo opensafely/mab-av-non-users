@@ -379,7 +379,8 @@ actions:
     needs: [perform_ccw_analysis]
     outputs:
       moderately_sensitive:
-        table: output/data_properties/data_long/dens_all.csv
+        table1: output/data_properties/data_long/dens_all.csv
+        table2: output/data_properties/data_long/q_all.csv
   
   dens_weights_mol:
     run: r:latest analysis/data_ccw/dens_weights.R 
@@ -388,7 +389,8 @@ actions:
     needs: [perform_ccw_analysis_mol]
     outputs:
       moderately_sensitive:
-        table: output/data_properties/data_long/dens_molnupiravir.csv
+        table1: output/data_properties/data_long/dens_molnupiravir.csv
+        table2: output/data_properties/data_long/q_molnupiravir.csv
 
   dens_weights_sot:
     run: r:latest analysis/data_ccw/dens_weights.R
@@ -397,7 +399,8 @@ actions:
     needs: [perform_ccw_analysis_sot]
     outputs:
       moderately_sensitive:
-        table: output/data_properties/data_long/dens_sotrovimab.csv
+        table1: output/data_properties/data_long/dens_sotrovimab.csv
+        table2: output/data_properties/data_long/q_sotrovimab.csv
 
   dens_weights_ba2:
     run: r:latest analysis/data_ccw/dens_weights.R
@@ -405,7 +408,8 @@ actions:
     needs: [perform_ccw_analysis_ba2]
     outputs:
       moderately_sensitive:
-        table: output/data_properties/data_long/ba2_dens_all.csv
+        table1: output/data_properties/data_long/ba2_dens_all.csv
+        table2: output/data_properties/data_long/ba2_q_all.csv
 
   dens_weights_mol_ba2:
     run: r:latest analysis/data_ccw/dens_weights.R
@@ -414,7 +418,8 @@ actions:
     needs: [perform_ccw_analysis_mol_ba2]
     outputs:
       moderately_sensitive:
-        table: output/data_properties/data_long/ba2_dens_molnupiravir.csv
+        table1: output/data_properties/data_long/ba2_dens_molnupiravir.csv
+        table2: output/data_properties/data_long/ba2_q_molnupiravir.csv
 
   dens_weights_sot_ba2:
     run: r:latest analysis/data_ccw/dens_weights.R
@@ -423,7 +428,8 @@ actions:
     needs: [perform_ccw_analysis_sot_ba2]
     outputs:
       moderately_sensitive:
-        table: output/data_properties/data_long/ba2_dens_sotrovimab.csv
+        table1: output/data_properties/data_long/ba2_dens_sotrovimab.csv
+        table2: output/data_properties/data_long/ba2_q_sotrovimab.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
@@ -644,7 +650,8 @@ actions:
     needs: [perform_ccw_analysis_haem]
     outputs:
       moderately_sensitive:
-        table: output/data_properties/data_long/haem/dens_all_haem.csv
+        table1: output/data_properties/data_long/haem/dens_all_haem.csv
+        table2: output/data_properties/data_long/haem/q_all_haem.csv
   
   dens_weights_mol_haem:
     run: r:latest analysis/data_ccw/dens_weights.R
@@ -654,7 +661,8 @@ actions:
     needs: [perform_ccw_analysis_mol_haem]
     outputs:
       moderately_sensitive:
-        table: output/data_properties/data_long/haem/dens_molnupiravir_haem.csv
+        table1: output/data_properties/data_long/haem/dens_molnupiravir_haem.csv
+        table2: output/data_properties/data_long/haem/q_molnupiravir_haem.csv
 
   dens_weights_sot_haem:
     run: r:latest analysis/data_ccw/dens_weights.R
@@ -664,7 +672,8 @@ actions:
     needs: [perform_ccw_analysis_sot_haem]
     outputs:
       moderately_sensitive:
-        table: output/data_properties/data_long/haem/dens_sotrovimab_haem.csv
+        table1: output/data_properties/data_long/haem/dens_sotrovimab_haem.csv
+        table2: output/data_properties/data_long/haem/q_sotrovimab_haem.csv
 
   dens_weights_haem_ba2:
     run: r:latest analysis/data_ccw/dens_weights.R
@@ -673,7 +682,8 @@ actions:
     needs: [perform_ccw_analysis_haem_ba2]
     outputs:
       moderately_sensitive:
-        table: output/data_properties/data_long/haem/ba2_dens_all_haem.csv
+        table1: output/data_properties/data_long/haem/ba2_dens_all_haem.csv
+        table2: output/data_properties/data_long/haem/ba2_q_all_haem.csv
 
   dens_weights_mol_haem_ba2:
     run: r:latest analysis/data_ccw/dens_weights.R
@@ -683,7 +693,8 @@ actions:
     needs: [perform_ccw_analysis_mol_haem_ba2]
     outputs:
       moderately_sensitive:
-        table: output/data_properties/data_long/haem/ba2_dens_molnupiravir_haem.csv
+        table1: output/data_properties/data_long/haem/ba2_dens_molnupiravir_haem.csv
+        table2: output/data_properties/data_long/haem/ba2_q_molnupiravir_haem.csv
 
   dens_weights_sot_haem_ba2:
     run: r:latest analysis/data_ccw/dens_weights.R
@@ -693,7 +704,9 @@ actions:
     needs: [perform_ccw_analysis_sot_haem_ba2]
     outputs:
       moderately_sensitive:
-        table: output/data_properties/data_long/haem/ba2_dens_sotrovimab_haem.csv
+        table1: output/data_properties/data_long/haem/ba2_dens_sotrovimab_haem.csv
+        table2: output/data_properties/data_long/haem/ba2_q_sotrovimab_haem.csv
+
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 

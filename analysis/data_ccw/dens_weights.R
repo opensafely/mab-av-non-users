@@ -19,6 +19,7 @@ library(purrr)
 library(tidyr)
 library(here)
 library(optparse)
+library(stringr)
 source(here::here("lib", "functions", "make_filename.R"))
 source(here::here("lib", "functions", "dir_structure.R"))
 
@@ -98,7 +99,17 @@ calc_dens_of_arm <- function(data, arm_str, time){
 }
 arms <- c("Control", "Treatment")
 dens <- map(.x = arms,
-            .f = ~ calc_dens_of_arm(data_long, .x, 5.5)) %>% bind_rows()
+            .f = ~ calc_dens_of_arm(data_long, .x, 4.5)) %>% bind_rows()
+q_s <-
+  data_long %>%
+  group_by(arm, fup) %>%
+  summarise(tibble::enframe(quantile(p_uncens, probs = c(0, 0.05, 0.95, 1)), 
+                            name = "quantile", "p_uncens"),
+            .groups = "keep") %>%
+  mutate(quantile = str_remove(quantile, pattern = "%")) %>%
+  pivot_wider(values_from = p_uncens,
+              names_from = quantile,
+              names_prefix = "q_")
 
 ################################################################################
 # 2 Save table
@@ -107,4 +118,9 @@ write_csv(
   dens,
   fs::path(data_properties_long_dir,
            make_filename("dens", period, outcome, contrast, model, subgrp, supp, "csv"))
+)
+write_csv(
+  q_s,
+  fs::path(data_properties_long_dir,
+           make_filename("q", period, outcome, contrast, model, subgrp, supp, "csv"))
 )
