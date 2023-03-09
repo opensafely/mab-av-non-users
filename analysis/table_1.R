@@ -146,12 +146,18 @@ for (pop_level in pop_levels) {
                              Summary)) %>%
     select(-Non_Count, -Count, -Percent)
   names(table1_redacted)[3] = pop_level
+  table1_clean <- table1_clean %>% select(-Percent)
+  names(table1_clean)[3] = pop_level
   # collate table
   if (pop_level == "All") { 
     collated_table = table1_redacted 
+    collated_table_unred = table1_clean
   } else { 
     collated_table = collated_table %>% 
       left_join(table1_redacted, 
+                by = c("Group" = "Group", "Variable" = "Variable"))
+    collated_table_unred = collated_table_unred %>% 
+      left_join(table1_clean, 
                 by = c("Group" = "Group", "Variable" = "Variable"))
   }
 }
@@ -162,3 +168,6 @@ for (pop_level in pop_levels) {
 file_name <- make_filename("table1_redacted", period, outcome = "primary", contrast = "", model = "cox", subgrp = subgrp, supp = "main", type = "html")
 gtsave(gt(collated_table), 
        filename = fs::path(tables_dir, file_name))
+file_name_unred <- make_filename("table1_unredacted", period, outcome = "primary", contrast = "", model = "cox", subgrp = subgrp, supp = "main", type = "html")
+gtsave(gt(collated_table_unred), 
+       filename = fs::path(tables_dir, file_name_unred))
