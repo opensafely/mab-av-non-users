@@ -36,7 +36,7 @@ if(length(args)==0){
   weight <- "weight"
   min_count <- as.integer("6")
   method <- "linear"
-  fill_times <- as.logical("TRUE")
+  fill_times <- as.logical("FALSE")
   plot <- as.logical("FALSE")
 } else {
   
@@ -77,7 +77,7 @@ if(length(args)==0){
     make_option("--method", type = "character", default = "constant",
                 help = "Interpolation method after rounding [default %default]. The 'constant' method leaves the event times unchanged after rounding, making the KM curve have bigger, fewer steps. The 'linear' method linearly interpolates between rounded events times (then rounds to the nearest day), so that the steps appear more natural.",
                 metavar = "method"),
-    make_option("--fill_times", type = "logical", default = TRUE,
+    make_option("--fill_times", type = "logical", default = FALSE,
                 help = "Should Kaplan-Meier estimates be provided for all possible event times (TRUE) or just observed event times (FALSE) [default %default]. ",
                 metavar = "TRUE/FALSE"),
     make_option("--plot", type = "logical", default = TRUE,
@@ -184,6 +184,7 @@ if(is.null(subgroups)) subgroups <- list("all")
 
 for (subgroup_i in subgroups) {
   #subgroup_i = "previous_covid_test"
+  survival::survfit(survival::Surv(tstart, tend, event_indicator) ~ 1, data = data_patients, id = patient_id, conf.type="log-log", weights = weight) %>% summary()
   
   # for each exposure level and subgroup level, pass data through `survival::Surv` to get KM table
   data_surv <-
