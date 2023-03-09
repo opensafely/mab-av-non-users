@@ -314,9 +314,11 @@ data_long <-
 # kaplan meier
 km_control <- survfit(Surv(tstart, fup, outcome) ~ 1,
                       data = subset(data_long, arm == "Control"),
+                      id = patient_id,
                       weights = weight)
 km_trt <- survfit(Surv(tstart, fup, outcome) ~ 1,
                   data = subset(data_long, arm == "Treatment"),
+                  id = patient_id,
                   weights = weight)
 max_fup <- max(t_events)
 km_est <- extract_km_estimates(km_control, km_trt, max_fup)
