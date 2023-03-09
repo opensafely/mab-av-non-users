@@ -86,6 +86,7 @@ fs::dir_create(tables_ccw_dir)
 data_dir <- concat_dirs("data", output_dir, model, subgrp, supp)
 data_filename <- make_filename("data_long", period, outcome, contrast, model, subgrp, supp, "feather")
 data_long <- arrow::read_feather(fs::path(data_dir, data_filename))
+t_events <- data_long %>% pull(fup) %>% unique()
 # spread data:
 # - spread factors in dummy columns
 data_long_spread <- spread_data(data_long)
@@ -94,18 +95,25 @@ data_long_spread <- spread_data(data_long)
 # 1 Calculate standardised mean differences
 ################################################################################
 data_long_spread <- data_long_spread %>% mutate(unweight = 1)
-smd <- 
-  bind_rows(covars = covars_smd,
-            smd_w = map_dbl(covars_smd,
-                           ~ std_diff(data_long_spread,
-                                      .x,
-                                      "weight",
-                                      4.5)),
-            smd_uw = map_dbl(covars_smd,
+calc_smd <- function(time) {
+  smd <- 
+    bind_rows(covars = covars_smd,
+              time = time,
+              smd_w = map_dbl(covars_smd,
                              ~ std_diff(data_long_spread,
                                         .x,
-                                        "unweight",
-                                        4.5)))
+                                        "weight",
+                                        time)),
+              smd_uw = map_dbl(covars_smd,
+                               ~ std_diff(data_long_spread,
+                                          .x,
+                                          "unweight",
+                                          time)))
+}
+smd <- map(
+  .x = t_events,
+  .f = ~ calc_smd(.x)
+) %>% bind_rows()
 
 ################################################################################
 # 2 Save table
