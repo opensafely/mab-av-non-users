@@ -1288,3 +1288,21 @@ actions:
     outputs:
       moderately_sensitive:
         html: output/tables/haem/ba2_table_ccw_haem.html
+
+  create_table_ccw_transplant:
+    run: r:latest analysis/table_ccw.R
+      --period ba1
+      --subgrp transplant
+    needs: [perform_ccw_analysis_transplant, perform_ccw_analysis_mol_transplant, perform_ccw_analysis_sot_transplant]
+    outputs:
+      moderately_sensitive:
+        html: output/tables/transplant/table_ccw_transplant.html
+
+  create_table_ccw_transplant_ba2:
+    run: r:latest analysis/table_ccw.R
+      --period ba2
+      --subgrp transplant
+    needs: [perform_ccw_analysis_transplant_ba2, perform_ccw_analysis_mol_transplant_ba2, perform_ccw_analysis_sot_transplant_ba2]
+    outputs:
+      moderately_sensitive:
+        html: output/tables/transplant/ba2_table_ccw_transplant.html
