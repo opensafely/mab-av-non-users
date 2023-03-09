@@ -13,6 +13,6 @@ std_diff <- function(data, var, wgt, time){
                             weights = .data[[wgt]],
                             na.rm = TRUE)) %>%
     mutate(mu = if_else(arm == "Control", - mu, mu))
-  sdiff <- (100 * sum(tab$mu)) / (sqrt(sum(tab$var) / 2))
+  sdiff <- (100 * sum(tab$mu, na.rm = TRUE)) / (sqrt(sum(tab$var, na.rm = TRUE) / 2))
   sdiff
 }
