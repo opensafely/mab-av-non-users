@@ -80,6 +80,11 @@ if (subgrp == "haem"){
     data %>%
     filter(solid_organ_transplant_nhsd_new == TRUE)
 }
+data %>% 
+  group_by(vaccination_status, moderna_most_recent_cov_vac) %>%
+  tally() %>%
+  spread(moderna_most_recent_cov_vac, n) %>%
+  print()
 
 ################################################################################
 # 1 Make table 1
