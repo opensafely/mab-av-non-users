@@ -27,6 +27,6 @@ add_p_uncens_cox <- function(data_long, cox_fit, basehazard){
     data_long %>%
     mutate(lin_pred = coxLP(cox_fit, data_long, center = FALSE)) %>%
     left_join(basehazard, by = c("tstart" = "time")) %>%
-    mutate(p_uncens = exp(-(hazard)*exp(lin_pred)))
+    mutate(cmlp_uncens = exp(-(hazard)*exp(lin_pred)))
   data_long
 }
