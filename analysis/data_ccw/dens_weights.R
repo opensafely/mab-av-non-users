@@ -20,6 +20,7 @@ library(tidyr)
 library(here)
 library(optparse)
 library(stringr)
+library(ggplot2)
 source(here::here("lib", "functions", "make_filename.R"))
 source(here::here("lib", "functions", "dir_structure.R"))
 
