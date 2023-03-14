@@ -69,6 +69,15 @@ input_filename <-
     "input_ba2.csv.gz"
   }
 data_extracted <- extract_data(input_filename)
+# change data if run using dummy data
+if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
+  data_extracted <- 
+    data_extracted %>%
+    mutate(died_ons_covid_any_date = 
+             if_else(!is.na(death_date), death_date, died_ons_covid_any_date),
+           death_date =
+             if_else(!is.na(died_ons_covid_any_date), died_ons_covid_any_date, death_date)) 
+}
 
 ################################################################################
 # 2 Process data
