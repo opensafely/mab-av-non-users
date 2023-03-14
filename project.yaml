@@ -1442,3 +1442,21 @@ actions:
     outputs:
       moderately_sensitive:
         html: output/tables/transplant/ba2_table_ccw_transplant.html
+
+  create_table_ccw_plr:
+    run: r:latest analysis/table_ccw.R
+      --period ba1
+      --model plr
+    needs: [perform_ccw_analysis_plr, perform_ccw_analysis_mol_plr, perform_ccw_analysis_sot_plr]
+    outputs:
+      moderately_sensitive:
+        html: output/plr/tables/table_ccw_plr.html
+
+  create_table_ccw_plr_ba2:
+    run: r:latest analysis/table_ccw.R
+      --period ba2
+      --model plr
+    needs: [perform_ccw_analysis_plr_ba2, perform_ccw_analysis_mol_plr_ba2, perform_ccw_analysis_sot_plr_ba2]
+    outputs:
+      moderately_sensitive:
+        html: output/plr/tables/ba2_table_ccw_plr.html
