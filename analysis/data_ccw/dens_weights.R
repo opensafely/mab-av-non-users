@@ -90,16 +90,18 @@ data_long <- arrow::read_feather(fs::path(data_dir, data_filename))
 ################################################################################
 # 1 Estimate density
 ################################################################################
-calc_dens_of_arm <- function(data, arm_str, time){
-  dens <- data %>%
-    filter(arm == arm_str & fup == time) %>%
-    pull(weight) %>%
-    density()
-  out <- cbind.data.frame(coord = dens$x, dens = dens$y, arm = arm_str)
+calc_hist_of_arm <- function(data, arm_str, time){
+  plot_data <-
+    data %>%
+    filter(arm == arm_str & fup == time)
+  p <- ggplot(plot_data, aes(x = weight)) +
+    geom_histogram(bins = 20)
+  p_data <- layer_data(p, 1)
+  p_data %>% mutate(arm = arm_str)
 }
 arms <- c("Control", "Treatment")
-dens <- map(.x = arms,
-            .f = ~ calc_dens_of_arm(data_long, .x, 4.5)) %>% bind_rows()
+hist <- map(.x = arms,
+            .f = ~ calc_hist_of_arm(data_long, .x, 5.5)) %>% bind_rows()
 q_s <-
   data_long %>%
   group_by(arm, fup) %>%
@@ -115,7 +117,7 @@ q_s <-
 # 2 Save table
 ################################################################################
 write_csv(
-  dens,
+  hist,
   fs::path(data_properties_long_dir,
            make_filename("dens", period, outcome, contrast, model, subgrp, supp, "csv"))
 )
