@@ -2115,3 +2115,43 @@ actions:
     outputs:
       moderately_sensitive:
         html: output/plr/tables/ba2_table_ccw_plr.html
+
+  create_table_ccw_haem_plr:
+    run: r:latest analysis/table_ccw.R
+      --period ba1
+      --model plr
+      --subgrp haem
+    needs: [perform_ccw_analysis_haem_plr, perform_ccw_analysis_mol_haem_plr, perform_ccw_analysis_sot_haem_plr]
+    outputs:
+      moderately_sensitive:
+        html: output/plr/tables/haem/table_ccw_haem_plr.html
+
+  create_table_ccw_haem_plr_ba2:
+    run: r:latest analysis/table_ccw.R
+      --period ba2
+      --model plr
+      --subgrp haem
+    needs: [perform_ccw_analysis_haem_plr_ba2, perform_ccw_analysis_mol_haem_plr_ba2, perform_ccw_analysis_sot_haem_plr_ba2]
+    outputs:
+      moderately_sensitive:
+        html: output/plr/tables/haem/ba2_table_ccw_haem_plr.html
+
+  create_table_ccw_transplant_plr:
+    run: r:latest analysis/table_ccw.R
+      --period ba1
+      --model plr
+      --subgrp transplant
+    needs: [perform_ccw_analysis_transplant_plr, perform_ccw_analysis_mol_transplant_plr, perform_ccw_analysis_sot_transplant_plr]
+    outputs:
+      moderately_sensitive:
+        html: output/plr/tables/transplant/table_ccw_transplant_plr.html
+
+  create_table_ccw_transplant_plr_ba2:
+    run: r:latest analysis/table_ccw.R
+      --period ba2
+      --model plr
+      --subgrp transplant
+    needs: [perform_ccw_analysis_transplant_plr_ba2, perform_ccw_analysis_mol_transplant_plr_ba2, perform_ccw_analysis_sot_transplant_plr_ba2]
+    outputs:
+      moderately_sensitive:
+        html: output/plr/tables/transplant/ba2_table_ccw_transplant_plr.html
