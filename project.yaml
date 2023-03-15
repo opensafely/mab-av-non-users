@@ -1916,6 +1916,7 @@ actions:
     run: r:latest analysis/km.R
       --df_input output/plr/data/data_long_molnupiravir_plr.feather
       --dir_output output/plr/figures/km_estimates
+      --contrast molnupiravir
       --plot TRUE
     needs: [perform_ccw_analysis_mol_plr]
     outputs:
@@ -1929,6 +1930,7 @@ actions:
     run: r:latest analysis/km.R
       --df_input output/plr/data/data_long_sotrovimab_plr.feather
       --dir_output output/plr/figures/km_estimates
+      --contrast sotrovimab
       --plot TRUE
     needs: [perform_ccw_analysis_sot_plr]
     outputs:
@@ -1957,6 +1959,7 @@ actions:
       --df_input output/plr/data/ba2_data_long_molnupiravir_plr.feather
       --dir_output output/plr/figures/km_estimates
       --period ba2
+      --contrast molnupiravir
       --plot TRUE
     needs: [perform_ccw_analysis_mol_plr_ba2]
     outputs:
@@ -1971,6 +1974,7 @@ actions:
       --df_input output/plr/data/ba2_data_long_sotrovimab_plr.feather
       --dir_output output/plr/figures/km_estimates
       --period ba2
+      --contrast sotrovimab
       --plot TRUE
     needs: [perform_ccw_analysis_sot_plr_ba2]
     outputs:
