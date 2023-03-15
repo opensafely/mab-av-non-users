@@ -1367,7 +1367,7 @@ actions:
         model3: output/plr/models/truncated/ba2_cox_w_sotrovimab_plr_truncated.rds
         model4: output/plr/models/truncated/ba2_cox_uw_sotrovimab_plr_truncated.rds
       moderately_sensitive:
-        table: output/plr/tables/ccw/truncated/ba2_ccw_sotrovimab_plr.csv
+        table: output/plr/tables/ccw/truncated/ba2_ccw_sotrovimab_plr_truncated.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## 5.3 CCW Analysis - density weights - TRUNC x PLR
