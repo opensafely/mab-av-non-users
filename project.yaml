@@ -1266,8 +1266,8 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/haem/data_long_all_plr_haem.feather
-        model01: output/plr/models/haem/cox_cens_control_all_plr_haem.rds
-        model02: output/plr/models/haem/cox_cens_trt_all_plr_haem.rds
+        model01: output/plr/models/haem/plr_cens_control_all_plr_haem.rds
+        model02: output/plr/models/haem/plr_cens_trt_all_plr_haem.rds
         model1: output/plr/models/haem/km_trt_all_plr_haem.rds
         model2: output/plr/models/haem/km_control_all_plr_haem.rds
         model3: output/plr/models/haem/cox_w_all_plr_haem.rds
@@ -1285,8 +1285,8 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/haem/data_long_molnupiravir_plr_haem.feather
-        model01: output/plr/models/haem/cox_cens_control_molnupiravir_plr_haem.rds
-        model02: output/plr/models/haem/cox_cens_trt_molnupiravir_plr_haem.rds
+        model01: output/plr/models/haem/plr_cens_control_molnupiravir_plr_haem.rds
+        model02: output/plr/models/haem/plr_cens_trt_molnupiravir_plr_haem.rds
         model1: output/plr/models/haem/km_trt_molnupiravir_plr_haem.rds
         model2: output/plr/models/haem/km_control_molnupiravir_plr_haem.rds
         model3: output/plr/models/haem/cox_w_molnupiravir_plr_haem.rds
@@ -1304,8 +1304,8 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/haem/data_long_sotrovimab_plr_haem.feather
-        model01: output/plr/models/haem/cox_cens_control_sotrovimab_plr_haem.rds
-        model02: output/plr/models/haem/cox_cens_trt_sotrovimab_plr_haem.rds
+        model01: output/plr/models/haem/plr_cens_control_sotrovimab_plr_haem.rds
+        model02: output/plr/models/haem/plr_cens_trt_sotrovimab_plr_haem.rds
         model1: output/plr/models/haem/km_trt_sotrovimab_plr_haem.rds
         model2: output/plr/models/haem/km_control_sotrovimab_plr_haem.rds
         model3: output/plr/models/haem/cox_w_sotrovimab_plr_haem.rds
@@ -1321,7 +1321,7 @@ actions:
     needs: [perform_ccw_analysis_plr_haem, perform_ccw_analysis_mol_plr_haem, perform_ccw_analysis_sot_plr_haem]
     outputs:
       moderately_sensitive:
-        table: output/plr/models/coefficients/haem/cox_cens_*.csv
+        table: output/plr/models/coefficients/haem/plr_cens_*.csv
 
   perform_ccw_analysis_plr_haem_ba2:
     run: r:latest analysis/ccw.R
@@ -1332,8 +1332,8 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/haem/ba2_data_long_all_plr_haem.feather
-        model01: output/plr/models/haem/ba2_cox_cens_control_all_plr_haem.rds
-        model02: output/plr/models/haem/ba2_cox_cens_trt_all_plr_haem.rds
+        model01: output/plr/models/haem/ba2_plr_cens_control_all_plr_haem.rds
+        model02: output/plr/models/haem/ba2_plr_cens_trt_all_plr_haem.rds
         model1: output/plr/models/haem/ba2_km_trt_all_plr_haem.rds
         model2: output/plr/models/haem/ba2_km_control_all_plr_haem.rds
         model3: output/plr/models/haem/ba2_cox_w_all_plr_haem.rds
@@ -1351,8 +1351,8 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/haem/ba2_data_long_molnupiravir_plr_haem.feather
-        model01: output/plr/models/haem/ba2_cox_cens_control_molnupiravir_plr_haem.rds
-        model02: output/plr/models/haem/ba2_cox_cens_trt_molnupiravir_plr_haem.rds
+        model01: output/plr/models/haem/ba2_plr_cens_control_molnupiravir_plr_haem.rds
+        model02: output/plr/models/haem/ba2_plr_cens_trt_molnupiravir_plr_haem.rds
         model1: output/plr/models/haem/ba2_km_trt_molnupiravir_plr_haem.rds
         model2: output/plr/models/haem/ba2_km_control_molnupiravir_plr_haem.rds
         model3: output/plr/models/haem/ba2_cox_w_molnupiravir_plr_haem.rds
@@ -1370,8 +1370,8 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/haem/ba2_data_long_sotrovimab_plr_haem.feather
-        model01: output/plr/models/haem/ba2_cox_cens_control_sotrovimab_plr_haem.rds
-        model02: output/plr/models/haem/ba2_cox_cens_trt_sotrovimab_plr_haem.rds
+        model01: output/plr/models/haem/ba2_plr_cens_control_sotrovimab_plr_haem.rds
+        model02: output/plr/models/haem/ba2_plr_cens_trt_sotrovimab_plr_haem.rds
         model1: output/plr/models/haem/ba2_km_trt_sotrovimab_plr_haem.rds
         model2: output/plr/models/haem/ba2_km_control_sotrovimab_plr_haem.rds
         model3: output/plr/models/haem/ba2_cox_w_sotrovimab_plr_haem.rds
@@ -1387,7 +1387,7 @@ actions:
     needs: [perform_ccw_analysis_plr_haem_ba2, perform_ccw_analysis_mol_plr_haem_ba2, perform_ccw_analysis_sot_plr_haem_ba2]
     outputs:
       moderately_sensitive:
-        table: output/plr/models/coefficients/haem/ba2_cox_cens_*.csv
+        table: output/plr/models/coefficients/haem/ba2_plr_cens_*.csv
   
   ## # # # # # # # # # # # # # # # # # # # 
   ## 5.2 CCW Analysis - check balance - PLR
@@ -1550,8 +1550,8 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/transplant/data_long_all_plr_transplant.feather
-        model01: output/plr/models/transplant/cox_cens_control_all_plr_transplant.rds
-        model02: output/plr/models/transplant/cox_cens_trt_all_plr_transplant.rds
+        model01: output/plr/models/transplant/plr_cens_control_all_plr_transplant.rds
+        model02: output/plr/models/transplant/plr_cens_trt_all_plr_transplant.rds
         model1: output/plr/models/transplant/km_trt_all_plr_transplant.rds
         model2: output/plr/models/transplant/km_control_all_plr_transplant.rds
         model3: output/plr/models/transplant/cox_w_all_plr_transplant.rds
@@ -1571,8 +1571,8 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/transplant/data_long_molnupiravir_plr_transplant.feather
-        model01: output/plr/models/transplant/cox_cens_control_molnupiravir_plr_transplant.rds
-        model02: output/plr/models/transplant/cox_cens_trt_molnupiravir_plr_transplant.rds
+        model01: output/plr/models/transplant/plr_cens_control_molnupiravir_plr_transplant.rds
+        model02: output/plr/models/transplant/plr_cens_trt_molnupiravir_plr_transplant.rds
         model1: output/plr/models/transplant/km_trt_molnupiravir_plr_transplant.rds
         model2: output/plr/models/transplant/km_control_molnupiravir_plr_transplant.rds
         model3: output/plr/models/transplant/cox_w_molnupiravir_plr_transplant.rds
@@ -1592,8 +1592,8 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/transplant/data_long_sotrovimab_plr_transplant.feather
-        model01: output/plr/models/transplant/cox_cens_control_sotrovimab_plr_transplant.rds
-        model02: output/plr/models/transplant/cox_cens_trt_sotrovimab_plr_transplant.rds
+        model01: output/plr/models/transplant/plr_cens_control_sotrovimab_plr_transplant.rds
+        model02: output/plr/models/transplant/plr_cens_trt_sotrovimab_plr_transplant.rds
         model1: output/plr/models/transplant/km_trt_sotrovimab_plr_transplant.rds
         model2: output/plr/models/transplant/km_control_sotrovimab_plr_transplant.rds
         model3: output/plr/models/transplant/cox_w_sotrovimab_plr_transplant.rds
@@ -1611,7 +1611,7 @@ actions:
     needs: [perform_ccw_analysis_plr_transplant, perform_ccw_analysis_mol_plr_transplant, perform_ccw_analysis_sot_plr_transplant]
     outputs:
       moderately_sensitive:
-        table: output/plr/models/coefficients/transplant/cox_cens_*.csv
+        table: output/plr/models/coefficients/transplant/plr_cens_*.csv
 
   perform_ccw_analysis_plr_transplant_ba2:
     run: r:latest analysis/ccw.R
@@ -1622,8 +1622,8 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/transplant/ba2_data_long_all_plr_transplant.feather
-        model01: output/plr/models/transplant/ba2_cox_cens_control_all_plr_transplant.rds
-        model02: output/plr/models/transplant/ba2_cox_cens_trt_all_plr_transplant.rds
+        model01: output/plr/models/transplant/ba2_plr_cens_control_all_plr_transplant.rds
+        model02: output/plr/models/transplant/ba2_plr_cens_trt_all_plr_transplant.rds
         model1: output/plr/models/transplant/ba2_km_trt_all_plr_transplant.rds
         model2: output/plr/models/transplant/ba2_km_control_all_plr_transplant.rds
         model3: output/plr/models/transplant/ba2_cox_w_all_plr_transplant.rds
@@ -1643,8 +1643,8 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/transplant/ba2_data_long_molnupiravir_plr_transplant.feather
-        model01: output/plr/models/transplant/ba2_cox_cens_control_molnupiravir_plr_transplant.rds
-        model02: output/plr/models/transplant/ba2_cox_cens_trt_molnupiravir_plr_transplant.rds
+        model01: output/plr/models/transplant/ba2_plr_cens_control_molnupiravir_plr_transplant.rds
+        model02: output/plr/models/transplant/ba2_plr_cens_trt_molnupiravir_plr_transplant.rds
         model1: output/plr/models/transplant/ba2_km_trt_molnupiravir_plr_transplant.rds
         model2: output/plr/models/transplant/ba2_km_control_molnupiravir_plr_transplant.rds
         model3: output/plr/models/transplant/ba2_cox_w_molnupiravir_plr_transplant.rds
@@ -1664,8 +1664,8 @@ actions:
     outputs:
       highly_sensitive:
         data: output/plr/data/transplant/ba2_data_long_sotrovimab_plr_transplant.feather
-        model01: output/plr/models/transplant/ba2_cox_cens_control_sotrovimab_plr_transplant.rds
-        model02: output/plr/models/transplant/ba2_cox_cens_trt_sotrovimab_plr_transplant.rds
+        model01: output/plr/models/transplant/ba2_plr_cens_control_sotrovimab_plr_transplant.rds
+        model02: output/plr/models/transplant/ba2_plr_cens_trt_sotrovimab_plr_transplant.rds
         model1: output/plr/models/transplant/ba2_km_trt_sotrovimab_plr_transplant.rds
         model2: output/plr/models/transplant/ba2_km_control_sotrovimab_plr_transplant.rds
         model3: output/plr/models/transplant/ba2_cox_w_sotrovimab_plr_transplant.rds
@@ -1683,7 +1683,7 @@ actions:
     needs: [perform_ccw_analysis_plr_transplant_ba2, perform_ccw_analysis_mol_plr_transplant_ba2, perform_ccw_analysis_sot_plr_transplant_ba2]
     outputs:
       moderately_sensitive:
-        table: output/plr/models/coefficients/transplant/ba2_cox_cens_*.csv
+        table: output/plr/models/coefficients/transplant/ba2_plr_cens_*.csv
   
   ## # # # # # # # # # # # # # # # # # # # 
   ## 6.2 CCW Analysis - check balance - PLR
