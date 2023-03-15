@@ -106,7 +106,7 @@ hist <- map(.x = arms,
 q_s <-
   data_long %>%
   group_by(arm, fup) %>%
-  summarise(tibble::enframe(quantile(cmlp_uncens, probs = c(0, 0.05, 0.95, 1)), 
+  summarise(tibble::enframe(quantile(cmlp_uncens, probs = c(0, 0.025, 0.05, 0.95, 0.975, 1)), 
                             name = "quantile", "cmlp_uncens"),
             .groups = "keep") %>%
   mutate(quantile = str_remove(quantile, pattern = "%")) %>%
