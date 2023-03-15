@@ -1249,199 +1249,199 @@ actions:
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 5 STABILISED WEIGHTS - PLR
+  ## 5 TRUNCATED WEIGHTS - PLR
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 5.1 CCW Analysis - STAB x PLR
+  ## 5.1 CCW Analysis - TRUNC x PLR
   ## # # # # # # # # # # # # # # # # # # # 
 
-  perform_ccw_analysis_plr_stabilised:
+  perform_ccw_analysis_plr_truncated:
     run: r:latest analysis/ccw.R
       --period ba1
       --model plr
-      --supp stabilised
+      --supp truncated
     needs: [data_process]
     outputs:
       highly_sensitive:
-        data: output/plr/data/stabilised/data_long_all_plr_stabilised.feather
-        model01: output/plr/models/stabilised/plr_cens_control_all_plr_stabilised.rds
-        model02: output/plr/models/stabilised/plr_cens_trt_all_plr_stabilised.rds
-        model1: output/plr/models/stabilised/km_trt_all_plr_stabilised.rds
-        model2: output/plr/models/stabilised/km_control_all_plr_stabilised.rds
-        model3: output/plr/models/stabilised/cox_w_all_plr_stabilised.rds
-        model4: output/plr/models/stabilised/cox_uw_all_plr_stabilised.rds
+        data: output/plr/data/truncated/data_long_all_plr_truncated.feather
+        model01: output/plr/models/truncated/plr_cens_control_all_plr_truncated.rds
+        model02: output/plr/models/truncated/plr_cens_trt_all_plr_truncated.rds
+        model1: output/plr/models/truncated/km_trt_all_plr_truncated.rds
+        model2: output/plr/models/truncated/km_control_all_plr_truncated.rds
+        model3: output/plr/models/truncated/cox_w_all_plr_truncated.rds
+        model4: output/plr/models/truncated/cox_uw_all_plr_truncated.rds
       moderately_sensitive:
-        table: output/plr/tables/ccw/stabilised/ccw_all_plr_stabilised.csv
+        table: output/plr/tables/ccw/truncated/ccw_all_plr_truncated.csv
   
-  perform_ccw_analysis_mol_plr_stabilised:
+  perform_ccw_analysis_mol_plr_truncated:
     run: r:latest analysis/ccw.R
       --period ba1
       --contrast molnupiravir
       --model plr
-      --supp stabilised
+      --supp truncated
     needs: [data_process]
     outputs:
       highly_sensitive:
-        data: output/plr/data/stabilised/data_long_molnupiravir_plr_stabilised.feather
-        model01: output/plr/models/stabilised/plr_cens_control_molnupiravir_plr_stabilised.rds
-        model02: output/plr/models/stabilised/plr_cens_trt_molnupiravir_plr_stabilised.rds
-        model1: output/plr/models/stabilised/km_trt_molnupiravir_plr_stabilised.rds
-        model2: output/plr/models/stabilised/km_control_molnupiravir_plr_stabilised.rds
-        model3: output/plr/models/stabilised/cox_w_molnupiravir_plr_stabilised.rds
-        model4: output/plr/models/stabilised/cox_uw_molnupiravir_plr_stabilised.rds
+        data: output/plr/data/truncated/data_long_molnupiravir_plr_truncated.feather
+        model01: output/plr/models/truncated/plr_cens_control_molnupiravir_plr_truncated.rds
+        model02: output/plr/models/truncated/plr_cens_trt_molnupiravir_plr_truncated.rds
+        model1: output/plr/models/truncated/km_trt_molnupiravir_plr_truncated.rds
+        model2: output/plr/models/truncated/km_control_molnupiravir_plr_truncated.rds
+        model3: output/plr/models/truncated/cox_w_molnupiravir_plr_truncated.rds
+        model4: output/plr/models/truncated/cox_uw_molnupiravir_plr_truncated.rds
       moderately_sensitive:
-        table: output/plr/tables/ccw/stabilised/ccw_molnupiravir_plr_stabilised.csv
+        table: output/plr/tables/ccw/truncated/ccw_molnupiravir_plr_truncated.csv
 
-  perform_ccw_analysis_sot_plr_stabilised:
+  perform_ccw_analysis_sot_plr_truncated:
     run: r:latest analysis/ccw.R
       --period ba1
       --contrast sotrovimab
       --model plr
-      --supp stabilised
+      --supp truncated
     needs: [data_process]
     outputs:
       highly_sensitive:
-        data: output/plr/data/stabilised/data_long_sotrovimab_plr_stabilised.feather
-        model01: output/plr/models/stabilised/plr_cens_control_sotrovimab_plr_stabilised.rds
-        model02: output/plr/models/stabilised/plr_cens_trt_sotrovimab_plr_stabilised.rds
-        model1: output/plr/models/stabilised/km_trt_sotrovimab_plr_stabilised.rds
-        model2: output/plr/models/stabilised/km_control_sotrovimab_plr_stabilised.rds
-        model3: output/plr/models/stabilised/cox_w_sotrovimab_plr_stabilised.rds
-        model4: output/plr/models/stabilised/cox_uw_sotrovimab_plr_stabilised.rds
+        data: output/plr/data/truncated/data_long_sotrovimab_plr_truncated.feather
+        model01: output/plr/models/truncated/plr_cens_control_sotrovimab_plr_truncated.rds
+        model02: output/plr/models/truncated/plr_cens_trt_sotrovimab_plr_truncated.rds
+        model1: output/plr/models/truncated/km_trt_sotrovimab_plr_truncated.rds
+        model2: output/plr/models/truncated/km_control_sotrovimab_plr_truncated.rds
+        model3: output/plr/models/truncated/cox_w_sotrovimab_plr_truncated.rds
+        model4: output/plr/models/truncated/cox_uw_sotrovimab_plr_truncated.rds
       moderately_sensitive:
-        table: output/plr/tables/ccw/stabilised/ccw_sotrovimab_plr_stabilised.csv
+        table: output/plr/tables/ccw/truncated/ccw_sotrovimab_plr_truncated.csv
 
-  perform_ccw_analysis_plr_stabilised_ba2:
+  perform_ccw_analysis_plr_truncated_ba2:
     run: r:latest analysis/ccw.R
       --period ba2
       --model plr
-      --supp stabilised
+      --supp truncated
     needs: [data_process_ba2]
     outputs:
       highly_sensitive:
-        data: output/plr/data/stabilised/ba2_data_long_all_plr_stabilised.feather
-        model01: output/plr/models/stabilised/ba2_plr_cens_control_all_plr_stabilised.rds
-        model02: output/plr/models/stabilised/ba2_plr_cens_trt_all_plr_stabilised.rds
-        model1: output/plr/models/stabilised/ba2_km_trt_all_plr_stabilised.rds
-        model2: output/plr/models/stabilised/ba2_km_control_all_plr_stabilised.rds
-        model3: output/plr/models/stabilised/ba2_cox_w_all_plr_stabilised.rds
-        model4: output/plr/models/stabilised/ba2_cox_uw_all_plr_stabilised.rds
+        data: output/plr/data/truncated/ba2_data_long_all_plr_truncated.feather
+        model01: output/plr/models/truncated/ba2_plr_cens_control_all_plr_truncated.rds
+        model02: output/plr/models/truncated/ba2_plr_cens_trt_all_plr_truncated.rds
+        model1: output/plr/models/truncated/ba2_km_trt_all_plr_truncated.rds
+        model2: output/plr/models/truncated/ba2_km_control_all_plr_truncated.rds
+        model3: output/plr/models/truncated/ba2_cox_w_all_plr_truncated.rds
+        model4: output/plr/models/truncated/ba2_cox_uw_all_plr_truncated.rds
       moderately_sensitive:
-        table: output/plr/tables/ccw/stabilised/ba2_ccw_all_plr_stabilised.csv
+        table: output/plr/tables/ccw/truncated/ba2_ccw_all_plr_truncated.csv
   
-  perform_ccw_analysis_mol_plr_stabilised_ba2:
+  perform_ccw_analysis_mol_plr_truncated_ba2:
     run: r:latest analysis/ccw.R
       --period ba2
       --contrast molnupiravir
       --model plr
-      --supp stabilised
+      --supp truncated
     needs: [data_process_ba2]
     outputs:
       highly_sensitive:
-        data: output/plr/data/stabilised/ba2_data_long_molnupiravir_plr_stabilised.feather
-        model01: output/plr/models/stabilised/ba2_plr_cens_control_molnupiravir_plr_stabilised.rds
-        model02: output/plr/models/stabilised/ba2_plr_cens_trt_molnupiravir_plr_stabilised.rds
-        model1: output/plr/models/stabilised/ba2_km_trt_molnupiravir_plr_stabilised.rds
-        model2: output/plr/models/stabilised/ba2_km_control_molnupiravir_plr_stabilised.rds
-        model3: output/plr/models/stabilised/ba2_cox_w_molnupiravir_plr_stabilised.rds
-        model4: output/plr/models/stabilised/ba2_cox_uw_molnupiravir_plr_stabilised.rds
+        data: output/plr/data/truncated/ba2_data_long_molnupiravir_plr_truncated.feather
+        model01: output/plr/models/truncated/ba2_plr_cens_control_molnupiravir_plr_truncated.rds
+        model02: output/plr/models/truncated/ba2_plr_cens_trt_molnupiravir_plr_truncated.rds
+        model1: output/plr/models/truncated/ba2_km_trt_molnupiravir_plr_truncated.rds
+        model2: output/plr/models/truncated/ba2_km_control_molnupiravir_plr_truncated.rds
+        model3: output/plr/models/truncated/ba2_cox_w_molnupiravir_plr_truncated.rds
+        model4: output/plr/models/truncated/ba2_cox_uw_molnupiravir_plr_truncated.rds
       moderately_sensitive:
-        table: output/plr/tables/ccw/stabilised/ba2_ccw_molnupiravir_plr_stabilised.csv
+        table: output/plr/tables/ccw/truncated/ba2_ccw_molnupiravir_plr_truncated.csv
 
-  perform_ccw_analysis_sot_plr_stabilised_ba2:
+  perform_ccw_analysis_sot_plr_truncated_ba2:
     run: r:latest analysis/ccw.R
       --period ba2
       --contrast sotrovimab
       --model plr
-      --supp stabilised
+      --supp truncated
     needs: [data_process_ba2]
     outputs:
       highly_sensitive:
-        data: output/plr/data/stabilised/ba2_data_long_sotrovimab_plr_stabilised.feather
-        model01: output/plr/models/stabilised/ba2_plr_cens_control_sotrovimab_plr_stabilised.rds
-        model02: output/plr/models/stabilised/ba2_plr_cens_trt_sotrovimab_plr_stabilised.rds
-        model1: output/plr/models/stabilised/ba2_km_trt_sotrovimab_plr_stabilised.rds
-        model2: output/plr/models/stabilised/ba2_km_control_sotrovimab_plr_stabilised.rds
-        model3: output/plr/models/stabilised/ba2_cox_w_sotrovimab_plr_stabilised.rds
-        model4: output/plr/models/stabilised/ba2_cox_uw_sotrovimab_plr_stabilised.rds
+        data: output/plr/data/truncated/ba2_data_long_sotrovimab_plr_truncated.feather
+        model01: output/plr/models/truncated/ba2_plr_cens_control_sotrovimab_plr_truncated.rds
+        model02: output/plr/models/truncated/ba2_plr_cens_trt_sotrovimab_plr_truncated.rds
+        model1: output/plr/models/truncated/ba2_km_trt_sotrovimab_plr_truncated.rds
+        model2: output/plr/models/truncated/ba2_km_control_sotrovimab_plr_truncated.rds
+        model3: output/plr/models/truncated/ba2_cox_w_sotrovimab_plr_truncated.rds
+        model4: output/plr/models/truncated/ba2_cox_uw_sotrovimab_plr_truncated.rds
       moderately_sensitive:
-        table: output/plr/tables/ccw/stabilised/ba2_ccw_sotrovimab_plr.csv
+        table: output/plr/tables/ccw/truncated/ba2_ccw_sotrovimab_plr.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 5.3 CCW Analysis - density weights - STAB x PLR
+  ## 5.3 CCW Analysis - density weights - TRUNC x PLR
   ## # # # # # # # # # # # # # # # # # # #
 
-  dens_weights_plr_stabilised:
+  dens_weights_plr_truncated:
     run: r:latest analysis/data_ccw/dens_weights.R 
       --period ba1
       --model plr
-      --supp stabilised
-    needs: [perform_ccw_analysis_plr_stabilised]
+      --supp truncated
+    needs: [perform_ccw_analysis_plr_truncated]
     outputs:
       moderately_sensitive:
-        table1: output/plr/data_properties/data_long/stabilised/dens_all_plr_stabilised.csv
-        table2: output/plr/data_properties/data_long/stabilised/q_all_plr_stabilised.csv
+        table1: output/plr/data_properties/data_long/truncated/dens_all_plr_truncated.csv
+        table2: output/plr/data_properties/data_long/truncated/q_all_plr_truncated.csv
   
-  dens_weights_mol_plr_stabilised:
+  dens_weights_mol_plr_truncated:
     run: r:latest analysis/data_ccw/dens_weights.R 
       --period ba1 
       --contrast molnupiravir
       --model plr
-      --supp stabilised
-    needs: [perform_ccw_analysis_mol_plr_stabilised]
+      --supp truncated
+    needs: [perform_ccw_analysis_mol_plr_truncated]
     outputs:
       moderately_sensitive:
-        table1: output/plr/data_properties/data_long/stabilised/dens_molnupiravir_plr_stabilised.csv
-        table2: output/plr/data_properties/data_long/stabilised/q_molnupiravir_plr_stabilised.csv
+        table1: output/plr/data_properties/data_long/truncated/dens_molnupiravir_plr_truncated.csv
+        table2: output/plr/data_properties/data_long/truncated/q_molnupiravir_plr_truncated.csv
 
-  dens_weights_sot_plr_stabilised:
+  dens_weights_sot_plr_truncated:
     run: r:latest analysis/data_ccw/dens_weights.R
       --period ba1
       --contrast sotrovimab
       --model plr
-      --supp stabilised
-    needs: [perform_ccw_analysis_sot_plr_stabilised]
+      --supp truncated
+    needs: [perform_ccw_analysis_sot_plr_truncated]
     outputs:
       moderately_sensitive:
-        table1: output/plr/data_properties/data_long/stabilised/dens_sotrovimab_plr_stabilised.csv
-        table2: output/plr/data_properties/data_long/stabilised/q_sotrovimab_plr_stabilised.csv
+        table1: output/plr/data_properties/data_long/truncated/dens_sotrovimab_plr_truncated.csv
+        table2: output/plr/data_properties/data_long/truncated/q_sotrovimab_plr_truncated.csv
 
-  dens_weights_plr_stabilised_ba2:
+  dens_weights_plr_truncated_ba2:
     run: r:latest analysis/data_ccw/dens_weights.R
       --period ba2
       --model plr
-      --supp stabilised
-    needs: [perform_ccw_analysis_plr_stabilised_ba2]
+      --supp truncated
+    needs: [perform_ccw_analysis_plr_truncated_ba2]
     outputs:
       moderately_sensitive:
-        table1: output/plr/data_properties/data_long/stabilised/ba2_dens_all_plr_stabilised.csv
-        table2: output/plr/data_properties/data_long/stabilised/ba2_q_all_plr_stabilised.csv
+        table1: output/plr/data_properties/data_long/truncated/ba2_dens_all_plr_truncated.csv
+        table2: output/plr/data_properties/data_long/truncated/ba2_q_all_plr_truncated.csv
 
-  dens_weights_mol_plr_stabilised_ba2:
+  dens_weights_mol_plr_truncated_ba2:
     run: r:latest analysis/data_ccw/dens_weights.R
       --period ba2 
       --contrast molnupiravir
       --model plr
-      --supp stabilised
-    needs: [perform_ccw_analysis_mol_plr_stabilised_ba2]
+      --supp truncated
+    needs: [perform_ccw_analysis_mol_plr_truncated_ba2]
     outputs:
       moderately_sensitive:
-        table1: output/plr/data_properties/data_long/stabilised/ba2_dens_molnupiravir_plr_stabilised.csv
-        table2: output/plr/data_properties/data_long/stabilised/ba2_q_molnupiravir_plr_stabilised.csv
+        table1: output/plr/data_properties/data_long/truncated/ba2_dens_molnupiravir_plr_truncated.csv
+        table2: output/plr/data_properties/data_long/truncated/ba2_q_molnupiravir_plr_truncated.csv
 
-  dens_weights_sot_plr_stabilised_ba2:
+  dens_weights_sot_plr_truncated_ba2:
     run: r:latest analysis/data_ccw/dens_weights.R
       --period ba2
       --contrast sotrovimab
       --model plr
-      --supp stabilised
-    needs: [perform_ccw_analysis_sot_plr_stabilised_ba2]
+      --supp truncated
+    needs: [perform_ccw_analysis_sot_plr_truncated_ba2]
     outputs:
       moderately_sensitive:
-        table1: output/plr/data_properties/data_long/stabilised/ba2_dens_sotrovimab_plr_stabilised.csv
-        table2: output/plr/data_properties/data_long/stabilised/ba2_q_sotrovimab_plr_stabilised.csv
+        table1: output/plr/data_properties/data_long/truncated/ba2_dens_sotrovimab_plr_truncated.csv
+        table2: output/plr/data_properties/data_long/truncated/ba2_q_sotrovimab_plr_truncated.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 

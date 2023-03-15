@@ -162,7 +162,7 @@ data %>%
 #              a given arm (either because they receive surgery in the control 
 #              arm or they didn't receive surgery in the surgery arm)
 ################################################################################
-if (supp == "main" | supp == "stabilised") {
+if (supp == "main" | supp == "truncated") {
 data_cloned <- 
   clone_data(data) %>%
   add_x_days_to_fup(0.5)
@@ -342,8 +342,8 @@ if (model == "plr"){ # change name (cmlp_uncens_plr was used for diagnostic
 }
 data_long <- 
   bind_rows(data_control_long, data_trt_long)
-if (supp == "stabilised"){
-  # Stabilised weights --> replace weights smaller than 2.5%-tile or greater 
+if (supp == "truncated"){
+  # Truncated weights --> replace weights smaller than 2.5%-tile or greater 
   # than 97.5%-tile with 2.5%-tile and 97.5%-tile, respectively
   # calc truncation levels for each arm, throughout time
   truncation_levels <- 
