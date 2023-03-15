@@ -2311,6 +2311,26 @@ actions:
     outputs:
       moderately_sensitive:
         html: output/plr/tables/ba2_table_ccw_plr.html
+  
+  create_table_ccw_plr_truncated:
+    run: r:latest analysis/table_ccw.R
+      --period ba1
+      --model plr
+      --supp truncated
+    needs: [perform_ccw_analysis_plr_truncated, perform_ccw_analysis_mol_plr_truncated, perform_ccw_analysis_sot_plr_truncated]
+    outputs:
+      moderately_sensitive:
+        html: output/plr/tables/truncated/table_ccw_plr_truncated.html
+
+  create_table_ccw_plr_trunctated_ba2:
+    run: r:latest analysis/table_ccw.R
+      --period ba2
+      --model plr
+      --supp truncated
+    needs: [perform_ccw_analysis_plr_truncated_ba2, perform_ccw_analysis_mol_plr_truncated_ba2, perform_ccw_analysis_sot_plr_truncated_ba2]
+    outputs:
+      moderately_sensitive:
+        html: output/plr/tables/truncated/ba2_table_ccw_plr_truncated.html
 
   create_table_ccw_plr_haem:
     run: r:latest analysis/table_ccw.R
