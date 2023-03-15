@@ -70,7 +70,7 @@ data_split <-
             end = "fup",
             event = "outcome")
 pooled_logreg_fit <- 
-  glm(outcome ~ treatment + lspline(fup, 1),
+  glm(outcome ~ treatment + ns(fup, 3),
       family = binomial(link = "logit"),
       data = data_split)
 pooled_logreg_fit$coefficients[2] %>% exp() # approx same as HR
@@ -115,10 +115,34 @@ data_obs_split <-
             end = "fup",
             event = "outcome")
 pooled_logreg_fit_obs <- 
-  glm(outcome ~ treatment_obs + lspline(fup, 1),
+  glm(outcome ~ ns(fup, 2),
       family = binomial(link = "logit"),
       data = data_obs_split)
 pooled_logreg_fit_obs$coefficients[2] %>% exp() # approx same as HR
+
+cox_fit_obs_split <- 
+  coxph(Surv(start, fup, outcome) ~ 1,
+        ties = "breslow",
+        data = data_obs_split)
+survtable_obs_split <- 
+  survfit(Surv(start, fup, outcome) ~ 1,
+          id = pt_id,
+          data = data_obs_split)
+cumsum(survtable_obs_split$n.event / survtable_obs_split$n.risk)
+# same as
+exp(-basehaz(cox_fit_obs_split)$hazard)
+
+data_obs_split_plr <-
+  data_obs_split %>%
+  mutate(p_surv = 1 - predict(pooled_logreg_fit_obs, type = "response")) %>%
+  group_by(pt_id) %>%
+  mutate(cum_surv = cumprod(p_surv))
+
+data_obs_split_plr %>%
+  select(fup, cum_surv) %>%
+  group_by(fup) %>%
+  summarise(fup1 = unique(cum_surv))
+
 
 ################################################################################
 # 3. CCW
