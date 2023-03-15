@@ -1249,12 +1249,208 @@ actions:
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 5 SUBGROUP ANALYSIS: HEAM MALIG - PLR
+  ## 5 TRUNCATED WEIGHTS - PLR
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 5.1 CCW Analysis - PLR
+  ## 5.1 CCW Analysis - TRUNC x PLR
+  ## # # # # # # # # # # # # # # # # # # # 
+
+  perform_ccw_analysis_plr_truncated:
+    run: r:latest analysis/ccw.R
+      --period ba1
+      --model plr
+      --supp truncated
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/truncated/data_long_all_plr_truncated.feather
+        model01: output/plr/models/truncated/plr_cens_control_all_plr_truncated.rds
+        model02: output/plr/models/truncated/plr_cens_trt_all_plr_truncated.rds
+        model1: output/plr/models/truncated/km_trt_all_plr_truncated.rds
+        model2: output/plr/models/truncated/km_control_all_plr_truncated.rds
+        model3: output/plr/models/truncated/cox_w_all_plr_truncated.rds
+        model4: output/plr/models/truncated/cox_uw_all_plr_truncated.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/truncated/ccw_all_plr_truncated.csv
+  
+  perform_ccw_analysis_mol_plr_truncated:
+    run: r:latest analysis/ccw.R
+      --period ba1
+      --contrast molnupiravir
+      --model plr
+      --supp truncated
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/truncated/data_long_molnupiravir_plr_truncated.feather
+        model01: output/plr/models/truncated/plr_cens_control_molnupiravir_plr_truncated.rds
+        model02: output/plr/models/truncated/plr_cens_trt_molnupiravir_plr_truncated.rds
+        model1: output/plr/models/truncated/km_trt_molnupiravir_plr_truncated.rds
+        model2: output/plr/models/truncated/km_control_molnupiravir_plr_truncated.rds
+        model3: output/plr/models/truncated/cox_w_molnupiravir_plr_truncated.rds
+        model4: output/plr/models/truncated/cox_uw_molnupiravir_plr_truncated.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/truncated/ccw_molnupiravir_plr_truncated.csv
+
+  perform_ccw_analysis_sot_plr_truncated:
+    run: r:latest analysis/ccw.R
+      --period ba1
+      --contrast sotrovimab
+      --model plr
+      --supp truncated
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/truncated/data_long_sotrovimab_plr_truncated.feather
+        model01: output/plr/models/truncated/plr_cens_control_sotrovimab_plr_truncated.rds
+        model02: output/plr/models/truncated/plr_cens_trt_sotrovimab_plr_truncated.rds
+        model1: output/plr/models/truncated/km_trt_sotrovimab_plr_truncated.rds
+        model2: output/plr/models/truncated/km_control_sotrovimab_plr_truncated.rds
+        model3: output/plr/models/truncated/cox_w_sotrovimab_plr_truncated.rds
+        model4: output/plr/models/truncated/cox_uw_sotrovimab_plr_truncated.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/truncated/ccw_sotrovimab_plr_truncated.csv
+
+  perform_ccw_analysis_plr_truncated_ba2:
+    run: r:latest analysis/ccw.R
+      --period ba2
+      --model plr
+      --supp truncated
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/truncated/ba2_data_long_all_plr_truncated.feather
+        model01: output/plr/models/truncated/ba2_plr_cens_control_all_plr_truncated.rds
+        model02: output/plr/models/truncated/ba2_plr_cens_trt_all_plr_truncated.rds
+        model1: output/plr/models/truncated/ba2_km_trt_all_plr_truncated.rds
+        model2: output/plr/models/truncated/ba2_km_control_all_plr_truncated.rds
+        model3: output/plr/models/truncated/ba2_cox_w_all_plr_truncated.rds
+        model4: output/plr/models/truncated/ba2_cox_uw_all_plr_truncated.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/truncated/ba2_ccw_all_plr_truncated.csv
+  
+  perform_ccw_analysis_mol_plr_truncated_ba2:
+    run: r:latest analysis/ccw.R
+      --period ba2
+      --contrast molnupiravir
+      --model plr
+      --supp truncated
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/truncated/ba2_data_long_molnupiravir_plr_truncated.feather
+        model01: output/plr/models/truncated/ba2_plr_cens_control_molnupiravir_plr_truncated.rds
+        model02: output/plr/models/truncated/ba2_plr_cens_trt_molnupiravir_plr_truncated.rds
+        model1: output/plr/models/truncated/ba2_km_trt_molnupiravir_plr_truncated.rds
+        model2: output/plr/models/truncated/ba2_km_control_molnupiravir_plr_truncated.rds
+        model3: output/plr/models/truncated/ba2_cox_w_molnupiravir_plr_truncated.rds
+        model4: output/plr/models/truncated/ba2_cox_uw_molnupiravir_plr_truncated.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/truncated/ba2_ccw_molnupiravir_plr_truncated.csv
+
+  perform_ccw_analysis_sot_plr_truncated_ba2:
+    run: r:latest analysis/ccw.R
+      --period ba2
+      --contrast sotrovimab
+      --model plr
+      --supp truncated
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/truncated/ba2_data_long_sotrovimab_plr_truncated.feather
+        model01: output/plr/models/truncated/ba2_plr_cens_control_sotrovimab_plr_truncated.rds
+        model02: output/plr/models/truncated/ba2_plr_cens_trt_sotrovimab_plr_truncated.rds
+        model1: output/plr/models/truncated/ba2_km_trt_sotrovimab_plr_truncated.rds
+        model2: output/plr/models/truncated/ba2_km_control_sotrovimab_plr_truncated.rds
+        model3: output/plr/models/truncated/ba2_cox_w_sotrovimab_plr_truncated.rds
+        model4: output/plr/models/truncated/ba2_cox_uw_sotrovimab_plr_truncated.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/truncated/ba2_ccw_sotrovimab_plr.csv
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 5.3 CCW Analysis - density weights - TRUNC x PLR
+  ## # # # # # # # # # # # # # # # # # # #
+
+  dens_weights_plr_truncated:
+    run: r:latest analysis/data_ccw/dens_weights.R 
+      --period ba1
+      --model plr
+      --supp truncated
+    needs: [perform_ccw_analysis_plr_truncated]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/truncated/dens_all_plr_truncated.csv
+        table2: output/plr/data_properties/data_long/truncated/q_all_plr_truncated.csv
+  
+  dens_weights_mol_plr_truncated:
+    run: r:latest analysis/data_ccw/dens_weights.R 
+      --period ba1 
+      --contrast molnupiravir
+      --model plr
+      --supp truncated
+    needs: [perform_ccw_analysis_mol_plr_truncated]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/truncated/dens_molnupiravir_plr_truncated.csv
+        table2: output/plr/data_properties/data_long/truncated/q_molnupiravir_plr_truncated.csv
+
+  dens_weights_sot_plr_truncated:
+    run: r:latest analysis/data_ccw/dens_weights.R
+      --period ba1
+      --contrast sotrovimab
+      --model plr
+      --supp truncated
+    needs: [perform_ccw_analysis_sot_plr_truncated]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/truncated/dens_sotrovimab_plr_truncated.csv
+        table2: output/plr/data_properties/data_long/truncated/q_sotrovimab_plr_truncated.csv
+
+  dens_weights_plr_truncated_ba2:
+    run: r:latest analysis/data_ccw/dens_weights.R
+      --period ba2
+      --model plr
+      --supp truncated
+    needs: [perform_ccw_analysis_plr_truncated_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/truncated/ba2_dens_all_plr_truncated.csv
+        table2: output/plr/data_properties/data_long/truncated/ba2_q_all_plr_truncated.csv
+
+  dens_weights_mol_plr_truncated_ba2:
+    run: r:latest analysis/data_ccw/dens_weights.R
+      --period ba2 
+      --contrast molnupiravir
+      --model plr
+      --supp truncated
+    needs: [perform_ccw_analysis_mol_plr_truncated_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/truncated/ba2_dens_molnupiravir_plr_truncated.csv
+        table2: output/plr/data_properties/data_long/truncated/ba2_q_molnupiravir_plr_truncated.csv
+
+  dens_weights_sot_plr_truncated_ba2:
+    run: r:latest analysis/data_ccw/dens_weights.R
+      --period ba2
+      --contrast sotrovimab
+      --model plr
+      --supp truncated
+    needs: [perform_ccw_analysis_sot_plr_truncated_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/truncated/ba2_dens_sotrovimab_plr_truncated.csv
+        table2: output/plr/data_properties/data_long/truncated/ba2_q_sotrovimab_plr_truncated.csv
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 6 SUBGROUP ANALYSIS: HEAM MALIG - PLR
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## # # # # # # # # # # # # # # # # # # # 
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 6.1 CCW Analysis - PLR
   ## # # # # # # # # # # # # # # # # # # # 
 
   perform_ccw_analysis_plr_haem:
@@ -1390,7 +1586,7 @@ actions:
         table: output/plr/models/coefficients/haem/ba2_plr_cens_*.csv
   
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 5.2 CCW Analysis - check balance - PLR
+  ## 6.2 CCW Analysis - check balance - PLR
   ## # # # # # # # # # # # # # # # # # # #
 
   calc_smd_plr_haem:
@@ -1458,7 +1654,7 @@ actions:
         table: output/plr/tables/ccw/haem/ba2_smd_sotrovimab_plr_haem.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 5.3 CCW Analysis - density weights - PLR
+  ## 6.3 CCW Analysis - density weights - PLR
   ## # # # # # # # # # # # # # # # # # # #
 
   dens_weights_plr_haem:
@@ -1533,12 +1729,12 @@ actions:
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 6 SUBGROUP ANALYSIS: ORGAN TRNSPLNT - PLR
+  ## 7 SUBGROUP ANALYSIS: ORGAN TRNSPLNT - PLR
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 6.1 CCW Analysis - PLR
+  ## 7.1 CCW Analysis - PLR
   ## # # # # # # # # # # # # # # # # # # # 
 
   perform_ccw_analysis_plr_transplant:
@@ -1674,7 +1870,7 @@ actions:
         table: output/plr/models/coefficients/transplant/ba2_plr_cens_*.csv
   
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 6.2 CCW Analysis - check balance - PLR
+  ## 7.2 CCW Analysis - check balance - PLR
   ## # # # # # # # # # # # # # # # # # # #
 
   calc_smd_plr_transplant:
@@ -1742,7 +1938,7 @@ actions:
         table: output/plr/tables/ccw/transplant/ba2_smd_sotrovimab_plr_transplant.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 6.3 CCW Analysis - density weights - PLR
+  ## 7.3 CCW Analysis - density weights - PLR
   ## # # # # # # # # # # # # # # # # # # #
 
   dens_weights_plr_transplant:

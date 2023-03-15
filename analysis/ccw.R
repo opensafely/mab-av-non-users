@@ -162,7 +162,7 @@ data %>%
 #              a given arm (either because they receive surgery in the control 
 #              arm or they didn't receive surgery in the surgery arm)
 ################################################################################
-if (supp == "main") {
+if (supp == "main" | supp == "truncated") {
 data_cloned <- 
   clone_data(data) %>%
   add_x_days_to_fup(0.5)
@@ -331,7 +331,8 @@ if (model == "cox"){
 ################################################################################
 # Computing the IPC weights
 ################################################################################
-if (model == "plr"){
+if (model == "plr"){ # change name (cmlp_uncens_plr was used for diagnostic 
+  # purposes on dummy data)
   data_control_long <-
     data_control_long %>%
     rename(cmlp_uncens = cmlp_uncens_plr)
@@ -340,7 +341,32 @@ if (model == "plr"){
     rename(cmlp_uncens = cmlp_uncens_plr)
 }
 data_long <- 
-  bind_rows(data_control_long, data_trt_long) %>%
+  bind_rows(data_control_long, data_trt_long)
+if (supp == "truncated"){
+  # Truncated weights --> replace weights smaller than 2.5%-tile or greater 
+  # than 97.5%-tile with 2.5%-tile and 97.5%-tile, respectively
+  # calc truncation levels for each arm, throughout time
+  truncation_levels <- 
+    data_long %>%
+    group_by(arm, fup) %>%
+    summarise(tibble::enframe(quantile(cmlp_uncens, probs = c(0.025, 0.975)), 
+                              name = "quantile", "cmlp_uncens"),
+              .groups = "keep") %>%
+    mutate(quantile = str_remove(quantile, pattern = "%")) %>%
+    pivot_wider(values_from = cmlp_uncens,
+                names_from = quantile,
+                names_prefix = "q_")
+  # add truncation levels to data_long and truncate is needed
+  data_long <- 
+    data_long %>%
+    left_join(truncation_levels,
+              by = c("arm", "fup")) %>%
+    mutate(cmlp_uncens = case_when(cmlp_uncens < q_2.5 ~ q_2.5,
+                                   cmlp_uncens > q_97.5 ~  q_97.5,
+                                   TRUE ~ cmlp_uncens))
+}
+data_long <- 
+  data_long %>%
   mutate(weight = 1 / cmlp_uncens,
          arm = arm %>% factor(levels = c("Control", "Treatment")))
 
