@@ -1558,8 +1558,6 @@ actions:
         model4: output/plr/models/transplant/cox_uw_all_plr_transplant.rds
       moderately_sensitive:
         table: output/plr/tables/ccw/transplant/ccw_all_plr_transplant.csv
-        basehaz1: output/plr/models/basehaz/transplant/basehaz_control_all_plr_transplant.csv
-        basehaz2: output/plr/models/basehaz/transplant/basehaz_trt_all_plr_transplant.csv
   
   perform_ccw_analysis_mol_plr_transplant:
     run: r:latest analysis/ccw.R
@@ -1579,8 +1577,6 @@ actions:
         model4: output/plr/models/transplant/cox_uw_molnupiravir_plr_transplant.rds
       moderately_sensitive:
         table: output/plr/tables/ccw/transplant/ccw_molnupiravir_plr_transplant.csv
-        basehaz1: output/plr/models/basehaz/transplant/basehaz_control_molnupiravir_plr_transplant.csv
-        basehaz2: output/plr/models/basehaz/transplant/basehaz_trt_molnupiravir_plr_transplant.csv
 
   perform_ccw_analysis_sot_plr_transplant:
     run: r:latest analysis/ccw.R
@@ -1600,8 +1596,6 @@ actions:
         model4: output/plr/models/transplant/cox_uw_sotrovimab_plr_transplant.rds
       moderately_sensitive:
         table: output/plr/tables/ccw/transplant/ccw_sotrovimab_plr_transplant.csv
-        basehaz1: output/plr/models/basehaz/transplant/basehaz_control_sotrovimab_plr_transplant.csv
-        basehaz2: output/plr/models/basehaz/transplant/basehaz_trt_sotrovimab_plr_transplant.csv
 
   save_coef_weight_models_plr_transplant:
     run: r:latest analysis/models_ccw/coef_weight_models.R 
@@ -1630,8 +1624,6 @@ actions:
         model4: output/plr/models/transplant/ba2_cox_uw_all_plr_transplant.rds
       moderately_sensitive:
         table: output/plr/tables/ccw/transplant/ba2_ccw_all_plr_transplant.csv
-        basehaz1: output/plr/models/basehaz/transplant/ba2_basehaz_control_all_plr_transplant.csv
-        basehaz2: output/plr/models/basehaz/transplant/ba2_basehaz_trt_all_plr_transplant.csv
   
   perform_ccw_analysis_mol_plr_transplant_ba2:
     run: r:latest analysis/ccw.R
@@ -1651,8 +1643,6 @@ actions:
         model4: output/plr/models/transplant/ba2_cox_uw_molnupiravir_plr_transplant.rds
       moderately_sensitive:
         table: output/plr/tables/ccw/transplant/ba2_ccw_molnupiravir_plr_transplant.csv
-        basehaz1: output/plr/models/basehaz/transplant/ba2_basehaz_control_molnupiravir_plr_transplant.csv
-        basehaz2: output/plr/models/basehaz/transplant/ba2_basehaz_trt_molnupiravir_plr_transplant.csv
 
   perform_ccw_analysis_sot_plr_transplant_ba2:
     run: r:latest analysis/ccw.R
@@ -1672,8 +1662,6 @@ actions:
         model4: output/plr/models/transplant/ba2_cox_uw_sotrovimab_plr_transplant.rds
       moderately_sensitive:
         table: output/plr/tables/ccw/transplant/ba2_ccw_sotrovimab_plr_transplant.csv
-        basehaz1: output/plr/models/basehaz/transplant/ba2_basehaz_control_sotrovimab_plr_transplant.csv
-        basehaz2: output/plr/models/basehaz/transplant/ba2_basehaz_trt_sotrovimab_plr_transplant.csv
 
   save_coef_weight_models_plr_transplant_ba2:
     run: r:latest analysis/models_ccw/coef_weight_models.R 
