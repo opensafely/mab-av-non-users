@@ -1831,6 +1831,7 @@ actions:
   ## KM curves
   ## # # # # # # # # # # # # # # # # # # #
   
+  # COX
   plot_km:
     run: r:latest analysis/km.R
       --plot TRUE
@@ -1908,6 +1909,88 @@ actions:
       moderately_sensitive:
         csv: output/figures/km_estimates/ba2_km_estimates_sotrovimab.csv
         plot: output/figures/km_estimates/ba2_km_estimates_sotrovimab.png
+
+  # PLR
+    plot_km_plr:
+    run: r:latest analysis/km.R
+      --df_input output/plr/data/data_long_all_plr.feather
+      --dir_output output/plr/figures/km_estimates
+      --plot TRUE
+    needs: [perform_ccw_analysis_plr]
+    outputs:
+      highly_sensitive:
+        feather: output/plr/figures/km_estimates/km_estimates.feather
+      moderately_sensitive:
+        csv: output/plr/figures/km_estimates/km_estimates.csv
+        plot: output/plr/figures/km_estimates/km_estimates.png
+
+  plot_km_mol_plr:
+    run: r:latest analysis/km.R
+      --df_input output/plr/data/data_long_molnupiravir_plr.feather
+      --dir_output output/plr/figures/km_estimates
+      --plot TRUE
+    needs: [perform_ccw_analysis_mol_plr]
+    outputs:
+      highly_sensitive:
+        feather: output/plr/figures/km_estimates/km_estimates_molnupiravir.feather
+      moderately_sensitive:
+        csv: output/plr/figures/km_estimates/km_estimates_molnupiravir.csv
+        plot: output/plr/figures/km_estimates/km_estimates_molnupiravir.png
+  
+  plot_km_sot_plr:
+    run: r:latest analysis/km.R
+      --df_input output/plr/data/data_long_sotrovimab_plr.feather
+      --dir_output output/plr/figures/km_estimates
+      --plot TRUE
+    needs: [perform_ccw_analysis_sot_plr]
+    outputs:
+      highly_sensitive:
+        feather: output/plr/figures/km_estimates/km_estimates_sotrovimab.feather
+      moderately_sensitive:
+        csv: output/plr/figures/km_estimates/km_estimates_sotrovimab.csv
+        plot: output/plr/figures/km_estimates/km_estimates_sotrovimab.png
+
+  plot_km_plr_ba2:
+    run: r:latest analysis/km.R
+      --df_input output/plr/data/ba2_data_long_all_plr.feather
+      --dir_output output/plr/figures/km_estimates
+      --period ba2
+      --plot TRUE
+    needs: [perform_ccw_analysis_plr_ba2]
+    outputs:
+      highly_sensitive:
+        feather: output/plr/figures/km_estimates/ba2_km_estimates.feather
+      moderately_sensitive:
+        csv: output/plr/figures/km_estimates/ba2_km_estimates.csv
+        plot: output/plr/figures/km_estimates/ba2_km_estimates.png
+
+  plot_km_mol_plr_ba2:
+    run: r:latest analysis/km.R
+      --df_input output/plr/data/ba2_data_long_molnupiravir_plr.feather
+      --dir_output output/plr/figures/km_estimates
+      --period ba2
+      --plot TRUE
+    needs: [perform_ccw_analysis_mol_plr_ba2]
+    outputs:
+      highly_sensitive:
+        feather: output/plr/figures/km_estimates/ba2_km_estimates_molnupiravir.feather
+      moderately_sensitive:
+        csv: output/plr/figures/km_estimates/ba2_km_estimates_molnupiravir.csv
+        plot: output/plr/figures/km_estimates/ba2_km_estimates_molnupiravir.png
+  
+  plot_km_sot_plr_ba2:
+    run: r:latest analysis/km.R
+      --df_input output/plr/data/ba2_data_long_sotrovimab_plr.feather
+      --dir_output output/plr/figures/km_estimates
+      --period ba2
+      --plot TRUE
+    needs: [perform_ccw_analysis_sot_plr_ba2]
+    outputs:
+      highly_sensitive:
+        feather: output/plr/figures/km_estimates/ba2_km_estimates_sotrovimab.feather
+      moderately_sensitive:
+        csv: output/plr/figures/km_estimates/ba2_km_estimates_sotrovimab.csv
+        plot: output/plr/figures/km_estimates/ba2_km_estimates_sotrovimab.png
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Tables
