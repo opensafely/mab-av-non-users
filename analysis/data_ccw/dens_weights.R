@@ -113,6 +113,16 @@ q_s <-
   pivot_wider(values_from = cmlp_uncens,
               names_from = quantile,
               names_prefix = "q_")
+q_w_s <-
+  data_long %>%
+  group_by(arm, fup) %>%
+  summarise(tibble::enframe(quantile(weight, probs = c(0, 0.025, 0.05, 0.95, 0.975, 1)), 
+                            name = "quantile", "weight"),
+            .groups = "keep") %>%
+  mutate(quantile = str_remove(quantile, pattern = "%")) %>%
+  pivot_wider(values_from = weight,
+              names_from = quantile,
+              names_prefix = "q_w_")
 
 ################################################################################
 # 2 Save table
@@ -126,4 +136,9 @@ write_csv(
   q_s,
   fs::path(data_properties_long_dir,
            make_filename("q", period, outcome, contrast, model, subgrp, supp, "csv"))
+)
+write_csv(
+  q_w_s,
+  fs::path(data_properties_long_dir,
+           make_filename("q_w", period, outcome, contrast, model, subgrp, supp, "csv"))
 )
