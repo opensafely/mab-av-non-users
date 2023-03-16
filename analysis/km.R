@@ -132,10 +132,9 @@ roundmid_any <- function(x, to=1){
 
 
 round_cmlcount <- function(x, time, min_count, method="linear", integer.times=TRUE) {
-  print(x %% 1 == 0)
   # take a vector of cumulative counts and round them according to...
   stopifnot("x must be non-descreasing" = all(diff(x)>=0))
-  #stopifnot("x must be integer" = all(x %% 1 ==0))
+  stopifnot("x must be integer" = all(x %% 1 ==0))
   
   # round events such that the are no fewer than min_count events per step
   # steps are then shifted by ` - floor(min_count/2)` to remove bias
@@ -213,16 +212,19 @@ for (subgroup_i in subgroups) {
         N = max(n.risk, na.rm = TRUE),
         
         # rounded to `min_count - (min_count/2)`
-        #cml.event = round_cmlcount(cumsum(n.event), time, min_count),
-        #cml.censor = round_cmlcount(cumsum(n.censor), time, min_count),
-        #cml.eventcensor = cml.event + cml.censor,
-        #n.event = diff(c(0, cml.event)),
-        #n.censor = diff(c(0, cml.censor)),
-        #n.risk = roundmid_any(N, min_count) - lag(cml.eventcensor, 1, 0),
+        cml.event = cumsum(n.event),
+        cml.censor = cumsum(n.censor),
+        cml.event.r = round_cmlcount(round(cml.event), time, min_count, method),
+        cml.censor.r = round_cmlcount(round(cml.censor), time, min_count, method),
+        cml.eventcensor = cml.event.r + cml.censor.r,
+        n.event.r = diff(c(0, cml.event.r)),
+        n.censor.r = diff(c(0, cml.censor.r)),
+        #n.risk.r = roundmid_any(N, min_count) - lag(cml.eventcensor, 1, 0),
+        n.risk.r = roundmid_any(n.risk, min_count),
         
         # KM estimate for event of interest, combining censored and competing events as censored
-        summand = (1 / (n.risk - n.event)) - (1 / n.risk), # = n.event / ((n.risk - n.event) * n.risk) but re-written to prevent integer overflow
-        surv = cumprod(1 - n.event / n.risk),
+        summand = (1 / (n.risk.r - n.event.r)) - (1 / n.risk.r), # = n.event / ((n.risk - n.event) * n.risk) but re-written to prevent integer overflow
+        surv = cumprod(1 - n.event.r / n.risk.r),
         
         # standard errors on survival scale
         surv.se = surv * sqrt(cumsum(summand)), # greenwood's formula
@@ -261,7 +263,11 @@ for (subgroup_i in subgroups) {
         !!exposure_sym,
         time, lagtime, interval,
         #cml.event, cml.censor,
-        n.risk, n.event, n.censor,
+        N,
+        n.risk, n.risk.r,
+        n.event, n.event.r, cml.event, cml.event.r,
+        n.censor, n.censor.r, cml.censor, cml.censor.r,
+        estimate, conf.high, conf.low,
         surv, surv.se, surv.low, surv.high,
         risk, risk.se, risk.low, risk.high
       )
@@ -279,6 +285,43 @@ for (subgroup_i in subgroups) {
   if(plot){
     
     km_plot <- function(.data) {
+      .data %>%
+        group_modify(
+          ~ add_row(
+            .x,
+            time = 0, # assumes time origin is zero
+            lagtime = 0,
+            estimate = 1,
+            conf.low = 1,
+            conf.high = 1,
+            .before = 0
+          )
+        ) %>%
+        ggplot(aes(group = !!exposure_sym, colour = !!exposure_sym, fill = !!exposure_sym)) +
+        geom_step(aes(x = time, y = {1 - estimate}), direction = "vh") +
+        geom_step(aes(x = time, y = {1 - estimate}), direction = "vh", linetype = "dashed", alpha = 0.5) +
+        geom_rect(aes(xmin = lagtime, xmax = time, ymin = {1 - conf.low}, ymax = {1 - conf.high}), alpha = 0.1, colour = "transparent") +
+        facet_grid(rows = vars(.subgroup)) +
+        scale_color_brewer(type = "qual", palette = "Set1", na.value = "grey") +
+        scale_fill_brewer(type = "qual", palette = "Set1", guide = "none", na.value = "grey") +
+        scale_y_continuous(expand = expansion(mult = c(0, 0.01))) +
+        coord_cartesian(xlim = c(0, NA)) +
+        labs(
+          x = "Days since origin",
+          y = "Kaplan-Meier estimate",
+          colour = NULL,
+          title = NULL
+        ) +
+        theme_minimal() +
+        theme(
+          axis.line.x = element_line(colour = "black"),
+          panel.grid.minor.x = element_blank(),
+          legend.position = c(.05, .95),
+          legend.justification = c(0, 1),
+        )
+    }
+    
+    km_plot_rounded <- function(.data) {
       .data %>%
         group_modify(
           ~ add_row(
@@ -318,7 +361,9 @@ for (subgroup_i in subgroups) {
         )
     }
     
-    km_plot_rounded <- km_plot(data_surv_rounded)
-    ggsave(filename = fs::path(dir_output, paste0(file_name, ".png")), km_plot_rounded, width = 20, height = 20, units = "cm")
+    km_plot <- km_plot(data_surv_rounded)
+    km_plot_red <- km_plot_rounded(data_surv_rounded)
+    ggsave(filename = fs::path(dir_output, paste0(file_name, ".png")), km_plot, width = 20, height = 20, units = "cm")
+    ggsave(filename = fs::path(dir_output, paste0(file_name, "_red.png")), km_plot_red, width = 20, height = 20, units = "cm")
   }
 }
