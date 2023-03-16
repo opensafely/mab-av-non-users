@@ -248,7 +248,11 @@ for (subgroup_i in subgroups) {
         risk.se = surv.se,
         risk.ln.se = surv.ln.se,
         risk.low = 1 - surv.high,
-        risk.high = 1 - surv.low
+        risk.high = 1 - surv.low,
+        
+        # convert conf.int to non log-log scale
+        conf.low = exp(-exp(conf.low)),
+        conf.high = exp(-exp(conf.high))
       ) %>%
       filter(
         !(n.event==0 & n.censor==0 & !fill_times) # remove times where there are no events (unless all possible event times are requested with fill_times)
