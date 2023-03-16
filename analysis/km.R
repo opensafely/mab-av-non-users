@@ -300,7 +300,7 @@ for (subgroup_i in subgroups) {
         ggplot(aes(group = !!exposure_sym, colour = !!exposure_sym, fill = !!exposure_sym)) +
         geom_step(aes(x = time, y = {1 - estimate}), direction = "vh") +
         geom_step(aes(x = time, y = {1 - estimate}), direction = "vh", linetype = "dashed", alpha = 0.5) +
-        geom_rect(aes(xmin = lagtime, xmax = time, ymin = {1 - conf.low}, ymax = {1 - conf.high}), alpha = 0.1, colour = "transparent") +
+        geom_rect(aes(xmin = lagtime, xmax = time, ymin = {1 - conf.high}, ymax = {1 - conf.low}), alpha = 0.1, colour = "transparent") +
         facet_grid(rows = vars(.subgroup)) +
         scale_color_brewer(type = "qual", palette = "Set1", na.value = "grey") +
         scale_fill_brewer(type = "qual", palette = "Set1", guide = "none", na.value = "grey") +
