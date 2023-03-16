@@ -223,7 +223,8 @@ for (subgroup_i in subgroups) {
         n.risk.r = roundmid_any(n.risk, min_count),
         
         # KM estimate for event of interest, combining censored and competing events as censored
-        summand = (1 / (n.risk.r - n.event.r)) - (1 / n.risk.r), # = n.event / ((n.risk - n.event) * n.risk) but re-written to prevent integer overflow
+        #summand = (1 / (n.risk.r - n.event.r)) - (1 / n.risk.r), 
+        summand = n.event / ((n.risk - n.event) * n.risk), #but re-written to prevent integer overflow
         surv = cumprod(1 - n.event.r / n.risk.r),
         
         # standard errors on survival scale
@@ -248,11 +249,7 @@ for (subgroup_i in subgroups) {
         risk.se = surv.se,
         risk.ln.se = surv.ln.se,
         risk.low = 1 - surv.high,
-        risk.high = 1 - surv.low,
-        
-        # convert conf.int to non log-log scale
-        conf.low = exp(-exp(conf.low)),
-        conf.high = exp(-exp(conf.high))
+        risk.high = 1 - surv.low
       ) %>%
       filter(
         !(n.event==0 & n.censor==0 & !fill_times) # remove times where there are no events (unless all possible event times are requested with fill_times)
