@@ -35,7 +35,7 @@ if(length(args)==0){
   event_indicator <- "outcome"
   weight <- "weight"
   min_count <- as.integer("6")
-  method <- "linear"
+  method <- "constant"
   fill_times <- as.logical("FALSE")
   plot <- as.logical("FALSE")
 } else {
