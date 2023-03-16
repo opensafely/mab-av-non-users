@@ -195,7 +195,11 @@ for (subgroup_i in subgroups) {
     tidyr::nest() %>%
     dplyr::mutate(
       surv_obj = purrr::map(data, ~ {
-        survival::survfit(survival::Surv(tstart, tend, event_indicator) ~ 1, data = .x, id = patient_id, conf.type="log-log", weights = weight)
+        survival::survfit(survival::Surv(tstart, tend, event_indicator) ~ 1, 
+                          data = .x, 
+                          id = patient_id, 
+                          #conf.type="log-log", 
+                          weights = weight)
       }),
       surv_obj_tidy = purrr::map(surv_obj, ~ {
         tidied <- broom::tidy(.x)
