@@ -2106,7 +2106,8 @@ actions:
       highly_sensitive:
         feather: output/plr/figures/km_estimates/km_estimates.feather
       moderately_sensitive:
-        csv: output/plr/figures/km_estimates/km_estimates.csv
+        csv1: output/plr/figures/km_estimates/km_estimates.csv
+        csv2: output/plr/figures/km_estimates/km_estimates_red.csv
         plot1: output/plr/figures/km_estimates/km_estimates.png
         plot2: output/plr/figures/km_estimates/km_estimates_red.png
 
