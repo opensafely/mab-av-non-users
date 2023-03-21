@@ -198,7 +198,7 @@ for (subgroup_i in subgroups) {
         survival::survfit(survival::Surv(tstart, tend, event_indicator) ~ 1, 
                           data = .x, 
                           id = patient_id, 
-                          #conf.type="log-log", 
+                          conf.type="log-log", 
                           weights = weight)
       }),
       surv_obj_tidy = purrr::map(surv_obj, ~ {
@@ -247,13 +247,19 @@ for (subgroup_i in subgroups) {
         surv.cll.se = if_else(surv==1, 0, sqrt((1 / log(surv)^2) * cumsum(summand))), # assume SE is zero until there are events -- makes plotting easier
         surv.low = exp(-exp(surv.cll + qnorm(0.975) * surv.cll.se)),
         surv.high = exp(-exp(surv.cll + qnorm(0.025) * surv.cll.se)),
+        surv.se.approx = std.error, # using se that's taking into acount weights
+        surv.low.approx = surv + qnorm(0.025) * surv.se.approx,
+        surv.high.approx = surv + qnorm(0.975) * surv.se.approx,
         
         #risk (= complement of survival)
         risk = 1 - surv,
         risk.se = surv.se,
+        risk.se.approx = surv.se.approx,
         risk.ln.se = surv.ln.se,
         risk.low = 1 - surv.high,
-        risk.high = 1 - surv.low
+        risk.high = 1 - surv.low,
+        risk.low.approx = 1 - surv.high.approx,
+        risk.high.approx = 1 - surv.low.approx,
       ) %>%
       filter(
         !(n.event==0 & n.censor==0 & !fill_times) # remove times where there are no events (unless all possible event times are requested with fill_times)
@@ -261,6 +267,8 @@ for (subgroup_i in subgroups) {
       mutate(
         lagtime = lag(time, 1, 0), # assumes the time-origin is zero
         interval = time - lagtime,
+        conf.high = if_else(estimate == 1, 1, conf.high),
+        conf.low = if_else(estimate == 1, 1, conf.low)
       ) %>%
       transmute(
         .subgroup_var = subgroup_i,
@@ -272,9 +280,9 @@ for (subgroup_i in subgroups) {
         n.risk, n.risk.r,
         n.event, n.event.r, cml.event, cml.event.r,
         n.censor, n.censor.r, cml.censor, cml.censor.r,
-        estimate, conf.high, conf.low,
-        surv, surv.se, surv.low, surv.high,
-        risk, risk.se, risk.low, risk.high
+        estimate, std.error, conf.high, conf.low,
+        surv, surv.se, surv.se.approx, surv.low, surv.high, surv.low.approx, surv.high.approx,
+        risk, risk.se, risk.se.approx, risk.low, risk.high, risk.low.approx, risk.high.approx
       )
   }
   
@@ -286,6 +294,15 @@ for (subgroup_i in subgroups) {
   file_name <- paste0(period[period != "ba1"], "_"[period != "ba1"], file_name, "_"[contrast != "all"], contrast[contrast != "all"])
   arrow::write_feather(data_surv_rounded, fs::path(dir_output, paste0(file_name, ".feather")))
   write_csv(data_surv_rounded, fs::path(dir_output, paste0(file_name, ".csv")))
+  
+  data_surv_rounded_red <-
+    data_surv_rounded %>%
+    select(-c(n.risk, n.event, cml.event,
+              n.censor, cml.censor, estimate, 
+              std.error, conf.high, conf.low,
+              surv.se, surv.low, surv.high,
+              risk.se, risk.low, risk.high))
+  write_csv(data_surv_rounded_red, fs::path(dir_output, paste0(file_name, "_red.csv")))
   
   if(plot){
     
@@ -334,18 +351,16 @@ for (subgroup_i in subgroups) {
             time = 0, # assumes time origin is zero
             lagtime = 0,
             surv = 1,
-            surv.low = 1,
-            surv.high = 1,
             risk = 0,
-            risk.low = 0,
-            risk.high = 0,
+            risk.low.approx = 0,
+            risk.high.approx = 0,
             .before = 0
           )
         ) %>%
         ggplot(aes(group = !!exposure_sym, colour = !!exposure_sym, fill = !!exposure_sym)) +
         geom_step(aes(x = time, y = risk), direction = "vh") +
         geom_step(aes(x = time, y = risk), direction = "vh", linetype = "dashed", alpha = 0.5) +
-        geom_rect(aes(xmin = lagtime, xmax = time, ymin = risk.low, ymax = risk.high), alpha = 0.1, colour = "transparent") +
+        geom_rect(aes(xmin = lagtime, xmax = time, ymin = risk.low.approx, ymax = risk.high.approx), alpha = 0.1, colour = "transparent") +
         facet_grid(rows = vars(.subgroup)) +
         scale_color_brewer(type = "qual", palette = "Set1", na.value = "grey") +
         scale_fill_brewer(type = "qual", palette = "Set1", guide = "none", na.value = "grey") +
@@ -367,7 +382,7 @@ for (subgroup_i in subgroups) {
     }
     
     km_plot <- km_plot(data_surv_rounded)
-    km_plot_red <- km_plot_rounded(data_surv_rounded)
+    km_plot_red <- km_plot_rounded(data_surv_rounded_red)
     ggsave(filename = fs::path(dir_output, paste0(file_name, ".png")), km_plot, width = 20, height = 20, units = "cm")
     ggsave(filename = fs::path(dir_output, paste0(file_name, "_red.png")), km_plot_red, width = 20, height = 20, units = "cm")
   }
