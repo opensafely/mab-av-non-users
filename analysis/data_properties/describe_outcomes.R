@@ -20,6 +20,7 @@ library('here')
 library('readr')
 library('purrr')
 library('tidyselect')
+library('optparse')
 
 ################################################################################
 # 0.1 Create directories for output
