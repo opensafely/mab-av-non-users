@@ -30,16 +30,27 @@ fs::dir_create(here::here("output", "tables", "descriptive"))
 # 0.2 Import command-line arguments
 ################################################################################
 args <- commandArgs(trailingOnly=TRUE)
-# Set input data to ba1 or ba2 data, default is ba1
-if (length(args) == 0){
-  period = "ba1"
-} else if (args[[1]] == "ba1") {
-  period = "ba1"
-} else if (args[[1]] == "ba2") {
-  period = "ba2"
+
+if(length(args)==0){
+  # use for interactive testing
+  period <- "ba1"
+  subgrp <- "full"
 } else {
-  # Print error if no argument specified
-  stop("No period specified")
+  
+  option_list <- list(
+    make_option("--period", type = "character", default = "ba1",
+                help = "Period where the analysis is conducted in, options are 'ba1' or 'ba2' [default %default].",
+                metavar = "period"),
+    make_option("--subgrp", type = "character", default = "full",
+                help = "Subgroup where the analysis is conducted on, options are 'full' and 'haem' [default %default].",
+                metavar = "subgrp"),
+  )
+  
+  opt_parser <- OptionParser(usage = "ccw:[version] [options]", option_list = option_list)
+  opt <- parse_args(opt_parser)
+  
+  period <- opt$period
+  subgrp <- opt$subgrp
 }
 
 ################################################################################
@@ -50,6 +61,16 @@ data_filename <-
          "data_processed", ".rds")
 data <-
   read_rds(here::here("output", "data", data_filename))
+# subgroup if subgroup analysis
+if (subgrp == "haem"){
+  data <-
+    data %>% 
+    filter(haematological_disease_nhsd == TRUE)
+} else if (subgrp == "transplant"){
+  data <- 
+    data %>%
+    filter(solid_organ_transplant_nhsd_new == TRUE)
+}
 
 ################################################################################
 # 1 Add indicator to data
@@ -142,19 +163,31 @@ write_csv(table_prim,
           here::here("output", "tables", "descriptive",
                      paste0(period[period != "ba1"],
                             "_"[period != "ba1"],
-                            "outcomes.csv")))
+                            "outcomes",
+                            "_"[subgrp != "full"],
+                            subgrp[subgrp != "full"],
+                            ".csv")))
 write_csv(table_prim_redacted,
           here::here("output", "tables", "descriptive", 
                      paste0(period[period != "ba1"],
                             "_"[period != "ba1"],
-                            "outcomes_redacted.csv")))
+                            "outcomes",
+                            "_"[subgrp != "full"],
+                            subgrp[subgrp != "full"],
+                            "_redacted.csv")))
 write_csv(table_sec,
           here::here("output", "tables", "descriptive", 
                      paste0(period[period != "ba1"],
                             "_"[period != "ba1"],
-                            "outcomes_secondary.csv")))
+                            "outcomes_secondary",
+                            "_"[subgrp != "full"],
+                            subgrp[subgrp != "full"],
+                            ".csv")))
 write_csv(table_sec_redacted,
           here::here("output", "tables", "descriptive", 
                      paste0(period[period != "ba1"],
                             "_"[period != "ba1"],
-                            "outcomes_secondary_redacted.csv")))
+                            "outcomes_secondary",
+                            "_"[subgrp != "full"],
+                            subgrp[subgrp != "full"],
+                            "_redacted.csv")))

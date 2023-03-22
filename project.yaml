@@ -142,7 +142,8 @@ actions:
         csv2: output/tables/flowchart/ba2_flowchart_outcomegrps_redacted.csv
 
   describe_outcomes:
-    run: r:latest analysis/data_properties/describe_outcomes.R ba1
+    run: r:latest analysis/data_properties/describe_outcomes.R
+      --period ba1
     needs: [data_process]
     outputs:
       moderately_sensitive:
@@ -152,7 +153,8 @@ actions:
         csv2sec: output/tables/descriptive/outcomes_secondary_redacted.csv
 
   describe_outcomes_ba2:
-    run: r:latest analysis/data_properties/describe_outcomes.R ba2
+    run: r:latest analysis/data_properties/describe_outcomes.R
+      --period ba2
     needs: [data_process_ba2]
     outputs:
       moderately_sensitive:
@@ -160,6 +162,54 @@ actions:
         csv1sec: output/tables/descriptive/ba2_outcomes_secondary.csv
         csv2: output/tables/descriptive/ba2_outcomes_redacted.csv
         csv2sec: output/tables/descriptive/ba2_outcomes_secondary_redacted.csv
+
+  describe_outcomes_haem:
+    run: r:latest analysis/data_properties/describe_outcomes.R
+      --period ba1
+      --subgrp haem
+    needs: [data_process]
+    outputs:
+      moderately_sensitive:
+        csv1: output/tables/descriptive/outcomes_haem.csv
+        csv1sec: output/tables/descriptive/outcomes_secondary_haem.csv
+        csv2: output/tables/descriptive/outcomes_haem_redacted.csv
+        csv2sec: output/tables/descriptive/outcomes_secondary_haem_redacted.csv
+
+  describe_outcomes_haem_ba2:
+    run: r:latest analysis/data_properties/describe_outcomes.R
+      --period ba2
+      --subgrp haem
+    needs: [data_process_ba2]
+    outputs:
+      moderately_sensitive:
+        csv1: output/tables/descriptive/ba2_outcomes_haem.csv
+        csv1sec: output/tables/descriptive/ba2_outcomes_secondary_haem.csv
+        csv2: output/tables/descriptive/ba2_outcomes_haem_redacted.csv
+        csv2sec: output/tables/descriptive/ba2_outcomes_secondary_haem_redacted.csv
+  
+  describe_outcomes_transplant:
+    run: r:latest analysis/data_properties/describe_outcomes.R
+      --period ba1
+      --subgrp transplant
+    needs: [data_process]
+    outputs:
+      moderately_sensitive:
+        csv1: output/tables/descriptive/outcomes_transplant.csv
+        csv1sec: output/tables/descriptive/outcomes_secondary_transplant.csv
+        csv2: output/tables/descriptive/outcomes_transplant_redacted.csv
+        csv2sec: output/tables/descriptive/outcomes_secondary_transplant_redacted.csv
+
+  describe_outcomes_transplant_ba2:
+    run: r:latest analysis/data_properties/describe_outcomes.R
+      --period ba2
+      --subgrp transplant
+    needs: [data_process_ba2]
+    outputs:
+      moderately_sensitive:
+        csv1: output/tables/descriptive/ba2_outcomes_transplant.csv
+        csv1sec: output/tables/descriptive/ba2_outcomes_secondary_transplant.csv
+        csv2: output/tables/descriptive/ba2_outcomes_transplant_redacted.csv
+        csv2sec: output/tables/descriptive/ba2_outcomes_secondary_transplant_redacted.csv
   
   sense_check:
     run: r:latest analysis/data_properties/sense_check.R ba1
