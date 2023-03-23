@@ -44,7 +44,7 @@ if(length(args)==0){
                 metavar = "period"),
     make_option("--subgrp", type = "character", default = "full",
                 help = "Subgroup where the analysis is conducted on, options are 'full' and 'haem' [default %default].",
-                metavar = "subgrp"),
+                metavar = "subgrp")
   )
   
   opt_parser <- OptionParser(usage = "ccw:[version] [options]", option_list = option_list)
