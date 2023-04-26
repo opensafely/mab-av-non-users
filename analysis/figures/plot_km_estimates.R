@@ -18,7 +18,7 @@ source(here("lib", "functions", "dir_structure.R"))
 model <- "plr"
 subgrp <- "full"
 supp <- "main"
-period <- "ba1"
+periods <- c("ba1", "ba2")
 
 ################################################################################
 # 0.2 Create directories for output
@@ -32,29 +32,25 @@ fs::dir_create(figures_km_dir)
 ################################################################################
 # 0.3 Search files + read
 ################################################################################
-pattern <- if_else(period == "ba1", "^km_estimates", "^ba2_km_estimates")
 files <- 
-  list.files(figures_km_dir,
-             pattern = pattern, 
-             full.names = FALSE)
-files <- files[str_detect(files, ".csv")]
-contrast <- 
+    list.files(figures_km_dir,
+               pattern = "_red.csv$", 
+               full.names = FALSE)
+period_contrast <- 
   str_remove(files, "_red.csv") %>% 
-  str_remove_all(., "_") %>% 
-  str_remove("kmestimates")
-limits_y <- c(0, 0.045)
-breaks_y <- seq(0, 0.04, 0.01)
-if (period == "ba2") {
-  contrast <- str_remove(contrast, "ba2")
-  limits_y <- c(0, 0.05)
-  breaks_y <- seq(0, 0.05, 0.01)
-}
-contrast <- case_when(contrast == "" ~ "Treated vs Untreated",
-                      contrast == "sotrovimab" ~ "Sotrovimab vs Untreated",
-                      contrast == "molnupiravir" ~ "Molnupiravir vs Untreated")
+  str_remove("km_estimates") %>%
+  str_replace("__", "_") %>%
+  str_remove("^_|_$")
+period_contrast <- case_when(
+  period_contrast == "" ~ "BA.1 Treated vs Untreated",
+  period_contrast == "sotrovimab" ~ "BA.1 Sotrovimab vs Untreated",
+  period_contrast == "molnupiravir" ~ "BA.1 Molnupiravir vs Untreated",
+  period_contrast == "ba2" ~ "BA.2 Treated vs Untreated",
+  period_contrast == "ba2_sotrovimab" ~ "BA.2 Sotrovimab vs Untreated",
+  period_contrast == "ba2_molnupiravir" ~ "BA.2 Molnupiravir vs Untreated")
 output <- 
   map2(.x = fs::path(figures_km_dir, files),
-       .y = contrast,
+       .y = period_contrast,
        .f = ~ read_csv(.x, 
                        col_types = cols_only(arm = col_character(),
                                              time = col_double(),
@@ -64,7 +60,6 @@ output <-
                                              risk.high.approx = col_double())) %>%
          mutate(contrast = .y))
 names(output) <- str_remove(files, ".csv")
-
 ################################################################################
 # 0.4 Function plotting KMs
 ################################################################################
@@ -103,12 +98,31 @@ km_plot_rounded <- function(.data) {
     theme(
       axis.line.x = element_line(colour = "black"),
       panel.grid.minor.x = element_blank(),
-      legend.position = c(.05, .95),
-      legend.justification = c(0, 1),
+      legend.position = c(0.27, 0.95),
+      legend.text = element_text(size = 7),
+      axis.title = element_text(size = 9),
+      strip.text.x = element_text(size = 30),
+      strip.background =element_rect(fill="grey")
     )
 }
-iwalk(.x = output, 
-      .f = ~ km_plot_rounded(.x) %>%
-        ggsave(filename = fs::path(figures_km_dir, paste0(.y, ".png")),
-               bg = "white"))
+limits_y <- c(0, 0.05)
+breaks_y <- seq(0, 0.05, 0.01)
+plots <- 
+  map(.x = output,
+      .f = ~ km_plot_rounded(.x))
+
+library(patchwork)
+p <- 
+  (plots$km_estimates_red | plots$km_estimates_molnupiravir_red | plots$km_estimates_sotrovimab_red) /
+  (plots$ba2_km_estimates_red | plots$ba2_km_estimates_molnupiravir_red | plots$ba2_km_estimates_sotrovimab_red) + 
+  plot_annotation(tag_levels = "A",
+                  tag_suffix = ")") & 
+  theme(plot.tag = element_text(size = 9))
+
+ggsave(p, 
+       filename = fs::path(figures_km_dir, "plr_kms.png"),
+       width = 22,
+       height = 12.5,
+       units = "cm",
+       bg = "white")
 
