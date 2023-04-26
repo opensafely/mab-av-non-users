@@ -1317,7 +1317,7 @@ actions:
     outputs:
       moderately_sensitive:
         table1: output/plr/data_properties/data_long/ba2_flow_data_plr.csv
-        table2: output/plr/data_properties/data_long/ba2_flow_data_redacted.csv
+        table2: output/plr/data_properties/data_long/ba2_flow_data_redacted_plr.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
