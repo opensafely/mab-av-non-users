@@ -112,6 +112,14 @@ if (model == "cox"){
 data_filename <-
   paste0(period[!period == "ba1"], "_"[!period == "ba1"],
          "data_processed", ".rds")
+tstart_plr <- 4.5
+treatment_window_days <- 4
+if (supp %in% c("grace4", "grace3")){
+  data_filename <- 
+    stringr::str_replace(data_filename, ".rds", paste0("_", supp, ".rds"))
+  tstart_plr <- stringr::str_extract(supp, "[:digit:]") %>% as.numeric() - 0.5 
+  treatment_window_days <- tstart_plr - 0.5
+}
 data <-
   read_rds(here::here("output", "data", data_filename))
 # change data if run using dummy data
@@ -162,9 +170,9 @@ data %>%
 #              a given arm (either because they receive surgery in the control 
 #              arm or they didn't receive surgery in the surgery arm)
 ################################################################################
-if (supp == "main" | supp == "truncated") {
+if (supp %in% c("main", "grace3", "grace4") | supp == "truncated" ) {
 data_cloned <- 
-  clone_data(data) %>%
+  clone_data(data, treatment_window_days) %>%
   add_x_days_to_fup(0.5)
 } else if (supp == "supp1") {
   data_cloned <- 
@@ -288,7 +296,7 @@ if (model == "cox"){
   ##############################################################################
   data_control_long_grace <- 
     data_control_long %>%
-    filter(tstart <= 4.5) #FIXME should vary depending on how many days are added to fup
+    filter(tstart <= tstart_plr) #FIXME should vary depending on how many days are added to fup
   model_cens_control <- fit_cens_plr(data_control_long_grace, formula_control_cens)
   data_control_long_grace <-
     data_control_long_grace %>%
@@ -311,12 +319,12 @@ if (model == "cox"){
   ##############################################################################
   data_trt_surv_last_int_grace <-
     data_cloned %>%
-    filter(arm == "Treatment" & fup >= 4.5)
+    filter(arm == "Treatment" & fup >= tstart_plr)
   model_cens_trt <- fit_cens_plr(data_trt_surv_last_int_grace, formula_trt_cens)
   data_trt_surv_last_int_grace <-
     data_trt_surv_last_int_grace %>%
     transmute(patient_id,
-              tstart = 4.5,
+              tstart = tstart_plr,
               lag_p_uncens_plr = 1 - predict(model_cens_trt, type = "response"))
   data_trt_long <-
     data_trt_long %>%

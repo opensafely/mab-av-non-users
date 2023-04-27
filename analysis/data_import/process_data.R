@@ -8,7 +8,7 @@ source(here::here("lib", "functions", "define_status_and_fu_all.R"))
 source(here::here("lib", "functions", "define_status_and_fu_primary.R"))
 source(here::here("lib", "functions", "define_status_and_fu_secondary.R"))
 # function
-process_data <- function(data_extracted){
+process_data <- function(data_extracted, treat_window_days = 4){
   data_processed <- data_extracted %>%
     mutate(
       # COVARIATES -----
@@ -151,7 +151,7 @@ process_data <- function(data_extracted){
                NA_real_),
       
       # treatment window
-      treat_window = covid_test_positive_date + days(4),
+      treat_window = covid_test_positive_date + days(treat_window_days),
       
       # Treatment strategy categories
       # (regardless of treatment is in treat window)
