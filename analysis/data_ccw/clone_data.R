@@ -11,7 +11,7 @@
 #              a given arm (either because they receive surgery in the control 
 #              arm or they didn't receive surgery in the surgery arm)
 ################################################################################
-clone_data <- function(data){
+clone_data <- function(data, treatment_window_days = 4){
   ################################################################################
   # Arm CONTROL: no treatment within 5 days
   ################################################################################
@@ -63,13 +63,13 @@ clone_data <- function(data){
              # without being treated (scenarios K and L)
              # --> we keep their observed outcomes and follow-up times
              treatment_ccw == "Untreated" & 
-               fu_ccw <= 4 ~ status_ccw_simple,
+               fu_ccw <= treatment_window_days ~ status_ccw_simple,
              # Case 3: Patients do not receive treatment within 5 days
              # and are still alive or at risk at 5 days (scenarios F-J and M)
              # --> they don't experience an event and their follow-up time is 5 
              #     days
              treatment_ccw == "Untreated" & 
-               fu_ccw > 4 ~ 0,
+               fu_ccw > treatment_window_days ~ 0,
            ),
            fup = case_when(
              # Case 1: Patients receive treatment within 5 days (scenarios A to E)
@@ -79,13 +79,13 @@ clone_data <- function(data){
              # without being treated (scenarios K and L)
              # --> we keep their observed outcomes and follow-up times
              treatment_ccw == "Untreated" &
-               fu_ccw <= 4 ~ fu_ccw,
+               fu_ccw <= treatment_window_days ~ fu_ccw,
              # Case 3: Patients do not receive treatment within 5 days
              # and are still alive or at risk at 5 days (scenarios F-J and M)
              # --> they don't experience an event and their follow-up time is 5 
              #     days
              treatment_ccw == "Untreated" & 
-               fu_ccw > 4 ~ 4,
+               fu_ccw > treatment_window_days ~ treatment_window_days,
            ),
            # ADD VARIALBE CENSORING
            censoring = case_when(
@@ -97,12 +97,12 @@ clone_data <- function(data){
              # without being treated (scenarios K and L)
              # --> we keep their follow-up times but they are uncensored
              treatment_ccw == "Untreated" &
-               fu_ccw <= 4 ~ 0,
+               fu_ccw <= treatment_window_days ~ 0,
              # Case 3: Patients do not receive treatment within 5 days and are 
              # still alive or at risk at 5 days (scenarios F-J and M): 
              # --> they are considered censored and their follow-up time is 5 days
              treatment_ccw == "Untreated" & 
-               fu_ccw > 4 ~ 1,
+               fu_ccw > treatment_window_days ~ 1,
            ),
     )
   ################################################################################

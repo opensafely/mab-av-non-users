@@ -82,36 +82,44 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 ################################################################################
 # 2 Process data
 ################################################################################
-# FIX ME: currently slow (but working) due to use of rowwise in combination with
+# FIXME: currently slow (but working) due to use of rowwise in combination with
 # nth()/first()
-data_processed <- process_data(data_extracted)
+data_processed <- 
+  map(.x = list(4, 3, 2),
+      .f = ~ process_data(data_extracted, treat_window_days = .x))
+names(data_processed) <- c("grace5", "grace4", "grace3")
 
 ################################################################################
 # 3 Apply additional eligibility and exclusion criteria
 ################################################################################
 # calc n excluded
-n_excluded <- calc_n_excluded(data_processed)
+n_excluded <- calc_n_excluded(data_processed$grace5)
 data_processed <-
-  data_processed %>%
-  # Exclude patients treated with both sotrovimab and molnupiravir on the
-  # same day 
-  filter(treated_sot_mol_same_day  == 0) %>%
-  # Exclude patients hospitalised on day of positive test
-  filter(!(status_all %in% c("covid_hosp", "noncovid_hosp") &
-           fu_all == 0)) %>%
-  # if treated with paxlovid or remidesivir --> exclude
-  filter(is.na(paxlovid_covid_therapeutics) &
-           is.na(remdesivir_covid_therapeutics))
+  map(.x = data_processed, 
+      .f = ~ .x %>%
+        # Exclude patients treated with both sotrovimab and molnupiravir on the
+        # same day 
+        filter(treated_sot_mol_same_day  == 0) %>%
+        # Exclude patients hospitalised on day of positive test
+        filter(!(status_all %in% c("covid_hosp", "noncovid_hosp") &
+                   fu_all == 0)) %>%
+        # if treated with paxlovid or remidesivir --> exclude
+        filter(is.na(paxlovid_covid_therapeutics) &
+                 is.na(remdesivir_covid_therapeutics)))
 
 ################################################################################
 # 4 Save data
 ################################################################################
 # data_processed are saved
-write_rds(data_processed,
-          here::here("output", "data", 
-                     paste0(
-                       period[!period == "ba1"], "_"[!period == "ba1"],
-                       "data_processed.rds")))
+iwalk(.x = data_processed,
+      .f = ~ write_rds(.x,
+                       here::here("output", "data", 
+                                  paste0(
+                                    period[!period == "ba1"], "_"[!period == "ba1"],
+                                    "data_processed",
+                                    "_"[!.y == "grace5"],
+                                    .y[!.y == "grace5"],
+                                    ".rds"))))
 write_rds(n_excluded,
           here::here("output", "data_properties",
                      paste0(

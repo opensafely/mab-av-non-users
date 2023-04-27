@@ -79,6 +79,12 @@ data_dir <- concat_dirs("data", output_dir, model, subgrp, supp)
 data_filename <- make_filename("data_long", period, outcome, contrast = "all", model, subgrp, supp, "feather")
 input_file <- fs::path(data_dir, data_filename)
 data_long <- read_feather(input_file)
+treatment_window_days <- 4
+if (supp %in% c("grace4", "grace3")){
+  treatment_window_days <- 
+    stringr::str_extract(supp, "[:digit:]") %>% as.numeric() - 1
+}
+treatment_window_days_05 <- treatment_window_days + 0.5
 
 ################################################################################
 # 2. Select data needed
@@ -99,15 +105,15 @@ data_long_treatment <-
 retrieve_n_flowchart <- function(data_long, arm) {
   n_total <- data_long %>% nrow()
   if (arm == "Control"){
-    data_cens <- data_long %>% filter(censoring == 0 & max_fup <= 4.5)
+    data_cens <- data_long %>% filter(censoring == 0 & max_fup <= treatment_window_days_05)
   } else if (arm == "Treatment"){
-    data_cens <- data_long %>% filter(censoring == 0 & max_fup <= 4.5 & treatment_ccw == "Untreated")
+    data_cens <- data_long %>% filter(censoring == 0 & max_fup <= treatment_window_days_05 & treatment_ccw == "Untreated")
   }
   n_cens <- data_cens %>% filter(outcome == 0) %>% nrow()
   n_cens_outc <- data_cens %>% filter(outcome == 1) %>% nrow()
   n_art_cens <- data_long %>% filter(censoring == 1) %>% nrow()
   if (arm == "Control"){
-    data_fup <- data_long %>% filter(censoring == 0 & max_fup > 4.5)
+    data_fup <- data_long %>% filter(censoring == 0 & max_fup > treatment_window_days_05)
   } else if (arm == "Treatment"){
     data_fup <- data_long %>% filter(censoring == 0 & treatment_ccw == "Treated")
   }
