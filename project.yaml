@@ -2715,7 +2715,7 @@ actions:
       moderately_sensitive:
         html: output/plr/tables/grace4/table_ccw_plr_grace4.html
 
-  create_table_ccw_plr_trunctated_ba2:
+  create_table_ccw_plr_grace4_ba2:
     run: r:latest analysis/table_ccw.R
       --period ba2
       --model plr
