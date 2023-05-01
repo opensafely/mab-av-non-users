@@ -1673,7 +1673,7 @@ actions:
     needs: [perform_ccw_analysis_plr_grace4]
     outputs:
       moderately_sensitive:
-        table: output/plr/tables/ccw/grace4/smd_all_plr.csv
+        table: output/plr/tables/ccw/grace4/smd_all_plr_grace4.csv
 
   calc_smd_mol_plr_grace4:
     run: r:latest analysis/smd.R 
@@ -1684,7 +1684,7 @@ actions:
     needs: [perform_ccw_analysis_mol_plr_grace4]
     outputs:
       moderately_sensitive:
-        table: output/plr/tables/ccw/grace4/smd_molnupiravir_plr.csv
+        table: output/plr/tables/ccw/grace4/smd_molnupiravir_plr_grace4.csv
 
   calc_smd_sot_plr_grace4:
     run: r:latest analysis/smd.R
@@ -1695,7 +1695,7 @@ actions:
     needs: [perform_ccw_analysis_sot_plr_grace4]
     outputs:
       moderately_sensitive:
-        table: output/plr/tables/ccw/grace4/smd_sotrovimab_plr.csv
+        table: output/plr/tables/ccw/grace4/smd_sotrovimab_plr_grace4.csv
 
   calc_smd_plr_grace4_ba2:
     run: r:latest analysis/smd.R
@@ -1705,7 +1705,7 @@ actions:
     needs: [perform_ccw_analysis_plr_grace4_ba2]
     outputs:
       moderately_sensitive:
-        table: output/plr/tables/ccw/grace4/ba2_smd_all_plr.csv
+        table: output/plr/tables/ccw/grace4/ba2_smd_all_plr_grace4.csv
 
   calc_smd_mol_plr_grace4_ba2:
     run: r:latest analysis/smd.R
@@ -1716,7 +1716,7 @@ actions:
     needs: [perform_ccw_analysis_mol_plr_grace4_ba2]
     outputs:
       moderately_sensitive:
-        table: output/plr/tables/ccw/grace4/ba2_smd_molnupiravir_plr.csv
+        table: output/plr/tables/ccw/grace4/ba2_smd_molnupiravir_plr_grace4.csv
 
   calc_smd_sot_plr_grace4_ba2:
     run: r:latest analysis/smd.R
@@ -1727,7 +1727,7 @@ actions:
     needs: [perform_ccw_analysis_sot_plr_grace4_ba2]
     outputs:
       moderately_sensitive:
-        table: output/plr/tables/ccw/grace4/ba2_smd_sotrovimab_plr.csv
+        table: output/plr/tables/ccw/grace4/ba2_smd_sotrovimab_plr_grace4.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## 6.3 CCW Analysis - density weights - GRACE4 x PLR
