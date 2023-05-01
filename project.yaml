@@ -1300,7 +1300,7 @@ actions:
   ## # # # # # # # # # # # # # # # # # # # 
   ## 4.4 CCW Analysis - flow data - PLR
   ## # # # # # # # # # # # # # # # # # # #
-  describe_flow_data_long_plr_ba1:
+  describe_flow_data_long_plr:
     run: r:latest analysis/data_properties/describe_flow_data_long.R
       --model plr
     needs: [perform_ccw_analysis_plr]
@@ -1782,7 +1782,7 @@ actions:
   ## # # # # # # # # # # # # # # # # # # # 
   ## 6.4 CCW Analysis - flow data - GRACE4 x PLR
   ## # # # # # # # # # # # # # # # # # # #
-  describe_flow_data_long_plr_grace4_ba1:
+  describe_flow_data_long_plr_grace4:
     run: r:latest analysis/data_properties/describe_flow_data_long.R
       --model plr
       --supp grace4
