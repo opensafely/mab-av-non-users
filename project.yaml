@@ -1806,6 +1806,7 @@ actions:
   ## # # # # # # # # # # # # # # # # # # # 
   ## 6.4 CCW Analysis - flow data - GRACE4 x PLR
   ## # # # # # # # # # # # # # # # # # # #
+  
   describe_flow_data_long_plr_grace4:
     run: r:latest analysis/data_properties/describe_flow_data_long.R
       --model plr
@@ -1829,12 +1830,322 @@ actions:
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 7 SUBGROUP ANALYSIS: HEAM MALIG - PLR
+  ## 7 GRACE 3 - PLR
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 7.1 CCW Analysis - PLR
+  ## 7.1 CCW Analysis - GRACE3 x PLR
+  ## # # # # # # # # # # # # # # # # # # # 
+
+  perform_ccw_analysis_plr_grace3:
+    run: r:latest analysis/ccw.R
+      --period ba1
+      --model plr
+      --supp grace3
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/grace3/data_long_all_plr_grace3.feather
+        model01: output/plr/models/grace3/plr_cens_control_all_plr_grace3.rds
+        model02: output/plr/models/grace3/plr_cens_trt_all_plr_grace3.rds
+        model1: output/plr/models/grace3/km_trt_all_plr_grace3.rds
+        model2: output/plr/models/grace3/km_control_all_plr_grace3.rds
+        model3: output/plr/models/grace3/cox_w_all_plr_grace3.rds
+        model4: output/plr/models/grace3/cox_uw_all_plr_grace3.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/grace3/ccw_all_plr_grace3.csv
+  
+  perform_ccw_analysis_mol_plr_grace3:
+    run: r:latest analysis/ccw.R
+      --period ba1
+      --contrast molnupiravir
+      --model plr
+      --supp grace3
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/grace3/data_long_molnupiravir_plr_grace3.feather
+        model01: output/plr/models/grace3/plr_cens_control_molnupiravir_plr_grace3.rds
+        model02: output/plr/models/grace3/plr_cens_trt_molnupiravir_plr_grace3.rds
+        model1: output/plr/models/grace3/km_trt_molnupiravir_plr_grace3.rds
+        model2: output/plr/models/grace3/km_control_molnupiravir_plr_grace3.rds
+        model3: output/plr/models/grace3/cox_w_molnupiravir_plr_grace3.rds
+        model4: output/plr/models/grace3/cox_uw_molnupiravir_plr_grace3.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/grace3/ccw_molnupiravir_plr_grace3.csv
+
+  perform_ccw_analysis_sot_plr_grace3:
+    run: r:latest analysis/ccw.R
+      --period ba1
+      --contrast sotrovimab
+      --model plr
+      --supp grace3
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/grace3/data_long_sotrovimab_plr_grace3.feather
+        model01: output/plr/models/grace3/plr_cens_control_sotrovimab_plr_grace3.rds
+        model02: output/plr/models/grace3/plr_cens_trt_sotrovimab_plr_grace3.rds
+        model1: output/plr/models/grace3/km_trt_sotrovimab_plr_grace3.rds
+        model2: output/plr/models/grace3/km_control_sotrovimab_plr_grace3.rds
+        model3: output/plr/models/grace3/cox_w_sotrovimab_plr_grace3.rds
+        model4: output/plr/models/grace3/cox_uw_sotrovimab_plr_grace3.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/grace3/ccw_sotrovimab_plr_grace3.csv
+
+  save_coef_weight_models_plr_grace3:
+    run: r:latest analysis/models_ccw/coef_weight_models.R 
+      --period ba1
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_plr_grace3, perform_ccw_analysis_mol_plr_grace3, perform_ccw_analysis_sot_plr_grace3]
+    outputs:
+      moderately_sensitive:
+        table: output/plr/models/coefficients/grace3/plr_cens_*.csv
+
+  perform_ccw_analysis_plr_grace3_ba2:
+    run: r:latest analysis/ccw.R
+      --period ba2
+      --model plr
+      --supp grace3
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/grace3/ba2_data_long_all_plr_grace3.feather
+        model01: output/plr/models/grace3/ba2_plr_cens_control_all_plr_grace3.rds
+        model02: output/plr/models/grace3/ba2_plr_cens_trt_all_plr_grace3.rds
+        model1: output/plr/models/grace3/ba2_km_trt_all_plr_grace3.rds
+        model2: output/plr/models/grace3/ba2_km_control_all_plr_grace3.rds
+        model3: output/plr/models/grace3/ba2_cox_w_all_plr_grace3.rds
+        model4: output/plr/models/grace3/ba2_cox_uw_all_plr_grace3.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/grace3/ba2_ccw_all_plr_grace3.csv
+  
+  perform_ccw_analysis_mol_plr_grace3_ba2:
+    run: r:latest analysis/ccw.R
+      --period ba2
+      --contrast molnupiravir
+      --model plr
+      --supp grace3
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/grace3/ba2_data_long_molnupiravir_plr_grace3.feather
+        model01: output/plr/models/grace3/ba2_plr_cens_control_molnupiravir_plr_grace3.rds
+        model02: output/plr/models/grace3/ba2_plr_cens_trt_molnupiravir_plr_grace3.rds
+        model1: output/plr/models/grace3/ba2_km_trt_molnupiravir_plr_grace3.rds
+        model2: output/plr/models/grace3/ba2_km_control_molnupiravir_plr_grace3.rds
+        model3: output/plr/models/grace3/ba2_cox_w_molnupiravir_plr_grace3.rds
+        model4: output/plr/models/grace3/ba2_cox_uw_molnupiravir_plr_grace3.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/grace3/ba2_ccw_molnupiravir_plr_grace3.csv
+
+  perform_ccw_analysis_sot_plr_grace3_ba2:
+    run: r:latest analysis/ccw.R
+      --period ba2
+      --contrast sotrovimab
+      --model plr
+      --supp grace3
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/grace3/ba2_data_long_sotrovimab_plr_grace3.feather
+        model01: output/plr/models/grace3/ba2_plr_cens_control_sotrovimab_plr_grace3.rds
+        model02: output/plr/models/grace3/ba2_plr_cens_trt_sotrovimab_plr_grace3.rds
+        model1: output/plr/models/grace3/ba2_km_trt_sotrovimab_plr_grace3.rds
+        model2: output/plr/models/grace3/ba2_km_control_sotrovimab_plr_grace3.rds
+        model3: output/plr/models/grace3/ba2_cox_w_sotrovimab_plr_grace3.rds
+        model4: output/plr/models/grace3/ba2_cox_uw_sotrovimab_plr_grace3.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/grace3/ba2_ccw_sotrovimab_plr_grace3.csv
+
+  save_coef_weight_models_plr_grace3_ba2:
+    run: r:latest analysis/models_ccw/coef_weight_models.R 
+      --period ba2
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_plr_grace3_ba2, perform_ccw_analysis_mol_plr_grace3_ba2, perform_ccw_analysis_sot_plr_grace3_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/plr/models/coefficients/grace3/ba2_plr_cens_*.csv
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 7.2 CCW Analysis - check balance - GRACE3 x PLR
+  ## # # # # # # # # # # # # # # # # # # #
+
+  calc_smd_plr_grace3:
+    run: r:latest analysis/smd.R 
+      --period ba1
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_plr_grace3]
+    outputs:
+      moderately_sensitive:
+        table: output/plr/tables/ccw/grace3/smd_all_plr_grace3.csv
+
+  calc_smd_mol_plr_grace3:
+    run: r:latest analysis/smd.R 
+      --period ba1
+      --contrast molnupiravir
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_mol_plr_grace3]
+    outputs:
+      moderately_sensitive:
+        table: output/plr/tables/ccw/grace3/smd_molnupiravir_plr_grace3.csv
+
+  calc_smd_sot_plr_grace3:
+    run: r:latest analysis/smd.R
+      --period ba1
+      --contrast sotrovimab
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_sot_plr_grace3]
+    outputs:
+      moderately_sensitive:
+        table: output/plr/tables/ccw/grace3/smd_sotrovimab_plr_grace3.csv
+
+  calc_smd_plr_grace3_ba2:
+    run: r:latest analysis/smd.R
+      --period ba2
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_plr_grace3_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/plr/tables/ccw/grace3/ba2_smd_all_plr_grace3.csv
+
+  calc_smd_mol_plr_grace3_ba2:
+    run: r:latest analysis/smd.R
+      --period ba2
+      --contrast molnupiravir
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_mol_plr_grace3_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/plr/tables/ccw/grace3/ba2_smd_molnupiravir_plr_grace3.csv
+
+  calc_smd_sot_plr_grace3_ba2:
+    run: r:latest analysis/smd.R
+      --period ba2
+      --contrast sotrovimab
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_sot_plr_grace3_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/plr/tables/ccw/grace3/ba2_smd_sotrovimab_plr_grace3.csv
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 7.3 CCW Analysis - density weights - GRACE3 x PLR
+  ## # # # # # # # # # # # # # # # # # # #
+
+  dens_weights_plr_grace3:
+    run: r:latest analysis/data_ccw/dens_weights.R 
+      --period ba1
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_plr_grace3]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/grace3/dens_all_plr_grace3.csv
+        table2: output/plr/data_properties/data_long/grace3/q*_all_plr_grace3.csv
+  
+  dens_weights_mol_plr_grace3:
+    run: r:latest analysis/data_ccw/dens_weights.R 
+      --period ba1 
+      --contrast molnupiravir
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_mol_plr_grace3]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/grace3/dens_molnupiravir_plr_grace3.csv
+        table2: output/plr/data_properties/data_long/grace3/q*_molnupiravir_plr_grace3.csv
+
+  dens_weights_sot_plr_grace3:
+    run: r:latest analysis/data_ccw/dens_weights.R
+      --period ba1
+      --contrast sotrovimab
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_sot_plr_grace3]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/grace3/dens_sotrovimab_plr_grace3.csv
+        table2: output/plr/data_properties/data_long/grace3/q*_sotrovimab_plr_grace3.csv
+
+  dens_weights_plr_grace3_ba2:
+    run: r:latest analysis/data_ccw/dens_weights.R
+      --period ba2
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_plr_grace3_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/grace3/ba2_dens_all_plr_grace3.csv
+        table2: output/plr/data_properties/data_long/grace3/ba2_q*_all_plr_grace3.csv
+
+  dens_weights_mol_plr_grace3_ba2:
+    run: r:latest analysis/data_ccw/dens_weights.R
+      --period ba2 
+      --contrast molnupiravir
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_mol_plr_grace3_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/grace3/ba2_dens_molnupiravir_plr_grace3.csv
+        table2: output/plr/data_properties/data_long/grace3/ba2_q*_molnupiravir_plr_grace3.csv
+
+  dens_weights_sot_plr_grace3_ba2:
+    run: r:latest analysis/data_ccw/dens_weights.R
+      --period ba2
+      --contrast sotrovimab
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_sot_plr_grace3_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/grace3/ba2_dens_sotrovimab_plr_grace3.csv
+        table2: output/plr/data_properties/data_long/grace3/ba2_q*_sotrovimab_plr_grace3.csv
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 7.4 CCW Analysis - flow data - GRACE3 x PLR
+  ## # # # # # # # # # # # # # # # # # # #
+
+  describe_flow_data_long_plr_grace3:
+    run: r:latest analysis/data_properties/describe_flow_data_long.R
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_plr_grace3]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/grace3/flow_data_plr_grace3.csv
+        table2: output/plr/data_properties/data_long/grace3/flow_data_redacted_plr_grace3.csv
+
+  describe_flow_data_long_plr_grace3_ba2:
+    run: r:latest analysis/data_properties/describe_flow_data_long.R
+      --period ba2
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_plr_grace3_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/grace3/ba2_flow_data_plr_grace3.csv
+        table2: output/plr/data_properties/data_long/grace3/ba2_flow_data_redacted_plr_grace3.csv
+
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 8 SUBGROUP ANALYSIS: HEAM MALIG - PLR
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## # # # # # # # # # # # # # # # # # # # 
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 8.1 CCW Analysis - PLR
   ## # # # # # # # # # # # # # # # # # # # 
 
   perform_ccw_analysis_plr_haem:
@@ -1970,7 +2281,7 @@ actions:
         table: output/plr/models/coefficients/haem/ba2_plr_cens_*.csv
   
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 7.2 CCW Analysis - check balance - PLR
+  ## 8.2 CCW Analysis - check balance - PLR
   ## # # # # # # # # # # # # # # # # # # #
 
   calc_smd_plr_haem:
@@ -2038,7 +2349,7 @@ actions:
         table: output/plr/tables/ccw/haem/ba2_smd_sotrovimab_plr_haem.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 7.3 CCW Analysis - density weights - PLR
+  ## 8.3 CCW Analysis - density weights - PLR
   ## # # # # # # # # # # # # # # # # # # #
 
   dens_weights_plr_haem:
@@ -2113,12 +2424,12 @@ actions:
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 8 SUBGROUP ANALYSIS: ORGAN TRNSPLNT - PLR
+  ## 9 SUBGROUP ANALYSIS: ORGAN TRNSPLNT - PLR
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 8.1 CCW Analysis - PLR
+  ## 9.1 CCW Analysis - PLR
   ## # # # # # # # # # # # # # # # # # # # 
 
   perform_ccw_analysis_plr_transplant:
@@ -2254,7 +2565,7 @@ actions:
         table: output/plr/models/coefficients/transplant/ba2_plr_cens_*.csv
   
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 8.2 CCW Analysis - check balance - PLR
+  ## 9.2 CCW Analysis - check balance - PLR
   ## # # # # # # # # # # # # # # # # # # #
 
   calc_smd_plr_transplant:
@@ -2322,7 +2633,7 @@ actions:
         table: output/plr/tables/ccw/transplant/ba2_smd_sotrovimab_plr_transplant.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## 8.3 CCW Analysis - density weights - PLR
+  ## 9.3 CCW Analysis - density weights - PLR
   ## # # # # # # # # # # # # # # # # # # #
 
   dens_weights_plr_transplant:
@@ -2748,6 +3059,26 @@ actions:
     outputs:
       moderately_sensitive:
         html: output/plr/tables/grace4/ba2_table_ccw_plr_grace4.html
+
+  create_table_ccw_plr_grace3:
+    run: r:latest analysis/table_ccw.R
+      --period ba1
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_plr_grace3, perform_ccw_analysis_mol_plr_grace3, perform_ccw_analysis_sot_plr_grace3]
+    outputs:
+      moderately_sensitive:
+        html: output/plr/tables/grace3/table_ccw_plr_grace3.html
+
+  create_table_ccw_plr_grace3_ba2:
+    run: r:latest analysis/table_ccw.R
+      --period ba2
+      --model plr
+      --supp grace3
+    needs: [perform_ccw_analysis_plr_grace3_ba2, perform_ccw_analysis_mol_plr_grace3_ba2, perform_ccw_analysis_sot_plr_grace3_ba2]
+    outputs:
+      moderately_sensitive:
+        html: output/plr/tables/grace3/ba2_table_ccw_plr_grace3.html
 
   create_table_ccw_plr_haem:
     run: r:latest analysis/table_ccw.R
