@@ -1585,6 +1585,16 @@ actions:
       moderately_sensitive:
         table: output/plr/tables/ccw/grace4/ccw_sotrovimab_plr_grace4.csv
 
+  save_coef_weight_models_plr_grace4:
+    run: r:latest analysis/models_ccw/coef_weight_models.R 
+      --period ba1
+      --model plr
+      --supp grace4
+    needs: [perform_ccw_analysis_plr_grace4, perform_ccw_analysis_mol_plr_grace4, perform_ccw_analysis_sot_plr_grace4]
+    outputs:
+      moderately_sensitive:
+        table: output/plr/models/coefficients/grace4/plr_cens_*.csv
+
   perform_ccw_analysis_plr_grace4_ba2:
     run: r:latest analysis/ccw.R
       --period ba2
@@ -1640,6 +1650,16 @@ actions:
         model4: output/plr/models/grace4/ba2_cox_uw_sotrovimab_plr_grace4.rds
       moderately_sensitive:
         table: output/plr/tables/ccw/grace4/ba2_ccw_sotrovimab_plr_grace4.csv
+
+  save_coef_weight_models_plr_grace4_ba2:
+    run: r:latest analysis/models_ccw/coef_weight_models.R 
+      --period ba2
+      --model plr
+      --supp grace4
+    needs: [perform_ccw_analysis_plr_grace4_ba2, perform_ccw_analysis_mol_plr_grace4_ba2, perform_ccw_analysis_sot_plr_grace4_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/plr/models/coefficients/grace4/ba2_plr_cens_*.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## 6.2 CCW Analysis - check balance - GRACE4 x PLR
