@@ -46,7 +46,9 @@ actions:
     needs: [generate_study_population]
     outputs:
       highly_sensitive:
-        data: output/data/data_processed.rds
+        data1: output/data/data_processed.rds
+        data2: output/data/data_processed_grace4.rds
+        data3: output/data/data_processed_grace3.rds
         rds: output/data_properties/n_excluded.rds
 
   data_process_ba2:
@@ -54,7 +56,9 @@ actions:
     needs: [generate_study_population_ba2]
     outputs:
       highly_sensitive:
-        data: output/data/ba2_data_processed.rds
+        data1: output/data/ba2_data_processed.rds
+        data2: output/data/ba2_data_processed_grace4.rds
+        data3: output/data/ba2_data_processed_grace3.rds
         rds: output/data_properties/ba2_n_excluded.rds
 
   data_process_flowchart:
