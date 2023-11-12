@@ -49,6 +49,9 @@ actions:
         data1: output/data/data_processed.rds
         data2: output/data/data_processed_grace4.rds
         data3: output/data/data_processed_grace3.rds
+        data4: output/data/data_processed_paxlovid.rds
+        data5: output/data/data_processed_paxlovid_grace4.rds
+        data6: output/data/data_processed_paxlovid_grace3.rds
         rds: output/data_properties/n_excluded.rds
 
   data_process_ba2:
@@ -59,6 +62,9 @@ actions:
         data1: output/data/ba2_data_processed.rds
         data2: output/data/ba2_data_processed_grace4.rds
         data3: output/data/ba2_data_processed_grace3.rds
+        data4: output/data/ba2_data_processed_paxlovid.rds
+        data5: output/data/ba2_data_processed_paxlovid_grace4.rds
+        data6: output/data/ba2_data_processed_paxlovid_grace3.rds
         rds: output/data_properties/ba2_n_excluded.rds
 
   data_process_flowchart:
