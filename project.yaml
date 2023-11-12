@@ -229,6 +229,14 @@ actions:
       moderately_sensitive:
         csv: output/data_properties/ba2_sense_checks.txt
 
+  describe_trt_outcm_same_day:
+    run: r:latest analysis/data_properties/describe_trt_outcm_same_day.R
+    needs: [data_process, data_process_ba2]
+    outputs:
+      moderately_sensitive:
+        csv1: output/data_properties/trt_outcm_same_day.csv
+        csv2: output/data_properties/trt_outcm_same_day_red.csv
+
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
   ## 1 MAIN ANALYSIS - COX
