@@ -258,7 +258,7 @@ process_data <- function(data_extracted, treat_window_days = 4){
       # admission, non covid hosp admission is not used as a censoring event in
       # our study, but we'd like to report how many pt were admitted to the 
       # hospital for a noncovid-y reason before one of the other events
-      # of note, patients can have allcause hosp before or after covid hosp, 
+      # of note, patients can have allcause (non covid!) hosp before covid hosp, 
       # so the number of noncovid_hosp + covid_hosp is not strictly the number
       # of allcause_hosp
       noncovid_hosp_admission_date =
@@ -268,7 +268,11 @@ process_data <- function(data_extracted, treat_window_days = 4){
                   (!is.na(allcause_hosp_admission_date) &
                      !is.na(covid_hosp_admission_date)) &
                     allcause_hosp_admission_date != covid_hosp_admission_date ~
-                    allcause_hosp_admission_date,
+                    allcause_hosp_admission_date, # in this case individual can 
+                  # have both allcause hosp (not covid!) and covid hosp both
+                  # first event for patient and therefore picked up both.
+                  # all cause only includes first admissions so noncovid + covid
+                  # can exceed number of all cause admissions.
                   TRUE ~ NA_Date_),
     ) %>%
     # adds column status_all and fu_all 

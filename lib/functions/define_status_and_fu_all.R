@@ -28,7 +28,8 @@ add_status_and_fu_all <- function(data){
       # "noncovid_death": non-covid death
       min_date_all = pmin(dereg_date,
                           death_date,
-                          allcause_hosp_admission_date,
+                          covid_hosp_admission_date,
+                          noncovid_hosp_admission_date,
                           study_window,
                           na.rm = TRUE),
       status_all = case_when(
