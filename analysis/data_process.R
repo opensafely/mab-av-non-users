@@ -73,10 +73,20 @@ data_extracted <- extract_data(input_filename)
 if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   data_extracted <- 
     data_extracted %>%
-    mutate(died_ons_covid_any_date = 
-             if_else(!is.na(death_date), death_date, died_ons_covid_any_date),
-           death_date =
-             if_else(!is.na(died_ons_covid_any_date), died_ons_covid_any_date, death_date)) 
+    mutate(death_date =
+             if_else(!is.na(died_ons_covid_any_date), died_ons_covid_any_date, death_date),
+           date_treated = if_else(!is.na(date_treated),
+                                  covid_test_positive_date + runif(nrow(data_extracted), 0, 4) %>% round(),
+                                  NA_Date_),
+           paxlovid_covid_therapeutics = if_else(!is.na(paxlovid_covid_therapeutics),
+                                                 date_treated,
+                                                 NA_Date_),
+           sotrovimab_covid_therapeutics = if_else(!is.na(sotrovimab_covid_therapeutics),
+                                                   date_treated,
+                                                   NA_Date_),
+           molnupiravir_covid_therapeutics = if_else(!is.na(molnupiravir_covid_therapeutics),
+                                                     date_treated,
+                                                     NA_Date_)) 
 }
 
 ################################################################################
@@ -88,6 +98,18 @@ data_processed <-
   map(.x = list(4, 3, 2),
       .f = ~ process_data(data_extracted, treat_window_days = .x))
 names(data_processed) <- c("grace5", "grace4", "grace3")
+# change data if run using dummy data
+if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
+  data_processed <- 
+    map(.x = data_processed,
+        .f = ~ .x %>% group_by(patient_id) %>%
+          mutate(study_week = runif(1, 0, 12) %>% ceiling(),
+                 tb_postest_vacc_cat = sample(c(">= 84 days or unknown", "< 7 days", "7-27 days", "28-83 days"), 1) %>%
+                   factor(levels = c(">= 84 days or unknown", "< 7 days", "7-27 days", "28-83 days"))) %>%
+          ungroup() %>%
+          mutate(ageband = if_else(is.na(ageband), "18-39", ageband %>% as.character()) %>%
+                   factor(levels = c("18-39", "40-59", "60-79", "80+"))))
+}
 
 ################################################################################
 # 3 Apply additional eligibility and exclusion criteria
@@ -103,8 +125,8 @@ data_processed_paxlovid <-
         # Exclude patients hospitalised on day of positive test
         filter(!(status_all %in% c("covid_hosp", "noncovid_hosp") &
                    fu_all == 0)) %>%
-        # if treated with paxlovid --> incluse
-        filter(!is.na(paxlovid_covid_therapeutics)))
+        # if treated with paxlovid --> include
+        filter(!is.na(paxlovid_covid_therapeutics) & is.na(remdesivir_covid_therapeutics)))
 # for internal check, check n in pax data (should be same as in n_excluded)
 cat("Number of people treated with Paxlovid")
 data_processed_paxlovid$grace5 %>% nrow() %>% print()
@@ -148,3 +170,4 @@ write_rds(n_excluded,
                      paste0(
                        period[!period == "ba1"], "_"[!period == "ba1"],
                        "n_excluded.rds")))
+

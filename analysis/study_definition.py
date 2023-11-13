@@ -409,7 +409,8 @@ study = StudyDefinition(
     on_or_after="covid_test_positive_date",
     return_expectations={
       "date": {"earliest": "index_date + 1 days", "latest": end_date},
-      "incidence": 0.1
+      "incidence": 0.1,
+      "rate": "uniform",
     },
   ),
   # De-registration
@@ -418,7 +419,8 @@ study = StudyDefinition(
     date_format="YYYY-MM-DD",
     return_expectations={
       "date": {"earliest": "index_date + 1 days", "latest": end_date},
-      "incidence": 0.1
+      "incidence": 0.1,
+      "rate": "uniform",
     },
   ),
 
@@ -1687,7 +1689,7 @@ study = StudyDefinition(
     # results to only specified cause of death
     return_expectations={
       "date": {"earliest": "index_date + 1 days", "latest": end_date},
-      "rate": "exponential_increase",
+      "rate": "uniform",
       "incidence": 0.05,
     },
   ),
@@ -1702,7 +1704,7 @@ study = StudyDefinition(
     # results to only specified cause of death
     return_expectations={
       "date": {"earliest": "index_date + 1 days", "latest": end_date},
-      "rate": "exponential_increase",
+      "rate": "uniform",
       "incidence": 0.05,
     },
   ),
