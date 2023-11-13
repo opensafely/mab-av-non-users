@@ -94,6 +94,20 @@ names(data_processed) <- c("grace5", "grace4", "grace3")
 ################################################################################
 # calc n excluded
 n_excluded <- calc_n_excluded(data_processed$grace5)
+data_processed_paxlovid <-
+  map(.x = data_processed, 
+      .f = ~ .x %>%
+        # Exclude patients treated with both sotrovimab and molnupiravir on the
+        # same day 
+        filter(treated_sot_mol_same_day  == 0) %>%
+        # Exclude patients hospitalised on day of positive test
+        filter(!(status_all %in% c("covid_hosp", "noncovid_hosp") &
+                   fu_all == 0)) %>%
+        # if treated with paxlovid --> incluse
+        filter(!is.na(paxlovid_covid_therapeutics)))
+# for internal check, check n in pax data (should be same as in n_excluded)
+cat("Number of people treated with Paxlovid")
+data_processed_paxlovid$grace5 %>% nrow() %>% print()
 data_processed <-
   map(.x = data_processed, 
       .f = ~ .x %>%
@@ -106,21 +120,6 @@ data_processed <-
         # if treated with paxlovid or remidesivir --> exclude
         filter(is.na(paxlovid_covid_therapeutics) &
                  is.na(remdesivir_covid_therapeutics)))
-data_processed_paxlovid <-
-  map(.x = data_processed, 
-      .f = ~ .x %>%
-        # Exclude patients treated with both sotrovimab and molnupiravir on the
-        # same day 
-        filter(treated_sot_mol_same_day  == 0) %>%
-        # Exclude patients hospitalised on day of positive test
-        filter(!(status_all %in% c("covid_hosp", "noncovid_hosp") &
-                   fu_all == 0)) %>%
-        # if treated with paxlovid or remidesivir --> exclude
-        filter(!is.na(paxlovid_covid_therapeutics)))
-# for internal check, check n in pax data (should be same as in n_excluded)
-cat("Number of people treated with Paxlovid")
-data_processed_paxlovid$grace5 %>% nrow() %>% print()
-  
 
 ################################################################################
 # 4 Save data
