@@ -113,7 +113,7 @@ actions:
     outputs:
       moderately_sensitive:
         csv1: output/tables/flowchart/ba2_flowchart.csv
-        csv2: output/tables/flowchart/ba2_flowchart_rredacted.csv
+        csv2: output/tables/flowchart/ba2_flowchart_redacted.csv
 
   create_flowchart_trtgrps:
     run: r:latest analysis/data_properties/flowchart_trtgrps.R 
