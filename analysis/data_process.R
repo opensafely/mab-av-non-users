@@ -127,6 +127,13 @@ data_processed <-
                    fu_all == 0)) %>%
         # if treated with remidesivir --> exclude
         filter(is.na(remdesivir_covid_therapeutics)))
+if (period == "ba1") { # only very few people treated with paxlovid --> exclude
+  data_processed <-
+    map(.x = data_processed,
+        .f = ~ .x %>%
+          filter(treatment_paxlovid_prim == "Untreated")
+        )
+}
 
 ################################################################################
 # 4 Save data
