@@ -168,6 +168,18 @@ process_data <- function(data_extracted, treat_window_days = 4){
                 date_treated,
                 NA_Date_),
       
+      any_treatment_paxlovid = 
+        case_when(any_treatment_strategy_cat != "Untreated" ~ "Untreated",
+                  date_treated ==
+                    paxlovid_covid_therapeutics ~ "Treated",
+                  TRUE ~ "Untreated") %>%
+        factor(levels = c("Untreated", "Treated")),
+      
+      any_treatment_date_paxlovid =
+        if_else(any_treatment_paxlovid != "Untreated",
+                date_treated,
+                NA_Date_),
+      
       # Flag records where treatment date falls in treatment assignment window
       treat_check = 
         if_else(date_treated >= covid_test_positive_date & 

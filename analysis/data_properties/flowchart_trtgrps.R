@@ -79,25 +79,43 @@ n_trt_after_postest <-
   data %>% 
   filter(any_treatment_strategy_cat != "Untreated" &
            tb_postest_treat >= 0) %>% nrow()
-n_untrt_after_postest <- n_total - n_trt_after_postest
+n_trt_pax_after_postest <-
+  data %>%
+  filter(any_treatment_paxlovid != "Untreated" &
+           tb_postest_treat >= 0) %>% nrow()
+n_untrt_after_postest <- n_total - n_trt_after_postest - n_trt_pax_after_postest
 n_trt_after_treat_window <-
   data %>%
-  filter(treat_after_treat_window == 1) %>% nrow()
+  filter(any_treatment_strategy_cat != "Untreated" & treat_after_treat_window == 1) %>% nrow()
+n_trt_pax_after_treat_window <-
+  data %>%
+  filter(any_treatment_paxlovid != "Untreated" & treat_after_treat_window == 1) %>% nrow()
 n_trt_treat_window <-
   data %>%
   filter(treatment == "Treated") %>% nrow()
-n_untrt_treat_window <- n_total - n_trt_treat_window
+n_trt_pax_treat_window <-
+  data %>%
+  filter(treatment_paxlovid == "Treated") %>% nrow()
+n_untrt_treat_window <- n_total - n_trt_treat_window - n_trt_pax_treat_window
 n_trt_on_after_outcome <-
   data %>%
   filter(treatment == "Treated" & treatment_prim == "Untreated") %>%
+  nrow()
+n_trt_pax_on_after_outcome <-
+  data %>%
+  filter(treatment_paxlovid == "Treated" & treatment_paxlovid_prim == "Untreated") %>%
   nrow()
 n_trt <- 
   data %>%
   filter(treatment_prim == "Treated") %>%
   nrow()
+n_trt_pax <-
+  data %>%
+  filter(treatment_paxlovid_prim == "Treated") %>%
+  nrow()
 n_untrt <-
   data %>%
-  filter(treatment_prim == "Untreated") %>%
+  filter(treatment_prim == "Untreated" & treatment_paxlovid_prim == "Untreated") %>%
   nrow()
 
 ################################################################################
@@ -106,13 +124,19 @@ n_untrt <-
 flowchart_trtgrps <-
   tibble(n_total,
          n_trt_after_postest,
+         n_trt_pax_after_postest,
          n_untrt_after_postest,
          n_trt_after_treat_window,
+         n_trt_pax_after_treat_window,
          n_trt_treat_window,
+         n_trt_pax_treat_window,
          n_untrt_treat_window,
          n_trt_on_after_outcome,
+         n_trt_pax_on_after_outcome,
          n_trt,
-         n_untrt)
+         n_trt_pax,
+         n_untrt) %>%
+  tidyr::pivot_longer(everything())
 
 ################################################################################
 # 3 Redact flowchart
