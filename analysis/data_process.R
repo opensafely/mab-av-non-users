@@ -116,32 +116,17 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 ################################################################################
 # calc n excluded
 n_excluded <- calc_n_excluded(data_processed$grace5)
-data_processed_paxlovid <-
-  map(.x = data_processed, 
-      .f = ~ .x %>%
-        # Exclude patients treated with both sotrovimab and molnupiravir on the
-        # same day 
-        filter(treated_sot_mol_same_day  == 0) %>%
-        # Exclude patients hospitalised on day of positive test
-        filter(!(status_all %in% c("covid_hosp", "noncovid_hosp") &
-                   fu_all == 0)) %>%
-        # if treated with paxlovid --> include
-        filter(!is.na(paxlovid_covid_therapeutics) & is.na(remdesivir_covid_therapeutics)))
-# for internal check, check n in pax data (should be same as in n_excluded)
-cat("Number of people treated with Paxlovid")
-data_processed_paxlovid$grace5 %>% nrow() %>% print()
 data_processed <-
   map(.x = data_processed, 
       .f = ~ .x %>%
         # Exclude patients treated with both sotrovimab and molnupiravir on the
         # same day 
-        filter(treated_sot_mol_same_day  == 0) %>%
+        filter(treated_sot_mol_same_day == 0 & treated_pax_on_same_day_as_sot_mol == 0) %>%
         # Exclude patients hospitalised on day of positive test
-        filter(!(status_all %in% c("covid_hosp", "noncovid_hosp") &
+        filter(!(status_all %in% c("covid_hosp", "noncovid_hosp", "covid_death", "noncovid_death") &
                    fu_all == 0)) %>%
-        # if treated with paxlovid or remidesivir --> exclude
-        filter(is.na(paxlovid_covid_therapeutics) &
-                 is.na(remdesivir_covid_therapeutics)))
+        # if treated with remidesivir --> exclude
+        filter(is.na(remdesivir_covid_therapeutics)))
 
 ################################################################################
 # 4 Save data
@@ -156,18 +141,8 @@ iwalk(.x = data_processed,
                                     "_"[!.y == "grace5"],
                                     .y[!.y == "grace5"],
                                     ".rds"))))
-iwalk(.x = data_processed_paxlovid,
-      .f = ~ write_rds(.x,
-                       here::here("output", "data", 
-                                  paste0(
-                                    period[!period == "ba1"], "_"[!period == "ba1"],
-                                    "data_processed_paxlovid",
-                                    "_"[!.y == "grace5"],
-                                    .y[!.y == "grace5"],
-                                    ".rds"))))
 write_rds(n_excluded,
           here::here("output", "data_properties",
                      paste0(
                        period[!period == "ba1"], "_"[!period == "ba1"],
                        "n_excluded.rds")))
-

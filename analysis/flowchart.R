@@ -96,7 +96,8 @@ out <-
          tested_positive,
          in_hospital_when_tested,
          total_n_included)
-out <- bind_cols(out, n_excluded_in_data_processing)
+out <- bind_cols(out, n_excluded_in_data_processing) %>%
+  tidyr::pivot_longer(everything())
 out_redacted <- 
   out %>%
   mutate(across(where(~ is.integer(.x)), 

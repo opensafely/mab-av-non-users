@@ -206,11 +206,33 @@ process_data <- function(data_extracted, treat_window_days = 4){
                 date_treated,
                 NA_Date_),
       
+      # Treated with paxlovid
+      treatment_paxlovid =
+        case_when(treatment == "Treated" ~ "Untreated",
+                  date_treated == paxlovid_covid_therapeutics & treat_check == 1 ~ "Treated",
+                  TRUE ~ "Untreated") %>%
+        factor(levels = c("Untreated", "Treated")),
+      
+      treatment_date_paxlovid =
+        if_else(treatment_paxlovid == "Treated",
+                date_treated,
+                NA_Date_),
+      
       # Identify patients treated with sot and mol on same day
       treated_sot_mol_same_day = 
         case_when(is.na(sotrovimab_covid_therapeutics) ~ 0,
                   is.na(molnupiravir_covid_therapeutics) ~ 0,
                   sotrovimab_covid_therapeutics == 
+                    molnupiravir_covid_therapeutics ~ 1,
+                  TRUE ~ 0),
+      
+      treated_pax_on_same_day_as_sot_mol =
+        case_when(is.na(paxlovid_covid_therapeutics) ~ 0,
+                  is.na(sotrovimab_covid_therapeutics) &
+                    is.na(molnupiravir_covid_therapeutics) ~ 0,
+                  paxlovid_covid_therapeutics ==
+                    sotrovimab_covid_therapeutics ~ 1,
+                  paxlovid_covid_therapeutics ==
                     molnupiravir_covid_therapeutics ~ 1,
                   TRUE ~ 0),
       
@@ -306,6 +328,17 @@ process_data <- function(data_extracted, treat_window_days = 4){
       # Treatment date
       treatment_date_prim = 
         if_else(treatment_prim == "Treated", treatment_date, NA_Date_),
+      # PAXLOVID
+      treatment_paxlovid_prim =
+        if_else(status_primary %in% 
+                  c("covid_hosp_death", "noncovid_death", "dereg") &
+                  treatment_paxlovid == "Treated" &
+                  min_date_primary <= treatment_date_paxlovid,
+                "Untreated",
+                treatment_paxlovid %>% as.character()) %>%
+        factor(levels = c("Treated", "Untreated")),
+      treatment_date_paxlovid_prim =
+        if_else(treatment_paxlovid_prim == "Treated", treatment_date, NA_Date_),
       ## SECONDARY ##
       # Treatment strategy categories
       treatment_strategy_cat_sec = 
