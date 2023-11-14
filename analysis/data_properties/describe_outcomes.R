@@ -61,7 +61,10 @@ data_filename <-
   paste0(period[!period == "ba1"], "_"[!period == "ba1"],
          "data_processed", ".rds")
 data <-
-  read_rds(here::here("output", "data", data_filename))
+  read_rds(here::here("output", "data", data_filename)) %>%
+  filter(treatment_paxlovid_prim == "Untreated") # paxlovid treated only experience outcomes after 
+# treatment by design (_prim treatment cat); paxlovid treated will be censored after pax init,
+# so we're not interested in number of outcomes in paxlovid treated group.
 # subgroup if subgroup analysis
 if (subgrp == "haem"){
   data <-
