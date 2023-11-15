@@ -102,8 +102,9 @@ flowchart_outcomegrps <-
          n_outcomes_trt,
          n_outcomes_untrt,
          n_outcomes_untrt_treat_window,
-         n_outcomes_untrt_after_treat_window)
-
+         n_outcomes_untrt_after_treat_window) %>%
+  tidyr::pivot_longer(everything())
+  
 ################################################################################
 # 3 Redact flowchart
 ################################################################################
