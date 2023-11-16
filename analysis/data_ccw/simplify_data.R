@@ -25,6 +25,8 @@ ccw_simplify_data <- function(data, outcome, contrast, subgrp){
           NA_real_,
           tb_postest_treat),
         treatment_paxlovid_ccw = treatment_paxlovid_prim,
+        treatment_alt_ccw = "Untreated" %>% factor(levels = c("Untreated", "Treated")),
+        tb_postest_treat_alt_ccw = NA_real_,
       )
     if (contrast != "all"){
       contrast <- contrast %>% stringr::str_to_title()
@@ -34,7 +36,7 @@ ccw_simplify_data <- function(data, outcome, contrast, subgrp){
                  if_else(
                    treatment_strategy_cat_prim %in% c("Untreated", contrast),
                    treatment_ccw %>% as.character(),
-                   NA_character_) %>% factor(levels = c("Untreated", "Treated")),
+                   "Untreated") %>% factor(levels = c("Untreated", "Treated")),
                treatment_alt_ccw =
                  case_when(
                    treatment_strategy_cat_prim == "Untreated" ~ "Untreated",
