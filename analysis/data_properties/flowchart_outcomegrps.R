@@ -80,29 +80,63 @@ n_outcomes <-
   data %>%
   filter(status_ccw_simple == 1) %>%
   nrow()
+n_outcomes_non_pax <-
+  data %>%
+  filter(status_ccw_simple == 1 & treatment_paxlovid_ccw != "Treated") %>%
+  nrow()
 n_outcomes_trt <- 
   data %>%
   filter(treatment_ccw == "Treated" & status_ccw_simple == 1) %>%
   nrow()
-n_outcomes_untrt <- n_outcomes - n_outcomes_trt
+n_outcomes_untrt <- 
+  data %>%
+  filter(treatment_ccw == "Untreated" &
+           treatment_paxlovid_ccw == "Untreated" &
+           status_ccw_simple == 1) %>%
+  nrow()
+n_outcomes_untrt_pax_trt <-
+  data %>%
+  filter(treatment_ccw == "Untreated" &
+           treatment_paxlovid_ccw == "Treated" &
+           status_ccw_simple == 1) %>%
+  nrow()
 n_outcomes_untrt_treat_window <-
   data %>%
-  filter(treatment_ccw == "Untreated" & status_ccw_simple == 1 & fu_ccw <= 4) %>%
+  filter(treatment_ccw == "Untreated" &
+           treatment_paxlovid_ccw == "Untreated" &
+           status_ccw_simple == 1 & fu_ccw <= 4) %>%
+  nrow()
+n_outcomes_untrt_pax_trt_treat_window <-
+  data %>%
+  filter(treatment_ccw == "Untreated" &
+           treatment_paxlovid_ccw == "Treated" &
+           status_ccw_simple == 1 & fu_ccw <= 4) %>%
   nrow()
 n_outcomes_untrt_after_treat_window <-
   data %>%
-  filter(treatment_ccw == "Untreated" & status_ccw_simple == 1 & fu_ccw > 4) %>%
+  filter(treatment_ccw == "Untreated" &
+           treatment_paxlovid_ccw == "Untreated" &
+           status_ccw_simple == 1 & fu_ccw > 4) %>%
   nrow()
-
+n_outcomes_untrt_pax_trt_after_treat_window <-
+  data %>%
+  filter(treatment_ccw == "Untreated" &
+           treatment_paxlovid_ccw == "Treated" &
+           status_ccw_simple == 1 & fu_ccw > 4) %>%
+  nrow()
 ################################################################################
 # 2 Combine in one tibble
 ################################################################################
 flowchart_outcomegrps <-
   tibble(n_outcomes,
+         n_outcomes_non_pax,
          n_outcomes_trt,
          n_outcomes_untrt,
+         n_outcomes_untrt_pax_trt,
          n_outcomes_untrt_treat_window,
-         n_outcomes_untrt_after_treat_window) %>%
+         n_outcomes_untrt_pax_trt_treat_window,
+         n_outcomes_untrt_after_treat_window,
+         n_outcomes_untrt_pax_trt_after_treat_window) %>%
   tidyr::pivot_longer(everything())
   
 ################################################################################
