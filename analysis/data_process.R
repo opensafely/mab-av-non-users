@@ -134,6 +134,12 @@ if (period == "ba1") { # only very few people treated with paxlovid --> exclude
           filter(treatment_paxlovid_prim == "Untreated")
         )
 }
+cat("Number of people excluded before but included now")
+data_processed$grace5 %>%
+  filter(!is.na(paxlovid_covid_therapeutics)) %>%
+  select(treatment_paxlovid_prim, status_primary) %>%
+  table() %>%
+  print()
 
 ################################################################################
 # 4 Save data
