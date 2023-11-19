@@ -1325,7 +1325,7 @@ actions:
     run: r:latest analysis/data_properties/describe_flow_data_long.R
       --model plr
       --contrast molnupiravir
-    needs: [perform_ccw_analysis_plr]
+    needs: [perform_ccw_analysis_mol_plr]
     outputs:
       moderately_sensitive:
         table1: output/plr/data_properties/data_long/flow_data_molnupiravir_plr.csv
@@ -1335,7 +1335,7 @@ actions:
     run: r:latest analysis/data_properties/describe_flow_data_long.R
       --model plr
       --contrast sotrovimab
-    needs: [perform_ccw_analysis_plr]
+    needs: [perform_ccw_analysis_sot_plr]
     outputs:
       moderately_sensitive:
         table1: output/plr/data_properties/data_long/flow_data_sotrovimab_plr.csv
@@ -1356,7 +1356,7 @@ actions:
       --period ba2
       --model plr
       --contrast molnupiravir
-    needs: [perform_ccw_analysis_plr]
+    needs: [perform_ccw_analysis_mol_plr_ba2]
     outputs:
       moderately_sensitive:
         table1: output/plr/data_properties/data_long/ba2_flow_data_molnupiravir_plr.csv
@@ -1367,7 +1367,7 @@ actions:
       --period ba2
       --model plr
       --contrast sotrovimab
-    needs: [perform_ccw_analysis_plr]
+    needs: [perform_ccw_analysis_sot_plr_ba2]
     outputs:
       moderately_sensitive:
         table1: output/plr/data_properties/data_long/ba2_flow_data_sotrovimab_plr.csv
