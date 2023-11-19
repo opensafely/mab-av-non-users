@@ -59,7 +59,7 @@ out_pax <-
          .x %>%
          filter(status_primary %in% c("covid_hosp_death", "noncovid_death", "dereg") & 
                   treatment_paxlovid == "Treated" &
-                  treatment_date == min_date_all) %>%
+                  treatment_date_paxlovid == min_date_all) %>%
          group_by(status_primary, .drop = "FALSE") %>%
          summarise(n = n()) %>%
          filter(status_primary != "none") %>%
