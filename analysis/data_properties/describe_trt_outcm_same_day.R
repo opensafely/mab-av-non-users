@@ -45,13 +45,30 @@ out <-
        .f = ~ 
          .x %>%
          filter(status_primary %in% c("covid_hosp_death", "noncovid_death", "dereg") & 
-                  treatment == "Treated" &
+                  treatment_strategy_cat != "Untreated" &
+                  treatment_date == min_date_all) %>%
+         group_by(status_primary, treatment_strategy_cat, .drop = "FALSE") %>%
+         summarise(n = n(), .groups = "keep") %>%
+         filter(status_primary != "none") %>%
+         mutate(period = .y, .before = status_primary)
+  ) %>% bind_rows() %>% filter(treatment_strategy_cat != "Untreated") %>%
+  mutate(treatment_strategy_cat = treatment_strategy_cat %>% as.character)
+out_pax <- 
+  imap(.x = data,
+       .f = ~ 
+         .x %>%
+         filter(status_primary %in% c("covid_hosp_death", "noncovid_death", "dereg") & 
+                  treatment_paxlovid == "Treated" &
                   treatment_date == min_date_all) %>%
          group_by(status_primary, .drop = "FALSE") %>%
          summarise(n = n()) %>%
          filter(status_primary != "none") %>%
-         mutate(period = .y, .before = status_primary)
+         mutate(period = .y, treatment_strategy_cat = "Paxlovid", .before = status_primary)
   ) %>% bind_rows()
+out <-
+  bind_rows(out, out_pax) %>%
+  arrange(period, treatment_strategy_cat) %>%
+  select(period, treatment_strategy_cat, status_primary, n)
 # Set rounding and redaction thresholds
 rounding_threshold = 6
 redaction_threshold = 8
