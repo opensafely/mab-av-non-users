@@ -1318,8 +1318,28 @@ actions:
     needs: [perform_ccw_analysis_plr]
     outputs:
       moderately_sensitive:
-        table1: output/plr/data_properties/data_long/flow_data_plr.csv
-        table2: output/plr/data_properties/data_long/flow_data_redacted_plr.csv
+        table1: output/plr/data_properties/data_long/flow_data_all_plr.csv
+        table2: output/plr/data_properties/data_long/flow_data_redacted_all_plr.csv
+
+  describe_flow_data_long_mol_plr:
+    run: r:latest analysis/data_properties/describe_flow_data_long.R
+      --model plr
+      --contrast molnupiravir
+    needs: [perform_ccw_analysis_plr]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/flow_data_molnupiravir_plr.csv
+        table2: output/plr/data_properties/data_long/flow_data_redacted_molnupiravir_plr.csv
+
+  describe_flow_data_long_sot_plr:
+    run: r:latest analysis/data_properties/describe_flow_data_long.R
+      --model plr
+      --contrast sotrovimab
+    needs: [perform_ccw_analysis_plr]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/flow_data_sotrovimab_plr.csv
+        table2: output/plr/data_properties/data_long/flow_data_redacted_sotrovimab_plr.csv
 
   describe_flow_data_long_plr_ba2:
     run: r:latest analysis/data_properties/describe_flow_data_long.R
@@ -1328,8 +1348,30 @@ actions:
     needs: [perform_ccw_analysis_plr_ba2]
     outputs:
       moderately_sensitive:
-        table1: output/plr/data_properties/data_long/ba2_flow_data_plr.csv
-        table2: output/plr/data_properties/data_long/ba2_flow_data_redacted_plr.csv
+        table1: output/plr/data_properties/data_long/ba2_flow_data_all_plr.csv
+        table2: output/plr/data_properties/data_long/ba2_flow_data_redacted_all_plr.csv
+
+    describe_flow_data_long_mol_plr_ba2:
+    run: r:latest analysis/data_properties/describe_flow_data_long.R
+      --period ba2
+      --model plr
+      --contrast molnupiravir
+    needs: [perform_ccw_analysis_plr]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/ba2_flow_data_molnupiravir_plr.csv
+        table2: output/plr/data_properties/data_long/ba2_flow_data_redacted_molnupiravir_plr.csv
+
+  describe_flow_data_long_sot_plr_ba2:
+    run: r:latest analysis/data_properties/describe_flow_data_long.R
+      --period ba2
+      --model plr
+      --contrast sotrovimab
+    needs: [perform_ccw_analysis_plr]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/ba2_flow_data_sotrovimab_plr.csv
+        table2: output/plr/data_properties/data_long/ba2_flow_data_redacted_sotrovimab_plr.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 

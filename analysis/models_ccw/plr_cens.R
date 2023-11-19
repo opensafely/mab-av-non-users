@@ -1,12 +1,19 @@
 # PLR model
-create_formula_cens_trt_logreg <- function(covars_formula){
-  formula_cens <- paste0("censoring ~ ",
-                         paste0(covars_formula, collapse = " + ")) %>% 
-    as.formula()  
+create_formula_cens_trt_logreg <- function(covars_formula, period, contrast){
+  if (period == "ba1" & contrast == "all"){ # no pax init and alt trt init,
+    # censoring only happens end of trt window
+    formula_cens <- paste0("censoring ~ ",
+                           paste0(covars_formula, collapse = " + ")) %>% 
+      as.formula()
+  } else{
+    formula_cens <- paste0("censoring ~ ",
+                           paste0(c("factor(fup)", covars_formula), collapse = " + ")) %>% 
+     as.formula()
+  }
 }
 create_formula_cens_control_plr <- function(covars_formula){
   formula_cens <- paste0("censoring ~ ",
-                         paste0(c("ns(fup, 4)", covars_formula), collapse = " + ")) %>% 
+                         paste0(c("factor(fup)", covars_formula), collapse = " + ")) %>% 
     as.formula()  
 }
 ################################################################################

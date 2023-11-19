@@ -44,7 +44,7 @@ ccw_simplify_data <- function(data, outcome, contrast, subgrp){
                    TRUE ~ "Treated") %>% factor(levels = c("Untreated", "Treated")),
                tb_postest_treat_alt_ccw = 
                  if_else(
-                   treatment_paxlovid_prim == "Untreated",
+                   treatment_alt_ccw == "Untreated",
                    NA_real_,
                    tb_postest_treat)
                )

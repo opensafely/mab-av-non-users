@@ -35,6 +35,7 @@ source(here("analysis", "models_ccw", "cox_cens.R"))
 source(here("analysis", "models_ccw", "plr_cens.R"))
 source(here("lib", "functions", "make_filename.R"))
 source(here("lib", "functions", "dir_structure.R"))
+source(here("lib", "design", "covars_table.R"))
 
 ################################################################################
 # 0.1 Import command-line arguments
@@ -46,7 +47,7 @@ if(length(args)==0){
   period <- "ba1"
   contrast <- "all"
   outcome <- "primary"
-  model <- "cox"
+  model <- "plr"
   subgrp <- "full"
   supp <- "main"
 } else {
@@ -122,12 +123,6 @@ if (supp %in% c("grace4", "grace3")){
 }
 data <-
   read_rds(here::here("output", "data", data_filename))
-# change data if run using dummy data
-if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
-  data <- 
-    data %>%
-    mutate(study_week = runif(nrow(data), 1, 14) %>% floor())
-}
 
 ################################################################################
 # 0.4 Prepare data
@@ -153,9 +148,27 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 # 6. if 'subgrp' is not equal to 'full', the data is subsetted to only include
 #    individuals in a particular subgroup (eg haem malignancies)
 data <- ccw_simplify_data(data, outcome, contrast, subgrp)
+# change data if run using dummy data
+if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
+  data <- 
+    data %>%
+    select(patient_id, treatment_ccw, tb_postest_treat_ccw, status_ccw_simple, fu_ccw,
+           treatment_strategy_cat_prim,
+           treatment_paxlovid_ccw, tb_postest_treat_pax_ccw, 
+           treatment_alt_ccw, tb_postest_treat_alt_ccw,
+           age, 
+           all_of(covars), 
+           pfizer_most_recent_cov_vac,
+           az_most_recent_cov_vac,
+           moderna_most_recent_cov_vac,
+           study_week)
+}
 data %>%
   group_by(treatment_ccw) %>%
   tally() %>% print()
+data %>%
+  group_by(treatment_strategy_cat_prim) %>%
+  tally() %>% print
 
 ################################################################################
 # Clone data and add vars outcome, fup and censoring
@@ -289,7 +302,7 @@ if (model == "cox"){
     data_trt_long %>%
     add_p_uncens_cox(model_cens_trt, basehaz_trt)
 } else if (model == "plr"){
-  formula_trt_cens <- create_formula_cens_trt_logreg(covars_formula)
+  formula_trt_cens <- create_formula_cens_trt_logreg(covars_formula, period, contrast)
   formula_control_cens <- create_formula_cens_control_plr(covars_formula)
   ##############################################################################
   # Arm "Control": no treatment within 5 days
@@ -317,23 +330,46 @@ if (model == "cox"){
   ##############################################################################
   # Arm "Treatment": treatment within 5 days
   ##############################################################################
-  data_trt_surv_last_int_grace <-
-    data_cloned %>%
-    filter(arm == "Treatment" & fup >= tstart_plr)
-  model_cens_trt <- fit_cens_plr(data_trt_surv_last_int_grace, formula_trt_cens)
-  data_trt_surv_last_int_grace <-
-    data_trt_surv_last_int_grace %>%
-    transmute(patient_id,
-              tstart = tstart_plr,
-              lag_p_uncens_plr = 1 - predict(model_cens_trt, type = "response"))
-  data_trt_long <-
-    data_trt_long %>%
-    left_join(data_trt_surv_last_int_grace, 
-              by = c("patient_id", "tstart")) %>%
-    mutate(lag_p_uncens_plr = if_else(is.na(lag_p_uncens_plr), 1, lag_p_uncens_plr)) %>%
-    group_by(patient_id) %>%
-    mutate(cmlp_uncens_plr = cumprod(lag_p_uncens_plr)) %>%
-    ungroup()
+  if (period == "ba1" & contrast == "all"){
+    data_trt_surv_last_int_grace <-
+      data_cloned %>% # unsplit data
+      filter(arm == "Treatment" & fup >= tstart_plr)
+    model_cens_trt <- fit_cens_plr(data_trt_surv_last_int_grace, formula_trt_cens)
+    data_trt_surv_last_int_grace <-
+      data_trt_surv_last_int_grace %>%
+      transmute(patient_id,
+                tstart = tstart_plr,
+                lag_p_uncens_plr = 1 - predict(model_cens_trt, type = "response"))
+    data_trt_long <-
+      data_trt_long %>%
+      left_join(data_trt_surv_last_int_grace, 
+                by = c("patient_id", "tstart")) %>%
+      mutate(lag_p_uncens_plr = if_else(is.na(lag_p_uncens_plr), 1, lag_p_uncens_plr)) %>%
+      group_by(patient_id) %>%
+      mutate(cmlp_uncens_plr = cumprod(lag_p_uncens_plr)) %>%
+      ungroup()
+  } else{
+    data_trt_long_grace <- 
+      data_trt_long %>%
+      filter(tstart <= tstart_plr) #FIXME should vary depending on how many days are added to fup
+    model_cens_trt <- fit_cens_plr(data_trt_long_grace, formula_trt_cens)
+    data_trt_long_grace <-
+      data_trt_long_grace %>%
+      transmute(patient_id,
+                tstart,
+                p_uncens_plr = 1 - predict(model_cens_trt, type = "response"))
+    data_trt_long <- 
+      data_trt_long %>%
+      left_join(data_trt_long_grace,
+                by = c("patient_id", "tstart")) %>%
+      mutate(p_uncens_plr = if_else(is.na(p_uncens_plr), 1, p_uncens_plr))
+    data_trt_long <-
+      data_trt_long %>%
+      group_by(patient_id) %>%
+      mutate(lag_p_uncens_plr = lag(p_uncens_plr, default = 1),
+             cmlp_uncens_plr = cumprod(lag_p_uncens_plr)) %>%
+      ungroup()
+  }
 }
 
 ################################################################################

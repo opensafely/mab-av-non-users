@@ -4,6 +4,7 @@
 #
 # This script can be run via an action in project.yaml using three arguments:
 # - 'period' /in {ba1, ba2} (--> ba1 or ba2 analysis)
+# - 'contrast' /in {all, molnupiravir, sotrovimab} (--> mol/sot vs untrt, mol vs untrt, sot vs untrt)
 # - 'outcome' /in {primary, secondary} (--> primary or secondary outcome)
 # - 'subgrp' /in {full, haem, transplant} (--> full cohort or haematological subgroup)
 #
@@ -30,8 +31,9 @@ args <- commandArgs(trailingOnly=TRUE)
 if(length(args)==0){
   # use for interactive testing
   period <- "ba1"
+  contrast <- "all"
   outcome <- "primary"
-  model <- "cox"
+  model <- "plr"
   subgrp <- "full"
   supp <- "main"
 } else {
@@ -40,6 +42,9 @@ if(length(args)==0){
     make_option("--period", type = "character", default = "ba1",
                 help = "Period where the analysis is conducted in, options are 'ba1' or 'ba2' [default %default].",
                 metavar = "period"),
+    make_option("--contrast", type = "character", default = "all",
+                help = "Contrast of the analysis, options are 'all' (treated vs untreated), 'molnupiravir' (molnupiravir vs untreated) or 'sotrovimab' (sotrovimab vs untreated) [default %default].",
+                metavar = "contrast"),
     make_option("--outcome", type = "character", default = "primary",
                 help = "Outcome used in the analysis, options are 'primary' or 'secondary' [default %default].",
                 metavar = "outcome"),
@@ -58,6 +63,7 @@ if(length(args)==0){
   opt <- parse_args(opt_parser)
   
   period <- opt$period
+  contrast <- opt$contrast
   outcome <- opt$outcome
   model <- opt$model
   subgrp <- opt$subgrp
@@ -76,7 +82,7 @@ fs::dir_create(data_properties_long_dir)
 # 1 Import data
 ################################################################################
 data_dir <- concat_dirs("data", output_dir, model, subgrp, supp)
-data_filename <- make_filename("data_long", period, outcome, contrast = "all", model, subgrp, supp, "feather")
+data_filename <- make_filename("data_long", period, outcome, contrast, model, subgrp, supp, "feather")
 input_file <- fs::path(data_dir, data_filename)
 data_long <- read_feather(input_file)
 treatment_window_days <- 4
@@ -111,7 +117,9 @@ retrieve_n_flowchart <- function(data_long, arm) {
   }
   n_cens <- data_cens %>% filter(outcome == 0) %>% nrow()
   n_cens_outc <- data_cens %>% filter(outcome == 1) %>% nrow()
-  n_art_cens <- data_long %>% filter(censoring == 1) %>% nrow()
+  n_art_cens <- data_long %>% filter(censoring == 1 & treatment_paxlovid_ccw == "Untreated" & treatment_alt_ccw == "Untreated") %>% nrow()
+  n_art_cens_pax <- data_long %>% filter(censoring == 1 & treatment_paxlovid_ccw == "Treated") %>% nrow()
+  n_art_cens_alt <- data_long %>% filter(censoring == 1 & treatment_alt_ccw == "Treated") %>% nrow()
   if (arm == "Control"){
     data_fup <- data_long %>% filter(censoring == 0 & max_fup > treatment_window_days_05)
   } else if (arm == "Treatment"){
@@ -119,7 +127,7 @@ retrieve_n_flowchart <- function(data_long, arm) {
   }
   n_fup <- data_fup %>% nrow()
   n_fup_outc <- data_fup %>% filter(outcome == 1) %>% nrow()
-  out <- tibble(arm, n_total, n_cens, n_art_cens, n_cens_outc, n_fup, n_fup_outc)
+  out <- tibble(arm, n_total, n_cens, n_art_cens, n_art_cens_pax, n_art_cens_alt, n_cens_outc, n_fup, n_fup_outc)
 }
 
 ################################################################################
@@ -146,9 +154,9 @@ flowchart_red <-
 # 5. Save output
 ################################################################################
 filename <- 
-  make_filename("flow_data", period, outcome, contrast = "", model, subgrp = "full", supp, type = "csv")
+  make_filename("flow_data", period, outcome, contrast, model, subgrp = "full", supp, type = "csv")
 filename_red <- 
-  make_filename("flow_data_redacted", period, outcome, contrast = "", model, subgrp = "full", supp, type = "csv")
+  make_filename("flow_data_redacted", period, outcome, contrast, model, subgrp = "full", supp, type = "csv")
 write_csv(flowchart,
           fs::path(data_properties_long_dir,
                    filename))
