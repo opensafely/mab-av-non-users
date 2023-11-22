@@ -111,10 +111,12 @@ data_table <-
 # exclude pax treated
 pop_levels <- c("All", "Sotrovimab", "Molnupiravir", "Untreated")
 table1 <- generate_table1(data_table, pop_levels)
+table1$table1_red <- table1$table1_red %>% select(-All)
 # all levels
 if (period == "ba2"){
   pop_levels_full <- c("All", "Paxlovid", "Sotrovimab", "Molnupiravir", "Untreated")
   table1_full <- generate_table1(data_table_full, pop_levels_full)
+  table1_full$table1_red <- table1_full$table1_red %>% select(-All)
 }
 
 ################################################################################
