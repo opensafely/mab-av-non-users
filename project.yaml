@@ -2958,12 +2958,12 @@ actions:
     needs: [data_process_ba2]
     outputs:
       moderately_sensitive:
-        csv1: output/tables/table1.csv
-        csv2: output/tables/table1_redacted.csv
-        csv3: output/tables/table1_redacted_unf.csv
-        csv4: output/tables/table1_full.csv
-        csv5: output/tables/table1_full_redacted.csv
-        csv6: output/tables/table1_full_redacted_unf.csv
+        csv1: output/tables/ba2_table1.csv
+        csv2: output/tables/ba2_table1_redacted.csv
+        csv3: output/tables/ba2_table1_redacted_unf.csv
+        csv4: output/tables/ba2_table1_full.csv
+        csv5: output/tables/ba2_table1_full_redacted.csv
+        csv6: output/tables/ba2_table1_full_redacted_unf.csv
   
   create_table1_haem:
     run: r:latest analysis/table_1.R
@@ -2983,12 +2983,12 @@ actions:
     needs: [data_process_ba2]
     outputs:
       moderately_sensitive:
-        csv1: output/tables/haem/table1.csv
-        csv2: output/tables/haem/table1_redacted.csv
-        csv3: output/tables/haem/table1_redacted_unf.csv
-        csv4: output/tables/haem/table1_full.csv
-        csv5: output/tables/haem/table1_full_redacted.csv
-        csv6: output/tables/haem/table1_full_redacted_unf.csv
+        csv1: output/tables/haem/ba2_table1.csv
+        csv2: output/tables/haem/ba2_table1_redacted.csv
+        csv3: output/tables/haem/ba2_table1_redacted_unf.csv
+        csv4: output/tables/haem/ba2_table1_full.csv
+        csv5: output/tables/haem/ba2_table1_full_redacted.csv
+        csv6: output/tables/haem/ba2_table1_full_redacted_unf.csv
 
   create_table1_transplant:
     run: r:latest analysis/table_1.R
@@ -3008,12 +3008,12 @@ actions:
     needs: [data_process_ba2]
     outputs:
       moderately_sensitive:
-        csv1: output/tables/transplant/table1.csv
-        csv2: output/tables/transplant/table1_redacted.csv
-        csv3: output/tables/transplant/table1_redacted_unf.csv
-        csv4: output/tables/transplant/table1_full.csv
-        csv5: output/tables/transplant/table1_full_redacted.csv
-        csv6: output/tables/transplant/table1_full_redacted_unf.csv
+        csv1: output/tables/transplant/ba2_table1.csv
+        csv2: output/tables/transplant/ba2_table1_redacted.csv
+        csv3: output/tables/transplant/ba2_table1_redacted_unf.csv
+        csv4: output/tables/transplant/ba2_table1_full.csv
+        csv5: output/tables/transplant/ba2_table1_full_redacted.csv
+        csv6: output/tables/transplant/ba2_table1_full_redacted_unf.csv
 
   # create_table_ccw:
   #   run: r:latest analysis/table_ccw.R
