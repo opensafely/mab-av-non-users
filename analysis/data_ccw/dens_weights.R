@@ -34,7 +34,7 @@ if(length(args)==0){
   period <- "ba1"
   contrast <- "all"
   outcome <- "primary"
-  model <- "cox"
+  model <- "plr"
   subgrp <- "full"
   supp <- "main"
 } else {
@@ -106,11 +106,11 @@ hist <- map(.x = arms,
 q_s <-
   data_long %>%
   group_by(arm, fup) %>%
-  summarise(tibble::enframe(quantile(cmlp_uncens, probs = c(0, 0.025, 0.05, 0.95, 0.975, 1)), 
-                            name = "quantile", "cmlp_uncens"),
+  summarise(tibble::enframe(quantile(cmlp_uncens * cmlp_uncens2, probs = c(0, 0.025, 0.05, 0.95, 0.975, 1)), 
+                            name = "quantile", "cmlp_uncens_prod"),
             .groups = "keep") %>%
   mutate(quantile = str_remove(quantile, pattern = "%")) %>%
-  pivot_wider(values_from = cmlp_uncens,
+  pivot_wider(values_from = cmlp_uncens_prod,
               names_from = quantile,
               names_prefix = "q_")
 q_w_s <-

@@ -369,7 +369,8 @@ if (model == "cox"){
   if (period == "ba1" & contrast == "all"){ # no start of alternative treatments by design
     data_trt_long <-
       data_trt_long %>%
-      mutate(p_uncens2_plr = 1)}
+      mutate(p_uncens2_plr = 1)
+    model_cens2_trt <- "no alternative censoring"}
   else{
     data_trt_long_grace <- 
       data_trt_long %>%
