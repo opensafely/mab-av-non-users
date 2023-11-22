@@ -34,7 +34,7 @@ args <- commandArgs(trailingOnly=TRUE)
 if(length(args)==0){
   # use for interactive testing
   period <- "ba1"
-  model <- "cox"
+  model <- "plr"
   subgrp <- "full"
   supp <- "main"
 } else {
@@ -148,6 +148,6 @@ output_combined <-
 # 2. Save
 ################################################################################
 file_name <- 
-  make_filename("table_ccw", period, outcome = "primary", contrast = "", model, subgrp, supp, "html")
-gtsave(gt(output_combined), 
-       fs::path(tables_dir, file_name))
+  make_filename("table_ccw", period, outcome = "primary", contrast = "", model, subgrp, supp, "csv")
+write_csv(output_combined, 
+          fs::path(tables_dir, file_name))
