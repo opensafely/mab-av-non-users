@@ -424,14 +424,24 @@ if (supp == "truncated"){
     pivot_wider(values_from = cmlp_uncens,
                 names_from = quantile,
                 names_prefix = "q_")
+  truncation_levels2 <- 
+    data_long %>%
+    group_by(arm, fup) %>%
+    summarise(tibble::enframe(quantile(cmlp_uncens2, probs = c(0.025, 0.975)), 
+                              name = "quantile2", "cmlp_uncens2"),
+              .groups = "keep") %>%
+    mutate(quantile2 = str_remove(quantile2, pattern = "%")) %>%
+    pivot_wider(values_from = cmlp_uncens2,
+                names_from = quantile2,
+                names_prefix = "q_")
   # add truncation levels to data_long and truncate is needed
   data_long <- 
     data_long %>%
     left_join(truncation_levels,
               by = c("arm", "fup")) %>%
-    mutate(cmlp_uncens = case_when(cmlp_uncens < q_2.5 ~ q_2.5,
-                                   cmlp_uncens > q_97.5 ~  q_97.5,
-                                   TRUE ~ cmlp_uncens))
+    mutate(cmlp_uncens2 = case_when(cmlp_uncens2 < q_2.5 ~ q_2.5,
+                                    cmlp_uncens2 > q_97.5 ~ q_97.5,
+                                    TRUE ~ cmlp_uncens2))
 }
 data_long <- 
   data_long %>%
@@ -495,7 +505,8 @@ arrow::write_feather(
 # save models
 models_list <-
   list(model_cens_control = model_cens_control,
-       model_cens_trt = model_cens_control,
+       model_cens_trt = model_cens_trt,
+       model_cens2_trt = model_cens2_trt,
        km_control = km_control,
        km_trt = km_trt,
        cox_w = cox_w,
