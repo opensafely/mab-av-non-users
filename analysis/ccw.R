@@ -267,6 +267,21 @@ data_trt_long <-
   data_trt_long %>%
   select(-censoring) %>%
   left_join(data_trt_long_cens) 
+# splitting the original data set at each time of event and sorting it
+# until censoring happens. This is to have the censoring2 status at each time of
+# event
+data_trt_long_cens2 <-
+  data_cloned %>%
+  filter(arm == "Treatment") %>%
+  survSplit(cut = t_events,
+            end = "fup",
+            zero = 0,
+            event = "censoring2") %>%
+  select(patient_id, tstart, fup, censoring2)
+data_trt_long <-
+  data_trt_long %>%
+  select(-censoring2) %>%
+  left_join(data_trt_long_cens2) 
 
 ################################################################################
 # Estimating the censoring weights
@@ -302,14 +317,15 @@ if (model == "cox"){
     data_trt_long %>%
     add_p_uncens_cox(model_cens_trt, basehaz_trt)
 } else if (model == "plr"){
-  formula_trt_cens <- create_formula_cens_trt_logreg(covars_formula, period, contrast)
   formula_control_cens <- create_formula_cens_control_plr(covars_formula)
+  formula_trt_cens <- create_formula_cens_trt_logreg(covars_formula)
+  formula_trt_cens2 <- create_formula_cens2_trt_plr(covars_formula)
   ##############################################################################
   # Arm "Control": no treatment within 5 days
   ##############################################################################
   data_control_long_grace <- 
     data_control_long %>%
-    filter(tstart <= tstart_plr) #FIXME should vary depending on how many days are added to fup
+    filter(fup <= tstart_plr) #FIXME should vary depending on how many days are added to fup
   model_cens_control <- fit_cens_plr(data_control_long_grace, formula_control_cens)
   data_control_long_grace <-
     data_control_long_grace %>%
@@ -325,51 +341,57 @@ if (model == "cox"){
     data_control_long %>%
     group_by(patient_id) %>%
     mutate(lag_p_uncens_plr = lag(p_uncens_plr, default = 1),
-           cmlp_uncens_plr = cumprod(lag_p_uncens_plr)) %>%
+           cmlp_uncens_plr = cumprod(lag_p_uncens_plr),
+           cmlp_uncens2_plr = 1) %>%
     ungroup()
   ##############################################################################
   # Arm "Treatment": treatment within 5 days
   ##############################################################################
-  if (period == "ba1" & contrast == "all"){
-    data_trt_surv_last_int_grace <-
-      data_cloned %>% # unsplit data
-      filter(arm == "Treatment" & fup >= tstart_plr)
-    model_cens_trt <- fit_cens_plr(data_trt_surv_last_int_grace, formula_trt_cens)
-    data_trt_surv_last_int_grace <-
-      data_trt_surv_last_int_grace %>%
-      transmute(patient_id,
-                tstart = tstart_plr,
-                lag_p_uncens_plr = 1 - predict(model_cens_trt, type = "response"))
+  data_trt_surv_last_int_grace <-
+    data_cloned %>% # unsplit data
+    filter(arm == "Treatment" & fup >= tstart_plr)
+  model_cens_trt <- fit_cens_plr(data_trt_surv_last_int_grace, formula_trt_cens)
+  data_trt_surv_last_int_grace <-
+    data_trt_surv_last_int_grace %>%
+    transmute(patient_id,
+              fup = tstart_plr,
+              p_uncens_plr = 1 - predict(model_cens_trt, type = "response"))
+  data_trt_long <-
+    data_trt_long %>%
+    left_join(data_trt_surv_last_int_grace, 
+              by = c("patient_id", "fup")) %>%
+    mutate(p_uncens_plr = if_else(is.na(p_uncens_plr), 1, p_uncens_plr)) %>%
+    group_by(patient_id) %>%
+    mutate(lag_p_uncens_plr = lag(p_uncens_plr, default = 1),
+           cmlp_uncens_plr = cumprod(lag_p_uncens_plr)) %>%
+    ungroup()
+  # censoring 2
+  if (period == "ba1" & contrast == "all"){ # no start of alternative treatments by design
     data_trt_long <-
       data_trt_long %>%
-      left_join(data_trt_surv_last_int_grace, 
-                by = c("patient_id", "tstart")) %>%
-      mutate(lag_p_uncens_plr = if_else(is.na(lag_p_uncens_plr), 1, lag_p_uncens_plr)) %>%
-      group_by(patient_id) %>%
-      mutate(cmlp_uncens_plr = cumprod(lag_p_uncens_plr)) %>%
-      ungroup()
-  } else{
+      mutate(p_uncens2_plr = 1)}
+  else{
     data_trt_long_grace <- 
       data_trt_long %>%
-      filter(tstart <= tstart_plr) #FIXME should vary depending on how many days are added to fup
-    model_cens_trt <- fit_cens_plr(data_trt_long_grace, formula_trt_cens)
-    data_trt_long_grace <-
+      filter(fup <= tstart_plr) #FIXME should vary depending on how many days are added to fup
+    model_cens2_trt <- fit_cens_plr(data_trt_long_grace, formula_trt_cens2)
+    data_trt_long_grace2 <-
       data_trt_long_grace %>%
       transmute(patient_id,
                 tstart,
-                p_uncens_plr = 1 - predict(model_cens_trt, type = "response"))
+                p_uncens2_plr = 1 - predict(model_cens2_trt, type = "response"))
     data_trt_long <- 
       data_trt_long %>%
-      left_join(data_trt_long_grace,
+      left_join(data_trt_long_grace2,
                 by = c("patient_id", "tstart")) %>%
-      mutate(p_uncens_plr = if_else(is.na(p_uncens_plr), 1, p_uncens_plr))
-    data_trt_long <-
-      data_trt_long %>%
-      group_by(patient_id) %>%
-      mutate(lag_p_uncens_plr = lag(p_uncens_plr, default = 1),
-             cmlp_uncens_plr = cumprod(lag_p_uncens_plr)) %>%
-      ungroup()
+      mutate(p_uncens2_plr = if_else(is.na(p_uncens2_plr), 1, p_uncens2_plr))
   }
+  data_trt_long <-
+    data_trt_long %>%
+    group_by(patient_id) %>%
+    mutate(lag_p_uncens2_plr = lag(p_uncens2_plr, default = 1),
+           cmlp_uncens2_plr = cumprod(lag_p_uncens2_plr)) %>%
+    ungroup()
 }
 
 ################################################################################
@@ -379,10 +401,12 @@ if (model == "plr"){ # change name (cmlp_uncens_plr was used for diagnostic
   # purposes on dummy data)
   data_control_long <-
     data_control_long %>%
-    rename(cmlp_uncens = cmlp_uncens_plr)
+    rename(cmlp_uncens = cmlp_uncens_plr,
+           cmlp_uncens2 = cmlp_uncens2_plr)
   data_trt_long <-
     data_trt_long %>%
-    rename(cmlp_uncens = cmlp_uncens_plr)
+    rename(cmlp_uncens = cmlp_uncens_plr,
+           cmlp_uncens2 = cmlp_uncens2_plr)
 }
 data_long <- 
   bind_rows(data_control_long, data_trt_long)
@@ -411,7 +435,9 @@ if (supp == "truncated"){
 }
 data_long <- 
   data_long %>%
-  mutate(weight = 1 / cmlp_uncens,
+  mutate(weight1 = 1 / cmlp_uncens,
+         weight2 = 1 / cmlp_uncens2,
+         weight = weight1 * weight2,
          arm = arm %>% factor(levels = c("Control", "Treatment")))
 
 ################################################################################

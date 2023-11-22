@@ -142,12 +142,20 @@ clone_data <- function(data, treatment_window_days = 4){
              treatment_ccw == "Untreated" & 
                (treatment_paxlovid_ccw == "Untreated" & treatment_alt_ccw == "Untreated") &
                fu_ccw > treatment_window_days ~ 1,
+             # Case 4: Patients do not receive treatment within 5 days and are treated
+             # with an alternative treatment strategy
+             # --> thery are not censored
+             treatment_ccw == "Untreated" & 
+               (treatment_paxlovid_ccw == "Treated" | treatment_alt_ccw == "Treated") ~ 0,
+           ),
+           censoring2 = case_when(
              # Case 4: Patients receive paxlovid within 5 days
              # --> they are censored in the treatment group at time of treatment (see fup)
              treatment_paxlovid_ccw == "Treated" ~ 1,
              # Case 5: Patients receive alternative treatment within 5 days
              # --> they are censored in the treatment group at time of treatment (see fup)
              treatment_alt_ccw == "Treated" ~ 1,
+             TRUE ~ 0,
            ),
     )
   ################################################################################
