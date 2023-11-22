@@ -3059,7 +3059,7 @@ actions:
     needs: [perform_ccw_analysis_plr, perform_ccw_analysis_mol_plr, perform_ccw_analysis_sot_plr]
     outputs:
       moderately_sensitive:
-        html: output/plr/tables/table_ccw_plr.html
+        html: output/plr/tables/table_ccw_plr.csv
 
   create_table_ccw_plr_ba2:
     run: r:latest analysis/table_ccw.R
@@ -3068,7 +3068,7 @@ actions:
     needs: [perform_ccw_analysis_plr_ba2, perform_ccw_analysis_mol_plr_ba2, perform_ccw_analysis_sot_plr_ba2]
     outputs:
       moderately_sensitive:
-        html: output/plr/tables/ba2_table_ccw_plr.html
+        html: output/plr/tables/ba2_table_ccw_plr.csv
   
   create_table_ccw_plr_truncated:
     run: r:latest analysis/table_ccw.R
@@ -3078,7 +3078,7 @@ actions:
     needs: [perform_ccw_analysis_plr_truncated, perform_ccw_analysis_mol_plr_truncated, perform_ccw_analysis_sot_plr_truncated]
     outputs:
       moderately_sensitive:
-        html: output/plr/tables/truncated/table_ccw_plr_truncated.html
+        html: output/plr/tables/truncated/table_ccw_plr_truncated.csv
 
   create_table_ccw_plr_trunctated_ba2:
     run: r:latest analysis/table_ccw.R
@@ -3088,7 +3088,7 @@ actions:
     needs: [perform_ccw_analysis_plr_truncated_ba2, perform_ccw_analysis_mol_plr_truncated_ba2, perform_ccw_analysis_sot_plr_truncated_ba2]
     outputs:
       moderately_sensitive:
-        html: output/plr/tables/truncated/ba2_table_ccw_plr_truncated.html
+        html: output/plr/tables/truncated/ba2_table_ccw_plr_truncated.csv
 
   create_table_ccw_plr_grace4:
     run: r:latest analysis/table_ccw.R
@@ -3098,7 +3098,7 @@ actions:
     needs: [perform_ccw_analysis_plr_grace4, perform_ccw_analysis_mol_plr_grace4, perform_ccw_analysis_sot_plr_grace4]
     outputs:
       moderately_sensitive:
-        html: output/plr/tables/grace4/table_ccw_plr_grace4.html
+        html: output/plr/tables/grace4/table_ccw_plr_grace4.csv
 
   create_table_ccw_plr_grace4_ba2:
     run: r:latest analysis/table_ccw.R
@@ -3108,7 +3108,7 @@ actions:
     needs: [perform_ccw_analysis_plr_grace4_ba2, perform_ccw_analysis_mol_plr_grace4_ba2, perform_ccw_analysis_sot_plr_grace4_ba2]
     outputs:
       moderately_sensitive:
-        html: output/plr/tables/grace4/ba2_table_ccw_plr_grace4.html
+        html: output/plr/tables/grace4/ba2_table_ccw_plr_grace4.csv
 
   create_table_ccw_plr_grace3:
     run: r:latest analysis/table_ccw.R
@@ -3118,7 +3118,7 @@ actions:
     needs: [perform_ccw_analysis_plr_grace3, perform_ccw_analysis_mol_plr_grace3, perform_ccw_analysis_sot_plr_grace3]
     outputs:
       moderately_sensitive:
-        html: output/plr/tables/grace3/table_ccw_plr_grace3.html
+        html: output/plr/tables/grace3/table_ccw_plr_grace3.csv
 
   create_table_ccw_plr_grace3_ba2:
     run: r:latest analysis/table_ccw.R
@@ -3128,7 +3128,7 @@ actions:
     needs: [perform_ccw_analysis_plr_grace3_ba2, perform_ccw_analysis_mol_plr_grace3_ba2, perform_ccw_analysis_sot_plr_grace3_ba2]
     outputs:
       moderately_sensitive:
-        html: output/plr/tables/grace3/ba2_table_ccw_plr_grace3.html
+        html: output/plr/tables/grace3/ba2_table_ccw_plr_grace3.csv
 
   create_table_ccw_plr_haem:
     run: r:latest analysis/table_ccw.R
@@ -3138,7 +3138,7 @@ actions:
     needs: [perform_ccw_analysis_plr_haem, perform_ccw_analysis_mol_plr_haem, perform_ccw_analysis_sot_plr_haem]
     outputs:
       moderately_sensitive:
-        html: output/plr/tables/haem/table_ccw_plr_haem.html
+        html: output/plr/tables/haem/table_ccw_plr_haem.csv
 
   create_table_ccw_plr_haem_ba2:
     run: r:latest analysis/table_ccw.R
@@ -3148,7 +3148,7 @@ actions:
     needs: [perform_ccw_analysis_plr_haem_ba2, perform_ccw_analysis_mol_plr_haem_ba2, perform_ccw_analysis_sot_plr_haem_ba2]
     outputs:
       moderately_sensitive:
-        html: output/plr/tables/haem/ba2_table_ccw_plr_haem.html
+        html: output/plr/tables/haem/ba2_table_ccw_plr_haem.csv
 
   create_table_ccw_plr_transplant:
     run: r:latest analysis/table_ccw.R
@@ -3158,7 +3158,7 @@ actions:
     needs: [perform_ccw_analysis_plr_transplant, perform_ccw_analysis_mol_plr_transplant, perform_ccw_analysis_sot_plr_transplant]
     outputs:
       moderately_sensitive:
-        html: output/plr/tables/transplant/table_ccw_plr_transplant.html
+        html: output/plr/tables/transplant/table_ccw_plr_transplant.csv
 
   create_table_ccw_plr_transplant_ba2:
     run: r:latest analysis/table_ccw.R
@@ -3168,4 +3168,4 @@ actions:
     needs: [perform_ccw_analysis_plr_transplant_ba2, perform_ccw_analysis_mol_plr_transplant_ba2, perform_ccw_analysis_sot_plr_transplant_ba2]
     outputs:
       moderately_sensitive:
-        html: output/plr/tables/transplant/ba2_table_ccw_plr_transplant.html
+        html: output/plr/tables/transplant/ba2_table_ccw_plr_transplant.csv
