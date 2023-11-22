@@ -42,7 +42,7 @@ args <- commandArgs(trailingOnly=TRUE)
 if(length(args)==0){
   # use for interactive testing
   period <- "ba1"
-  model <- "cox"
+  model <- "plr"
   subgrp <- "full"
   supp <- "main"
 } else {
@@ -96,6 +96,9 @@ files <-
   list.files(models_dir,
              pattern = pattern, 
              full.names = FALSE)
+files <- files[files != "plr_cens2_trt_all_plr.rds"] # ba1, contrast all --> 
+# no alternative censoring (there is a character string saved in the .rds, 
+# causing problems when tidy is used in subsequent steps)
 # capture names of models
 object_names <- str_extract(files, "[^.]+")
 models <- 
