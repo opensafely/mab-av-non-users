@@ -1115,7 +1115,7 @@ actions:
     needs: [perform_ccw_analysis_plr, perform_ccw_analysis_mol_plr, perform_ccw_analysis_sot_plr]
     outputs:
       moderately_sensitive:
-        table: output/plr/models/coefficients/plr_cens_*.csv
+        table: output/plr/models/coefficients/plr_cens*.csv
 
   perform_ccw_analysis_plr_ba2:
     run: r:latest analysis/ccw.R
@@ -1177,7 +1177,7 @@ actions:
     needs: [perform_ccw_analysis_plr_ba2, perform_ccw_analysis_mol_plr_ba2, perform_ccw_analysis_sot_plr_ba2]
     outputs:
       moderately_sensitive:
-        table: output/plr/models/coefficients/ba2_plr_cens_*.csv
+        table: output/plr/models/coefficients/ba2_plr_cens*.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## 4.2 CCW Analysis - check balance - PLR
