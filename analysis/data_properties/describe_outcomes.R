@@ -150,13 +150,13 @@ redaction_threshold = 8
 table_prim_redacted <-
   table_prim %>%
   mutate(across(where(~ is.integer(.x)), 
-                ~ case_when(. >= 0 & . <= redaction_threshold ~ "[REDACTED]",
+                ~ case_when(. > 0 & . <= redaction_threshold ~ "[REDACTED]",
                             TRUE ~ plyr::round_any(., rounding_threshold) %>% 
                               as.character())))
 table_sec_redacted <-
   table_sec %>%
   mutate(across(where(~ is.integer(.x)), 
-                ~ case_when(. >= 0 & . <= redaction_threshold ~ "[REDACTED]",
+                ~ case_when(. > 0 & . <= redaction_threshold ~ "[REDACTED]",
                             TRUE ~ plyr::round_any(., rounding_threshold) %>% 
                               as.character())))
 
