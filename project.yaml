@@ -1064,7 +1064,7 @@ actions:
       highly_sensitive:
         data: output/plr/data/data_long_all_plr.feather
         model01: output/plr/models/plr_cens_control_all_plr.rds
-        model02: output/plr/models/plr_cens*_trt_all_plr.rds
+        model02: output/plr/models/plr_cens*trt_all_plr.rds
         model1: output/plr/models/km_trt_all_plr.rds
         model2: output/plr/models/km_control_all_plr.rds
         model3: output/plr/models/cox_w_all_plr.rds
@@ -1082,7 +1082,7 @@ actions:
       highly_sensitive:
         data: output/plr/data/data_long_molnupiravir_plr.feather
         model01: output/plr/models/plr_cens_control_molnupiravir_plr.rds
-        model02: output/plr/models/plr_cens_trt_molnupiravir_plr.rds
+        model02: output/plr/models/plr_cens*trt_molnupiravir_plr.rds
         model1: output/plr/models/km_trt_molnupiravir_plr.rds
         model2: output/plr/models/km_control_molnupiravir_plr.rds
         model3: output/plr/models/cox_w_molnupiravir_plr.rds
@@ -1100,7 +1100,7 @@ actions:
       highly_sensitive:
         data: output/plr/data/data_long_sotrovimab_plr.feather
         model01: output/plr/models/plr_cens_control_sotrovimab_plr.rds
-        model02: output/plr/models/plr_cens_trt_sotrovimab_plr.rds
+        model02: output/plr/models/plr_cens*trt_sotrovimab_plr.rds
         model1: output/plr/models/km_trt_sotrovimab_plr.rds
         model2: output/plr/models/km_control_sotrovimab_plr.rds
         model3: output/plr/models/cox_w_sotrovimab_plr.rds
@@ -1126,7 +1126,7 @@ actions:
       highly_sensitive:
         data: output/plr/data/ba2_data_long_all_plr.feather
         model01: output/plr/models/ba2_plr_cens_control_all_plr.rds
-        model02: output/plr/models/ba2_plr_cens_trt_all_plr.rds
+        model02: output/plr/models/ba2_plr_cens*trt_all_plr.rds
         model1: output/plr/models/ba2_km_trt_all_plr.rds
         model2: output/plr/models/ba2_km_control_all_plr.rds
         model3: output/plr/models/ba2_cox_w_all_plr.rds
@@ -1144,7 +1144,7 @@ actions:
       highly_sensitive:
         data: output/plr/data/ba2_data_long_molnupiravir_plr.feather
         model01: output/plr/models/ba2_plr_cens_control_molnupiravir_plr.rds
-        model02: output/plr/models/ba2_plr_cens_trt_molnupiravir_plr.rds
+        model02: output/plr/models/ba2_plr_cens*trt_molnupiravir_plr.rds
         model1: output/plr/models/ba2_km_trt_molnupiravir_plr.rds
         model2: output/plr/models/ba2_km_control_molnupiravir_plr.rds
         model3: output/plr/models/ba2_cox_w_molnupiravir_plr.rds
@@ -1162,7 +1162,7 @@ actions:
       highly_sensitive:
         data: output/plr/data/ba2_data_long_sotrovimab_plr.feather
         model01: output/plr/models/ba2_plr_cens_control_sotrovimab_plr.rds
-        model02: output/plr/models/ba2_plr_cens_trt_sotrovimab_plr.rds
+        model02: output/plr/models/ba2_plr_cens*trt_sotrovimab_plr.rds
         model1: output/plr/models/ba2_km_trt_sotrovimab_plr.rds
         model2: output/plr/models/ba2_km_control_sotrovimab_plr.rds
         model3: output/plr/models/ba2_cox_w_sotrovimab_plr.rds
