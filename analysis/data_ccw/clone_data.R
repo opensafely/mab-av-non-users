@@ -26,7 +26,8 @@ clone_data <- function(data, treatment_window_days = 4){
              # Case 2: patients do not receive treatment within 5 days (scenarios F to M)
              # [either no treatment or treatment after five days]
              # --> we keep their observed outcomes and follow-up times
-             treatment_ccw == "Untreated" ~ status_ccw_simple,
+             treatment_ccw == "Untreated" &
+               (treatment_paxlovid_ccw == "Untreated" & treatment_alt_ccw == "Untreated") ~ status_ccw_simple,
              # Case 3: patients receive paxlovid within 5 days
              # --> they are still alive and followed up until treatment
              treatment_paxlovid_ccw == "Treated" ~ 0,
