@@ -24,8 +24,8 @@ args <- commandArgs(trailingOnly=TRUE)
 
 if(length(args)==0){
   # use for interactive testing
-  df_input <- "output/data/data_long_all.feather"
-  dir_output <- "output/figures/km_estimates/"
+  df_input <- "output/plr/data/data_long_all_plr.feather"
+  dir_output <- "output/plr/figures/km_estimates/"
   period <- "ba1"
   contrast <- "all"
   exposure <- c("arm")
@@ -274,7 +274,9 @@ for (subgroup_i in subgroups) {
         .subgroup_var = subgroup_i,
         .subgroup,
         !!exposure_sym,
-        time, lagtime, interval,
+        tstart = lagtime, 
+        tend = time,
+        interval_length = interval,
         #cml.event, cml.censor,
         N,
         n.risk, n.risk.r,
@@ -297,12 +299,16 @@ for (subgroup_i in subgroups) {
   
   data_surv_rounded_red <-
     data_surv_rounded %>%
-    select(-c(n.risk, n.event, cml.event,
+    select(-c(N, n.risk, n.event, cml.event,
               n.censor, cml.censor, estimate, 
               std.error, conf.high, conf.low,
               surv.se, surv.low, surv.high,
               risk.se, risk.low, risk.high))
   write_csv(data_surv_rounded_red, fs::path(dir_output, paste0(file_name, "_red.csv")))
+  data_surv_rounded_red2 <- 
+    data_surv_rounded_red %>%
+    select(-c(n.censor.r, cml.censor.r, surv, surv.se.approx, surv.low.approx, surv.high.approx, risk.se.approx))
+  write_csv(data_surv_rounded_red2, fs::path(dir_output, paste0(file_name, "_red2.csv")))
   
   if(plot){
     
@@ -311,8 +317,8 @@ for (subgroup_i in subgroups) {
         group_modify(
           ~ add_row(
             .x,
-            time = 0, # assumes time origin is zero
-            lagtime = 0,
+            tstart = 0, # assumes time origin is zero
+            tend = 0,
             estimate = 1,
             conf.low = 1,
             conf.high = 1,
@@ -320,9 +326,8 @@ for (subgroup_i in subgroups) {
           )
         ) %>%
         ggplot(aes(group = !!exposure_sym, colour = !!exposure_sym, fill = !!exposure_sym)) +
-        geom_step(aes(x = time, y = {1 - estimate}), direction = "vh") +
-        geom_step(aes(x = time, y = {1 - estimate}), direction = "vh", linetype = "dashed", alpha = 0.5) +
-        geom_rect(aes(xmin = lagtime, xmax = time, ymin = {1 - conf.high}, ymax = {1 - conf.low}), alpha = 0.1, colour = "transparent") +
+        geom_step(aes(x = tend, y = {1 - estimate}), direction = "hv") +
+        geom_rect(aes(xmin = tstart, xmax = tend, ymin = {1 - conf.high}, ymax = {1 - conf.low}), alpha = 0.1, colour = "transparent") +
         facet_grid(rows = vars(.subgroup)) +
         scale_color_brewer(type = "qual", palette = "Set1", na.value = "grey") +
         scale_fill_brewer(type = "qual", palette = "Set1", guide = "none", na.value = "grey") +
@@ -348,8 +353,8 @@ for (subgroup_i in subgroups) {
         group_modify(
           ~ add_row(
             .x,
-            time = 0, # assumes time origin is zero
-            lagtime = 0,
+            tstart = 0, # assumes time origin is zero
+            tend = 0,
             surv = 1,
             risk = 0,
             risk.low.approx = 0,
@@ -358,9 +363,9 @@ for (subgroup_i in subgroups) {
           )
         ) %>%
         ggplot(aes(group = !!exposure_sym, colour = !!exposure_sym, fill = !!exposure_sym)) +
-        geom_step(aes(x = time, y = risk), direction = "vh") +
-        geom_step(aes(x = time, y = risk), direction = "vh", linetype = "dashed", alpha = 0.5) +
-        geom_rect(aes(xmin = lagtime, xmax = time, ymin = risk.low.approx, ymax = risk.high.approx), alpha = 0.1, colour = "transparent") +
+        geom_step(aes(x = tend, y = risk), direction = "vh") +
+        geom_step(aes(x = tend, y = risk), direction = "vh", linetype = "dashed", alpha = 0.5) +
+        geom_rect(aes(xmin = tstart, xmax = tend, ymin = risk.low.approx, ymax = risk.high.approx), alpha = 0.1, colour = "transparent") +
         facet_grid(rows = vars(.subgroup)) +
         scale_color_brewer(type = "qual", palette = "Set1", na.value = "grey") +
         scale_fill_brewer(type = "qual", palette = "Set1", guide = "none", na.value = "grey") +
