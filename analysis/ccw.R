@@ -370,8 +370,8 @@ if (model == "cox"){
     data_trt_long <-
       data_trt_long %>%
       mutate(p_uncens2_plr = 1)
-    model_cens2_trt <- "no alternative censoring"}
-  else{
+    model_cens2_trt <- "no alternative censoring"
+    } else{
     data_trt_long_grace <- 
       data_trt_long %>%
       filter(fup <= tstart_plr) #FIXME should vary depending on how many days are added to fup
