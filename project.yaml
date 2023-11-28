@@ -1086,8 +1086,8 @@ actions:
     needs: [perform_ccw_analysis_plr_grace4]
     outputs:
       moderately_sensitive:
-        table1: output/plr/data_properties/data_long/grace4/flow_data_plr_grace4.csv
-        table2: output/plr/data_properties/data_long/grace4/flow_data_redacted_plr_grace4.csv
+        table1: output/plr/data_properties/data_long/grace4/flow_data_all_plr_grace4.csv
+        table2: output/plr/data_properties/data_long/grace4/flow_data_redacted_all_plr_grace4.csv
 
   describe_flow_data_long_plr_grace4_ba2:
     run: r:latest analysis/data_properties/describe_flow_data_long.R
@@ -1097,8 +1097,8 @@ actions:
     needs: [perform_ccw_analysis_plr_grace4_ba2]
     outputs:
       moderately_sensitive:
-        table1: output/plr/data_properties/data_long/grace4/ba2_flow_data_plr_grace4.csv
-        table2: output/plr/data_properties/data_long/grace4/ba2_flow_data_redacted_plr_grace4.csv
+        table1: output/plr/data_properties/data_long/grace4/ba2_flow_data_all_plr_grace4.csv
+        table2: output/plr/data_properties/data_long/grace4/ba2_flow_data_redacted_all_plr_grace4.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
@@ -1395,8 +1395,8 @@ actions:
     needs: [perform_ccw_analysis_plr_grace3]
     outputs:
       moderately_sensitive:
-        table1: output/plr/data_properties/data_long/grace3/flow_data_plr_grace3.csv
-        table2: output/plr/data_properties/data_long/grace3/flow_data_redacted_plr_grace3.csv
+        table1: output/plr/data_properties/data_long/grace3/flow_data_all_plr_grace3.csv
+        table2: output/plr/data_properties/data_long/grace3/flow_data_redacted_all_plr_grace3.csv
 
   describe_flow_data_long_plr_grace3_ba2:
     run: r:latest analysis/data_properties/describe_flow_data_long.R
@@ -1406,8 +1406,8 @@ actions:
     needs: [perform_ccw_analysis_plr_grace3_ba2]
     outputs:
       moderately_sensitive:
-        table1: output/plr/data_properties/data_long/grace3/ba2_flow_data_plr_grace3.csv
-        table2: output/plr/data_properties/data_long/grace3/ba2_flow_data_redacted_plr_grace3.csv
+        table1: output/plr/data_properties/data_long/grace3/ba2_flow_data_all_plr_grace3.csv
+        table2: output/plr/data_properties/data_long/grace3/ba2_flow_data_redacted_all_plr_grace3.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
