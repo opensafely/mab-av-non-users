@@ -34,7 +34,7 @@ if(length(args)==0){
   period <- "ba1"
   contrast <- "all"
   outcome <- "primary"
-  model <- "cox"
+  model <- "plr"
   subgrp <- "full"
   supp <- "main"
 } else {
