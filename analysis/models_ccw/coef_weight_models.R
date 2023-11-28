@@ -96,7 +96,7 @@ files <-
   list.files(models_dir,
              pattern = pattern, 
              full.names = FALSE)
-files <- files[files != "plr_cens2_trt_all_plr.rds"] # ba1, contrast all --> 
+files <- files[!stringr::str_detect(files, "plr_cens2_trt_all_*")] # ba1, contrast all --> 
 # no alternative censoring (there is a character string saved in the .rds, 
 # causing problems when tidy is used in subsequent steps)
 # capture names of models

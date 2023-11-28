@@ -28,6 +28,7 @@ if(length(args)==0){
   dir_output <- "output/plr/figures/km_estimates/"
   period <- "ba1"
   contrast <- "all"
+  outcome <- "primary"
   exposure <- c("arm")
   subgroups <- NULL
   tstart <- "tstart"
@@ -53,6 +54,9 @@ if(length(args)==0){
     make_option("--contrast", type = "character", default = "all",
                 help = "Contrast of analysis [default %default].",
                 metavar = "contrast"),
+    make_option("--outcome", type = "character", default = "primary",
+                help = "Outcome of analysis [default %default].",
+                metavar = "outcome"),
     make_option("--exposure", type = "character", default = "arm",
                 help = "Exposure variable name in the input dataset [default %default]. All outputs will be stratified by this variable.",
                 metavar = "exposure_varname"),
@@ -91,6 +95,7 @@ if(length(args)==0){
   df_input <- opt$df_input
   dir_output <- opt$dir_output
   period <- opt$period
+  outcome <- opt$outcome
   contrast <- opt$contrast
   exposure <- opt$exposure
   subgroups <- opt$subgroups
@@ -293,7 +298,7 @@ for (subgroup_i in subgroups) {
   
   ## write to disk
   file_name <- ifelse(subgroups != "all", glue("km_estimates_{subgroup_i}"), "km_estimates")
-  file_name <- paste0(period[period != "ba1"], "_"[period != "ba1"], file_name, "_"[contrast != "all"], contrast[contrast != "all"])
+  file_name <- paste0(period[period != "ba1"], "_"[period != "ba1"], file_name, "_"[contrast != "all"], contrast[contrast != "all"], "_"[outcome != "primary"], outcome[outcome != "primary"])
   arrow::write_feather(data_surv_rounded, fs::path(dir_output, paste0(file_name, ".feather")))
   write_csv(data_surv_rounded, fs::path(dir_output, paste0(file_name, ".csv")))
   
