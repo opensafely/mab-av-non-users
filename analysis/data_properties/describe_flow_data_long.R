@@ -48,7 +48,7 @@ if(length(args)==0){
     make_option("--outcome", type = "character", default = "primary",
                 help = "Outcome used in the analysis, options are 'primary' or 'secondary' [default %default].",
                 metavar = "outcome"),
-    make_option("--model", type = "character", default = "cox",
+    make_option("--model", type = "character", default = "plr",
                 help = "Model used to estimate probability of remaining uncensored [default %default].",
                 metavar = "model"),
     make_option("--subgrp", type = "character", default = "full",
