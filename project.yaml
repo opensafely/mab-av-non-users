@@ -1438,6 +1438,46 @@ actions:
       moderately_sensitive:
         table: output/plr/tables/ccw/ccw_all_primary_combined_plr.csv
 
+  perform_ccw_analysis_mol_primary_combined_plr:
+    run: r:latest analysis/ccw.R
+      --period ba1
+      --model plr
+      --contrast molnupiravir
+      --outcome primary_combined
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/data_long_molnupiravir_primary_combined_plr.feather
+        model01: output/plr/models/plr_cens_control_molnupiravir_primary_combined_plr.rds
+        model02: output/plr/models/plr_cens_trt_molnupiravir_primary_combined_plr.rds
+        model03: output/plr/models/plr_cens2_trt_molnupiravir_primary_combined_plr.rds
+        model1: output/plr/models/km_trt_molnupiravir_primary_combined_plr.rds
+        model2: output/plr/models/km_control_molnupiravir_primary_combined_plr.rds
+        model3: output/plr/models/cox_w_molnupiravir_primary_combined_plr.rds
+        model4: output/plr/models/cox_uw_molnupiravir_primary_combined_plr.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/ccw_molnupiravir_primary_combined_plr.csv
+
+  perform_ccw_analysis_sot_primary_combined_plr:
+    run: r:latest analysis/ccw.R
+      --period ba1
+      --model plr
+      --contrast sotrovimab
+      --outcome primary_combined
+    needs: [data_process]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/data_long_sotrovimab_primary_combined_plr.feather
+        model01: output/plr/models/plr_cens_control_sotrovimab_primary_combined_plr.rds
+        model02: output/plr/models/plr_cens_trt_sotrovimab_primary_combined_plr.rds
+        model03: output/plr/models/plr_cens2_trt_sotrovimab_primary_combined_plr.rds
+        model1: output/plr/models/km_trt_sotrovimab_primary_combined_plr.rds
+        model2: output/plr/models/km_control_sotrovimab_primary_combined_plr.rds
+        model3: output/plr/models/cox_w_sotrovimab_primary_combined_plr.rds
+        model4: output/plr/models/cox_uw_sotrovimab_primary_combined_plr.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/ccw_sotrovimab_primary_combined_plr.csv
+
   perform_ccw_analysis_primary_combined_plr_ba2:
     run: r:latest analysis/ccw.R
       --period ba2
@@ -1457,6 +1497,46 @@ actions:
       moderately_sensitive:
         table: output/plr/tables/ccw/ba2_ccw_all_primary_combined_plr.csv
 
+  perform_ccw_analysis_mol_primary_combined_plr_ba2:
+    run: r:latest analysis/ccw.R
+      --period ba2
+      --model plr
+      --contrast molnupiravir
+      --outcome primary_combined
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/ba2_data_long_molnupiravir_primary_combined_plr.feather
+        model01: output/plr/models/ba2_plr_cens_control_molnupiravir_primary_combined_plr.rds
+        model02: output/plr/models/ba2_plr_cens_trt_molnupiravir_primary_combined_plr.rds
+        model03: output/plr/models/ba2_plr_cens2_trt_molnupiravir_primary_combined_plr.rds
+        model1: output/plr/models/ba2_km_trt_molnupiravir_primary_combined_plr.rds
+        model2: output/plr/models/ba2_km_control_molnupiravir_primary_combined_plr.rds
+        model3: output/plr/models/ba2_cox_w_molnupiravir_primary_combined_plr.rds
+        model4: output/plr/models/ba2_cox_uw_molnupiravir_primary_combined_plr.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/ba2_ccw_molnupiravir_primary_combined_plr.csv
+
+  perform_ccw_analysis_sot_primary_combined_plr_ba2:
+    run: r:latest analysis/ccw.R
+      --period ba2
+      --model plr
+      --contrast sotrovimab
+      --outcome primary_combined
+    needs: [data_process_ba2]
+    outputs:
+      highly_sensitive:
+        data: output/plr/data/ba2_data_long_sotrovimab_primary_combined_plr.feather
+        model01: output/plr/models/ba2_plr_cens_control_sotrovimab_primary_combined_plr.rds
+        model02: output/plr/models/ba2_plr_cens_trt_sotrovimab_primary_combined_plr.rds
+        model03: output/plr/models/ba2_plr_cens2_trt_sotrovimab_primary_combined_plr.rds
+        model1: output/plr/models/ba2_km_trt_sotrovimab_primary_combined_plr.rds
+        model2: output/plr/models/ba2_km_control_sotrovimab_primary_combined_plr.rds
+        model3: output/plr/models/ba2_cox_w_sotrovimab_primary_combined_plr.rds
+        model4: output/plr/models/ba2_cox_uw_sotrovimab_primary_combined_plr.rds
+      moderately_sensitive:
+        table: output/plr/tables/ccw/ba2_ccw_sotrovimab_primary_combined_plr.csv
+
   ## # # # # # # # # # # # # # # # # # # # 
   ## 5.2 CCW Analysis - check balance - PRIMARY_COMBINED x PLR
   ## # # # # # # # # # # # # # # # # # # #
@@ -1470,6 +1550,28 @@ actions:
     outputs:
       moderately_sensitive:
         table: output/plr/tables/ccw/smd_all_primary_combined_plr.csv
+  
+  calc_smd_mol_primary_combined_plr:
+    run: r:latest analysis/smd.R 
+      --period ba1
+      --model plr
+      --contrast molnupiravir
+      --outcome primary_combined
+    needs: [perform_ccw_analysis_mol_primary_combined_plr]
+    outputs:
+      moderately_sensitive:
+        table: output/plr/tables/ccw/smd_molnupiravir_primary_combined_plr.csv
+
+  calc_smd_sot_primary_combined_plr:
+    run: r:latest analysis/smd.R 
+      --period ba1
+      --model plr
+      --contrast sotrovimab
+      --outcome primary_combined
+    needs: [perform_ccw_analysis_sot_primary_combined_plr]
+    outputs:
+      moderately_sensitive:
+        table: output/plr/tables/ccw/smd_sotrovimab_primary_combined_plr.csv
 
   calc_smd_primary_combined_plr_ba2:
     run: r:latest analysis/smd.R
@@ -1480,6 +1582,28 @@ actions:
     outputs:
       moderately_sensitive:
         table: output/plr/tables/ccw/ba2_smd_all_primary_combined_plr.csv
+
+  calc_smd_mol_primary_combined_pl_ba2:
+    run: r:latest analysis/smd.R 
+      --period ba2
+      --model plr
+      --contrast molnupiravir
+      --outcome primary_combined
+    needs: [perform_ccw_analysis_mol_primary_combined_plr_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/plr/tables/ccw/ba2_smd_molnupiravir_primary_combined_plr.csv
+
+  calc_smd_sot_primary_combined_plr_ba2:
+    run: r:latest analysis/smd.R 
+      --period ba2
+      --model plr
+      --contrast sotrovimab
+      --outcome primary_combined
+    needs: [perform_ccw_analysis_sot_primary_combined_plr_ba2]
+    outputs:
+      moderately_sensitive:
+        table: output/plr/tables/ccw/ba2_smd_sotrovimab_primary_combined_plr.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## 5.3 CCW Analysis - density weights - PRIMARY_COMBINED x PLR
@@ -1496,6 +1620,30 @@ actions:
         table1: output/plr/data_properties/data_long/dens_all_primary_combined_plr.csv
         table2: output/plr/data_properties/data_long/q*_all_primary_combined_plr.csv
 
+  dens_weights_mol_primary_combined_plr:
+    run: r:latest analysis/data_ccw/dens_weights.R 
+      --period ba1
+      --model plr
+      --contrast molnupiravir
+      --outcome primary_combined
+    needs: [perform_ccw_analysis_mol_primary_combined_plr]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/dens_molnupiravir_primary_combined_plr.csv
+        table2: output/plr/data_properties/data_long/q*_molnupiravir_primary_combined_plr.csv
+  
+  dens_weights_sot_primary_combined_plr:
+    run: r:latest analysis/data_ccw/dens_weights.R 
+      --period ba1
+      --model plr
+      --contrast sotrovimab
+      --outcome primary_combined
+    needs: [perform_ccw_analysis_sot_primary_combined_plr]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/dens_sotrovimab_primary_combined_plr.csv
+        table2: output/plr/data_properties/data_long/q*_sotrovimab_primary_combined_plr.csv
+
   dens_weights_primary_combined_plr_ba2:
     run: r:latest analysis/data_ccw/dens_weights.R
       --period ba2
@@ -1506,6 +1654,30 @@ actions:
       moderately_sensitive:
         table1: output/plr/data_properties/data_long/ba2_dens_all_primary_combined_plr.csv
         table2: output/plr/data_properties/data_long/ba2_q*_all_primary_combined_plr.csv
+
+  dens_weights_mol_primary_combined_plr_ba2:
+    run: r:latest analysis/data_ccw/dens_weights.R 
+      --period ba2
+      --model plr
+      --contrast molnupiravir
+      --outcome primary_combined
+    needs: [perform_ccw_analysis_mol_primary_combined_plr_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/ba2_dens_molnupiravir_primary_combined_plr.csv
+        table2: output/plr/data_properties/data_long/ba2_q*_molnupiravir_primary_combined_plr.csv
+  
+  dens_weights_sot_primary_combined_plr_ba2:
+    run: r:latest analysis/data_ccw/dens_weights.R 
+      --period ba2
+      --model plr
+      --contrast sotrovimab
+      --outcome primary_combined
+    needs: [perform_ccw_analysis_sot_primary_combined_plr_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/ba2_dens_sotrovimab_primary_combined_plr.csv
+        table2: output/plr/data_properties/data_long/ba2_q*_sotrovimab_primary_combined_plr.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
@@ -1634,6 +1806,40 @@ actions:
         plot1: output/plr/figures/km_estimates/km_estimates_primary_combined.png
         plot2: output/plr/figures/km_estimates/km_estimates_primary_combined_red.png
 
+  plot_km_mol_primary_combined_plr:
+    run: r:latest analysis/km.R
+      --df_input output/plr/data/data_long_molnupiravir_primary_combined_plr.feather
+      --dir_output output/plr/figures/km_estimates
+      --contrast molnupiravir
+      --outcome primary_combined
+      --plot TRUE
+    needs: [perform_ccw_analysis_mol_primary_combined_plr]
+    outputs:
+      highly_sensitive:
+        feather: output/plr/figures/km_estimates/km_estimates_molnupiravir_primary_combined.feather
+      moderately_sensitive:
+        csv1: output/plr/figures/km_estimates/km_estimates_molnupiravir_primary_combined.csv
+        csv2: output/plr/figures/km_estimates/km_estimates_molnupiravir_primary_combined_red*.csv
+        plot1: output/plr/figures/km_estimates/km_estimates_molnupiravir_primary_combined.png
+        plot2: output/plr/figures/km_estimates/km_estimates_molnupiravir_primary_combined_red.png
+
+  plot_km_sot_primary_combined_plr:
+    run: r:latest analysis/km.R
+      --df_input output/plr/data/data_long_sotrovimab_primary_combined_plr.feather
+      --dir_output output/plr/figures/km_estimates
+      --contrast sotrovimab
+      --outcome primary_combined
+      --plot TRUE
+    needs: [perform_ccw_analysis_sot_primary_combined_plr]
+    outputs:
+      highly_sensitive:
+        feather: output/plr/figures/km_estimates/km_estimates_sotrovimab_primary_combined.feather
+      moderately_sensitive:
+        csv1: output/plr/figures/km_estimates/km_estimates_sotrovimab_primary_combined.csv
+        csv2: output/plr/figures/km_estimates/km_estimates_sotrovimab_primary_combined_red*.csv
+        plot1: output/plr/figures/km_estimates/km_estimates_sotrovimab_primary_combined.png
+        plot2: output/plr/figures/km_estimates/km_estimates_sotrovimab_primary_combined_red.png
+
   plot_km_primary_combined_plr_ba2:
     run: r:latest analysis/km.R
       --df_input output/plr/data/ba2_data_long_all_primary_combined_plr.feather
@@ -1650,6 +1856,42 @@ actions:
         csv2: output/plr/figures/km_estimates/ba2_km_estimates_primary_combined_red*.csv
         plot1: output/plr/figures/km_estimates/ba2_km_estimates_primary_combined.png
         plot2: output/plr/figures/km_estimates/ba2_km_estimates_primary_combined_red.png
+
+  plot_km_mol_primary_combined_plr_ba2:
+    run: r:latest analysis/km.R
+      --df_input output/plr/data/ba2_data_long_molnupiravir_primary_combined_plr.feather
+      --dir_output output/plr/figures/km_estimates
+      --period ba2
+      --contrast molnupiravir
+      --outcome primary_combined
+      --plot TRUE
+    needs: [perform_ccw_analysis_mol_primary_combined_plr_ba2]
+    outputs:
+      highly_sensitive:
+        feather: output/plr/figures/km_estimates/ba2_km_estimates_molnupiravir_primary_combined.feather
+      moderately_sensitive:
+        csv1: output/plr/figures/km_estimates/ba2_km_estimates_molnupiravir_primary_combined.csv
+        csv2: output/plr/figures/km_estimates/ba2_km_estimates_molnupiravir_primary_combined_red*.csv
+        plot1: output/plr/figures/km_estimates/ba2_km_estimates_molnupiravir_primary_combined.png
+        plot2: output/plr/figures/km_estimates/ba2_km_estimates_molnupiravir_primary_combined_red.png
+
+  plot_km_sot_primary_combined_plr_ba2:
+    run: r:latest analysis/km.R
+      --df_input output/plr/data/ba2_data_long_sotrovimab_primary_combined_plr.feather
+      --dir_output output/plr/figures/km_estimates
+      --period ba2
+      --contrast sotrovimab
+      --outcome primary_combined
+      --plot TRUE
+    needs: [perform_ccw_analysis_sot_primary_combined_plr_ba2]
+    outputs:
+      highly_sensitive:
+        feather: output/plr/figures/km_estimates/ba2_km_estimates_sotrovimab_primary_combined.feather
+      moderately_sensitive:
+        csv1: output/plr/figures/km_estimates/ba2_km_estimates_sotrovimab_primary_combined.csv
+        csv2: output/plr/figures/km_estimates/ba2_km_estimates_sotrovimab_primary_combined_red*.csv
+        plot1: output/plr/figures/km_estimates/ba2_km_estimates_sotrovimab_primary_combined.png
+        plot2: output/plr/figures/km_estimates/ba2_km_estimates_sotrovimab_primary_combined_red.png
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
@@ -1734,3 +1976,23 @@ actions:
     outputs:
       moderately_sensitive:
         html: output/plr/tables/grace3/ba2_table_ccw_plr_grace3.csv
+  
+  create_table_ccw_primary_combined_plr:
+    run: r:latest analysis/table_ccw.R
+      --period ba1
+      --model plr
+      --outcome primary_combined
+    needs: [perform_ccw_analysis_primary_combined_plr, perform_ccw_analysis_mol_primary_combined_plr, perform_ccw_analysis_sot_primary_combined_plr]
+    outputs:
+      moderately_sensitive:
+        html: output/plr/tables/table_ccw_primary_combined_plr.csv
+
+  create_table_ccw_primary_combined_plr_ba2:
+    run: r:latest analysis/table_ccw.R
+      --period ba2
+      --model plr
+      --outcome primary_combined
+    needs: [perform_ccw_analysis_primary_combined_plr_ba2, perform_ccw_analysis_mol_primary_combined_plr_ba2, perform_ccw_analysis_sot_primary_combined_plr_ba2]
+    outputs:
+      moderately_sensitive:
+        html: output/plr/tables/ba2_table_ccw_primary_combined_plr.csv
