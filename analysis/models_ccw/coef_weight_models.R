@@ -43,6 +43,7 @@ if(length(args)==0){
   # use for interactive testing
   period <- "ba1"
   model <- "plr"
+  outcome <- "primary"
   subgrp <- "full"
   supp <- "main"
 } else {
@@ -54,6 +55,9 @@ if(length(args)==0){
     make_option("--model", type = "character", default = "cox",
                 help = "Model used to estimate probability of remaining uncensored [default %default].",
                 metavar = "model"),
+    make_option("--outcome", type = "character", default = "primary",
+                help = "Outcome used in model [default %primary].",
+                metavar = "outcome"),
     make_option("--subgrp", type = "character", default = "full",
                 help = "Subgroup where the analysis is conducted on, options are 'full' and 'haem' [default %default].",
                 metavar = "subgrp"),
@@ -67,6 +71,7 @@ if(length(args)==0){
   
   period <- opt$period
   model <- opt$model
+  outcome <- opt$outcome
   subgrp <- opt$subgrp
   supp <- opt$supp
 }
@@ -99,6 +104,12 @@ files <-
 files <- files[!stringr::str_detect(files, "plr_cens2_trt_all_*")] # ba1, contrast all --> 
 # no alternative censoring (there is a character string saved in the .rds, 
 # causing problems when tidy is used in subsequent steps)
+if (outcome == "primary"){
+  files <- files[!stringr::str_detect(files, "primary_combined")]
+} else if (outcome == "primary_combined"){
+  files <- files[stringr::str_detect(files, "primary_combined")]
+}
+
 # capture names of models
 object_names <- str_extract(files, "[^.]+")
 models <- 

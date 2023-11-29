@@ -35,6 +35,7 @@ if(length(args)==0){
   # use for interactive testing
   period <- "ba1"
   model <- "plr"
+  outcome <- "primary"
   subgrp <- "full"
   supp <- "main"
 } else {
@@ -46,6 +47,9 @@ if(length(args)==0){
     make_option("--model", type = "character", default = "cox",
                 help = "Model used to estimate probability of remaining uncensored [default %default].",
                 metavar = "model"),
+    make_option("--outcome", type = "character", default = "primary",
+                help = "Outcome used in model [default %primary].",
+                metavar = "outcome"),
     make_option("--subgrp", type = "character", default = "full",
                 help = "Subgroup where the analysis is conducted on, options are 'full' and 'haem' [default %default].",
                 metavar = "subgrp"),
@@ -59,6 +63,7 @@ if(length(args)==0){
   
   period <- opt$period
   model <- opt$model
+  outcome <- opt$outcome
   subgrp <- opt$subgrp
   supp <- opt$supp
 }
@@ -75,7 +80,7 @@ fs::dir_create(tables_dir)
 ################################################################################
 # 0.2 Search files
 ################################################################################
-pattern <- if_else(period == "ba1", "^ccw", "^ba2_ccw")
+pattern <- if_else(period == "ba1", "^ccw_", "^ba2_ccw")
 # directory where tables are saved
 tables_ccw_dir <- 
   concat_dirs(fs::path("tables", "ccw"), output_dir, model, subgrp, supp)
@@ -83,6 +88,12 @@ files <-
   list.files(tables_ccw_dir,
              pattern = pattern, 
              full.names = TRUE)
+if (outcome == "primary"){
+  files <- files[!stringr::str_detect(files, "primary_combined")]
+} else if (outcome == "primary_combined"){
+  files <- files[stringr::str_detect(files, "primary_combined")]
+}
+
 
 ################################################################################
 # 0.3 Import output from ccw analysis
@@ -148,6 +159,6 @@ output_combined <-
 # 2. Save
 ################################################################################
 file_name <- 
-  make_filename("table_ccw", period, outcome = "primary", contrast = "", model, subgrp, supp, "csv")
+  make_filename("table_ccw", period, outcome, contrast = "", model, subgrp, supp, "csv")
 write_csv(output_combined, 
           fs::path(tables_dir, file_name))
