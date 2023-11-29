@@ -113,13 +113,18 @@ retrieve_n_flowchart <- function(data_long, arm) {
   if (arm == "Control"){
     data_cens <- data_long %>% filter(censoring == 0 & max_fup <= treatment_window_days_05)
   } else if (arm == "Treatment"){
-    data_cens <- data_long %>% filter(censoring == 0 & max_fup <= treatment_window_days_05 & treatment_ccw == "Untreated")
+    data_cens <- data_long %>% filter(censoring == 0 & censoring2 == 0 & max_fup <= treatment_window_days_05 & treatment_ccw == "Untreated")
   }
   n_cens <- data_cens %>% filter(outcome == 0) %>% nrow()
   n_cens_outc <- data_cens %>% filter(outcome == 1) %>% nrow()
   n_art_cens <- data_long %>% filter(censoring == 1 & treatment_paxlovid_ccw == "Untreated" & treatment_alt_ccw == "Untreated") %>% nrow()
-  n_art_cens_pax <- data_long %>% filter(censoring == 1 & treatment_paxlovid_ccw == "Treated") %>% nrow()
-  n_art_cens_alt <- data_long %>% filter(censoring == 1 & treatment_alt_ccw == "Treated") %>% nrow()
+  if (arm == "Control"){
+    n_art_cens_pax <- data_long %>% filter(censoring == 1 & treatment_paxlovid_ccw == "Treated") %>% nrow()
+    n_art_cens_alt <- data_long %>% filter(censoring == 1 & treatment_alt_ccw == "Treated") %>% nrow()
+  } else if (arm == "Treatment"){
+    n_art_cens_pax <- data_long %>% filter(censoring == 0 & censoring2 == 1 & treatment_paxlovid_ccw == "Treated") %>% nrow()
+    n_art_cens_alt <- data_long %>% filter(censoring == 0 & censoring2 == 1 & treatment_alt_ccw == "Treated") %>% nrow()
+  }
   if (arm == "Control"){
     data_fup <- data_long %>% filter(censoring == 0 & max_fup > treatment_window_days_05)
   } else if (arm == "Treatment"){
