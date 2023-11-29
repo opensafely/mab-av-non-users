@@ -1583,7 +1583,7 @@ actions:
       moderately_sensitive:
         table: output/plr/tables/ccw/ba2_smd_all_primary_combined_plr.csv
 
-  calc_smd_mol_primary_combined_pl_ba2:
+  calc_smd_mol_primary_combined_plr_ba2:
     run: r:latest analysis/smd.R 
       --period ba2
       --model plr
@@ -1678,6 +1678,31 @@ actions:
       moderately_sensitive:
         table1: output/plr/data_properties/data_long/ba2_dens_sotrovimab_primary_combined_plr.csv
         table2: output/plr/data_properties/data_long/ba2_q*_sotrovimab_primary_combined_plr.csv
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## 5.4 CCW Analysis - flow data - PRIMARY_COMBINED x PLR
+  ## # # # # # # # # # # # # # # # # # # #
+  
+  describe_flow_data_long_primary_combined_plr:
+    run: r:latest analysis/data_properties/describe_flow_data_long.R
+      --model plr
+      --outcome primary_combined
+    needs: [perform_ccw_analysis_primary_combined_plr]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/grace4/flow_data_all_primary_combined_plr.csv
+        table2: output/plr/data_properties/data_long/grace4/flow_data_redacted_all_primary_combined_plr.csv
+
+  describe_flow_data_long_primary_combined_plr_ba2:
+    run: r:latest analysis/data_properties/describe_flow_data_long.R
+      --period ba2
+      --model plr
+      --outcome primary_combined
+    needs: [perform_ccw_analysis_primary_combined_plr_ba2]
+    outputs:
+      moderately_sensitive:
+        table1: output/plr/data_properties/data_long/grace4/ba2_flow_data_all_primary_combined_plr.csv
+        table2: output/plr/data_properties/data_long/grace4/ba2_flow_data_redacted_all_primary_combined_plr.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
