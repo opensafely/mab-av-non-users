@@ -18,6 +18,7 @@ source(here("lib", "functions", "dir_structure.R"))
 model <- "plr"
 subgrp <- "full"
 supp <- "main"
+outcome <- "primary_combined"
 periods <- c("ba1", "ba2")
 
 ################################################################################
@@ -34,13 +35,24 @@ fs::dir_create(figures_km_dir)
 ################################################################################
 files <- 
     list.files(figures_km_dir,
-               pattern = "_red.csv$", 
+               pattern = "_red2.csv$", 
                full.names = FALSE)
+if (outcome == "primary"){
+  files <- files[!stringr::str_detect(files, "_primary_combined")]
+} else if (outcome == "primary_combined"){
+  files <- files[stringr::str_detect(files, "_primary_combined")]
+}
 period_contrast <- 
-  str_remove(files, "_red.csv") %>% 
+  str_remove(files, "_red2.csv") %>% 
   str_remove("km_estimates") %>%
   str_replace("__", "_") %>%
   str_remove("^_|_$")
+if (outcome == "primary_combined"){
+  period_contrast <-
+    period_contrast %>%
+    str_remove("primary_combined") %>%
+    str_remove("^_|_$")
+}
 period_contrast <- case_when(
   period_contrast == "" ~ "BA.1 Treated vs Untreated",
   period_contrast == "sotrovimab" ~ "BA.1 Sotrovimab vs Untreated",
@@ -53,13 +65,20 @@ output <-
        .y = period_contrast,
        .f = ~ read_csv(.x, 
                        col_types = cols_only(arm = col_character(),
-                                             time = col_double(),
-                                             lagtime = col_double(),
+                                             tstart = col_double(),
+                                             tend = col_double(),
                                              risk = col_double(),
                                              risk.low.approx = col_double(),
                                              risk.high.approx = col_double())) %>%
-         mutate(contrast = .y))
-names(output) <- str_remove(files, ".csv")
+         mutate(contrast = .y,
+                tstart = if_else(tstart == 0, 0, tstart + 0.5),
+                tend = tend + 0.5))
+if (outcome == "primary"){
+  names(output) <- str_remove(files, "_red2.csv")
+} else if (outcome == "primary_combined"){
+  names(output) <- str_remove(files, "_primary_combined_red2.csv")
+}
+
 ################################################################################
 # 0.4 Function plotting KMs
 ################################################################################
@@ -69,19 +88,18 @@ km_plot_rounded <- function(.data) {
     group_modify(
       ~ add_row(
         .x,
-        time = 0, # assumes time origin is zero
-        lagtime = 0,
+        tstart = 0, # assumes time origin is zero
+        tend = 1,
         risk = 0,
         risk.low.approx = 0,
         risk.high.approx = 0,
         .before = 0
       ),
     ) %>%
-    mutate(time = if_else(time == 27.5, 28, time)) %>%
     ggplot(aes(group = arm, colour = arm, fill = arm)) +
-    geom_step(aes(x = time, y = risk), direction = "vh") +
-    geom_step(aes(x = time, y = risk), direction = "vh", linetype = "dashed", alpha = 0.5) +
-    geom_rect(aes(xmin = lagtime, xmax = time, ymin = risk.low.approx, ymax = risk.high.approx), alpha = 0.1, colour = "transparent") +
+    geom_step(aes(x = tend, y = risk), direction = "vh") +
+    geom_step(aes(x = tend, y = risk), direction = "vh", linetype = "dashed", alpha = 0.5) +
+    geom_rect(aes(xmin = tstart, xmax = tend, ymin = risk.low.approx, ymax = risk.high.approx), alpha = 0.1, colour = "transparent") +
     facet_grid(rows = vars(contrast)) +
     scale_color_brewer(type = "qual", palette = "Set1", na.value = "grey") +
     scale_fill_brewer(type = "qual", palette = "Set1", guide = "none", na.value = "grey") +
@@ -102,10 +120,10 @@ km_plot_rounded <- function(.data) {
       legend.text = element_text(size = 7),
       axis.title = element_text(size = 9),
       strip.text.x = element_text(size = 30),
-      strip.background =element_rect(fill="grey")
+      strip.background = element_rect(fill="grey")
     )
 }
-limits_y <- c(0, 0.05)
+limits_y <- c(0, 0.053)
 breaks_y <- seq(0, 0.05, 0.01)
 plots <- 
   map(.x = output,
@@ -113,14 +131,19 @@ plots <-
 
 library(patchwork)
 p <- 
-  (plots$km_estimates_red | plots$km_estimates_molnupiravir_red | plots$km_estimates_sotrovimab_red) /
-  (plots$ba2_km_estimates_red | plots$ba2_km_estimates_molnupiravir_red | plots$ba2_km_estimates_sotrovimab_red) + 
+  (plots$km_estimates | plots$km_estimates_molnupiravir | plots$km_estimates_sotrovimab) /
+  (plots$ba2_km_estimates | plots$ba2_km_estimates_molnupiravir | plots$ba2_km_estimates_sotrovimab) + 
   plot_annotation(tag_levels = "A",
                   tag_suffix = ")") & 
   theme(plot.tag = element_text(size = 9))
 
+if (outcome == "primary"){
+  filename <- fs::path(figures_km_dir, "plr_kms.png")
+} else if (outcome == "primary_combined"){
+  filename <- fs::path(figures_km_dir, "plr_kms_primary_combined.png")
+}
 ggsave(p, 
-       filename = fs::path(figures_km_dir, "plr_kms.png"),
+       filename = filename,
        width = 22,
        height = 12.5,
        units = "cm",
