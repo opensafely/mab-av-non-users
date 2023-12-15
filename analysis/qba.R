@@ -5,10 +5,9 @@
 #
 # This script performs the qba + makes plots
 # Input:
-# ./output/tables/'period'_]table_ccw_plr.csv 
+# ./output/tables/['period'_]table_ccw_plr.csv 
 # Output:
-# ./output/plr/tables/qba/['period'_]qba_plr.csv
-# ./output/plr/figures/qba/['period'_]qba_plr.png
+# ./output/plr/tables/qba/scenario*.png
 # note if 'period' == ba1, no prefix is used
 #
 ################################################################################
@@ -42,7 +41,6 @@ figures_qba_dir <-
   concat_dirs(fs::path("figures", "qba"), output_dir, model, subgrp, supp)
 # Create tables directory
 fs::dir_create(tables_dir)
-fs::dir_create(tables_qba_dir)
 fs::dir_create(figures_qba_dir)
 
 ################################################################################
